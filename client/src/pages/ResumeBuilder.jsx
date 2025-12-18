@@ -19,7 +19,7 @@ import {
   User,
 } from "lucide-react";
 
-import PersonalInfoForm from "../components/personalinfoform";
+import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
 import TemplateSelector from "../components/TemplateSelector";
 import ColorPicker from "../components/colorPicker";
