@@ -1,9 +1,8 @@
-import React, { use, useEffect } from "react";
+import { useEffect } from "react";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import Preview from "./pages/Preview";
 import Dashboard from "./pages/Dashboard";
 import { Route, Routes } from "react-router-dom";
-import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Layout from "./pages/Layout";
 import { useDispatch } from "react-redux";
