@@ -20,14 +20,14 @@ const ColorPicker = ({ selectedColor, onChange }) => {
   return (
     <div className="relative">
       <button
-        className="flex items-center gap-1.5 text-sm text-brand-700 bg-brand-50 border border-brand-100 hover:bg-brand-100 transition-all px-3 py-2 rounded-lg cursor-pointer"
+        className="flex items-center gap-1.5 text-sm text-brand-700 bg-brand-50 border border-brand-100 hover:bg-brand-100 transition-all px-3 py-2 rounded-lg cursor-pointer dark:bg-brand-500/10 dark:text-brand-300 dark:border-brand-500/20 dark:hover:bg-brand-500/20"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Palette size={16} /> <span className="max-sm:hidden">Accent</span>
       </button>
 
       {isOpen && (
-        <div className="absolute top-full w-60 p-3 mt-2 grid grid-cols-4 gap-3 z-10 bg-white rounded-md border border-gray-200 shadow-sm">
+        <div className="absolute top-full w-60 p-3 mt-2 grid grid-cols-4 gap-3 z-10 bg-surface rounded-md border border-line shadow-sm">
           {colors.map((color) => (
             <div
               key={color.value}
@@ -38,7 +38,7 @@ const ColorPicker = ({ selectedColor, onChange }) => {
               }}
             >
               <div
-                className="w-8 h-8 rounded-full relative border-2 border-white hover:border-gray-300 shadow-sm"
+                className="w-8 h-8 rounded-full relative border-2 border-surface hover:border-line shadow-sm"
                 style={{ backgroundColor: color.value }}
               >
                 {selectedColor === color.value && (
@@ -47,7 +47,7 @@ const ColorPicker = ({ selectedColor, onChange }) => {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-600">{color.name}</p>
+              <p className="text-xs text-muted">{color.name}</p>
             </div>
           ))}
         </div>

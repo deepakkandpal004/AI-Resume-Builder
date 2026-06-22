@@ -104,7 +104,7 @@ const PersonalInfoForm = ({
         {typeof data.image === "object" && (
           <div className="flex flex-col gap-1 pl-4 text-sm">
             <p>Remove Background</p>
-            <label className="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
+            <label className="relative inline-flex items-center cursor-pointer text-ink gap-3">
               <input
                 type="checkbox"
                 className="sr-only peer"

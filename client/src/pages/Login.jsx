@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { login } from "../app/features/authSlice";
 import { toast } from "react-hot-toast";
 import api from "../configs/api.js";
+import ThemeToggle from "../components/ThemeToggle";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -66,10 +67,11 @@ const Login = () => {
       </div>
 
       {/* Form panel */}
-      <div className="flex items-center justify-center bg-canvas px-6 py-12">
+      <div className="relative flex items-center justify-center bg-canvas px-6 py-12">
+        <ThemeToggle className="absolute right-4 top-4" />
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-sm rounded-2xl border border-line bg-white p-8 shadow-sm"
+          className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-sm"
         >
           <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted transition hover:text-brand-600 lg:hidden">
             <ArrowLeft className="size-4" /> Back to home
@@ -83,7 +85,7 @@ const Login = () => {
           </p>
 
           {!isLogin && (
-            <div className="mt-6 flex h-12 w-full items-center gap-2 rounded-lg border border-line bg-white px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+            <div className="mt-6 flex h-12 w-full items-center gap-2 rounded-lg border border-line bg-surface px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
               <User2Icon size={16} className="text-muted" />
               <input
                 type="text"
@@ -97,7 +99,7 @@ const Login = () => {
             </div>
           )}
 
-          <div className="mt-4 flex h-12 w-full items-center gap-2 rounded-lg border border-line bg-white px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+          <div className="mt-4 flex h-12 w-full items-center gap-2 rounded-lg border border-line bg-surface px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
             <Mail size={16} className="text-muted" />
             <input
               type="email"
@@ -110,7 +112,7 @@ const Login = () => {
             />
           </div>
 
-          <div className="mt-4 flex h-12 w-full items-center gap-2 rounded-lg border border-line bg-white px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+          <div className="mt-4 flex h-12 w-full items-center gap-2 rounded-lg border border-line bg-surface px-4 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
             <Lock size={16} className="text-muted" />
             <input
               type="password"

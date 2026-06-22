@@ -18,11 +18,11 @@ import pdfToText from "react-pdftotext";
 const Modal = ({ onClose, title, children }) => (
   <div
     onClick={onClose}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 backdrop-blur-sm"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
   >
     <div
       onClick={(e) => e.stopPropagation()}
-      className="relative w-full max-w-sm rounded-2xl border border-line bg-white p-6 shadow-xl"
+      className="relative w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-xl"
     >
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-ink">{title}</h2>
@@ -167,9 +167,9 @@ const Dashboard = () => {
       <div className="grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
         <button
           onClick={() => setShowCreateResume(true)}
-          className="group flex items-center gap-4 rounded-2xl border border-dashed border-line bg-white p-5 text-left transition-all hover:border-brand-400 hover:shadow-md"
+          className="group flex items-center gap-4 rounded-2xl border border-dashed border-line bg-surface p-5 text-left transition-all hover:border-brand-400 hover:shadow-md"
         >
-          <span className="flex size-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:group-hover:bg-brand-500/20">
             <PlusIcon className="size-6" />
           </span>
           <span>
@@ -180,9 +180,9 @@ const Dashboard = () => {
 
         <button
           onClick={() => setShowUploadResume(true)}
-          className="group flex items-center gap-4 rounded-2xl border border-dashed border-line bg-white p-5 text-left transition-all hover:border-accent-500 hover:shadow-md"
+          className="group flex items-center gap-4 rounded-2xl border border-dashed border-line bg-surface p-5 text-left transition-all hover:border-accent-500 hover:shadow-md"
         >
-          <span className="flex size-12 items-center justify-center rounded-xl bg-accent-50 text-accent-600 transition-colors group-hover:bg-accent-100">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-accent-50 text-accent-600 transition-colors group-hover:bg-accent-100 dark:bg-accent-500/10 dark:text-accent-300 dark:group-hover:bg-accent-500/20">
             <UploadCloudIcon className="size-6" />
           </span>
           <span>
@@ -203,7 +203,7 @@ const Dashboard = () => {
 
       {/* Resume grid */}
       {allResumes.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-white py-16 text-center">
+        <div className="rounded-2xl border border-dashed border-line bg-surface py-16 text-center">
           <FileTextIcon className="mx-auto mb-3 size-10 text-muted/60" />
           <p className="text-sm text-muted">
             No resumes yet. Create or upload one to get started.
@@ -220,7 +220,7 @@ const Dashboard = () => {
               <div
                 key={r._id}
                 onClick={() => navigate(`/app/builder/${r._id}`)}
-                className="group relative flex h-52 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-line bg-white p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="group relative flex h-52 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-line bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
               >
                 {/* Accent strip */}
                 <span
@@ -252,14 +252,14 @@ const Dashboard = () => {
                       setEditResumeId(r._id);
                       setTitle(r.title);
                     }}
-                    className="rounded-lg bg-white/90 p-1.5 text-muted shadow-sm transition hover:text-brand-600"
+                    className="rounded-lg bg-surface/90 p-1.5 text-muted shadow-sm transition hover:text-brand-600"
                     aria-label="Edit title"
                   >
                     <PencilIcon className="size-4" />
                   </button>
                   <button
                     onClick={() => deleteResume(r._id)}
-                    className="rounded-lg bg-white/90 p-1.5 text-muted shadow-sm transition hover:text-rose-600"
+                    className="rounded-lg bg-surface/90 p-1.5 text-muted shadow-sm transition hover:text-rose-600"
                     aria-label="Delete resume"
                   >
                     <TrashIcon className="size-4" />

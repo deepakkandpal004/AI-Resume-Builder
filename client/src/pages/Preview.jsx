@@ -5,6 +5,7 @@ import Loader from "../components/Loader";
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import api from "../configs/api";
+import Logo from "../components/Logo";
 
 const Preview = () => {
   const { resumeId } = useParams();
@@ -39,10 +40,10 @@ const Preview = () => {
   return resumeData ? (
     <div className="min-h-screen bg-canvas">
       {/* Public header — hidden when printing */}
-      <header className="sticky top-0 z-40 border-b border-line bg-white/80 backdrop-blur-md print:hidden">
+      <header className="sticky top-0 z-40 border-b border-line bg-surface/80 backdrop-blur-md print:hidden">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <Link to="/">
-            <img src="/logo.svg" alt="logo" className="h-9 w-auto" />
+            <Logo className="h-8 w-auto text-ink" />
           </Link>
           <button
             onClick={() => window.print()}

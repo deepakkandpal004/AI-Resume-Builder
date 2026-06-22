@@ -47,11 +47,11 @@ const SkillsForm = ({ data, onChange }) => {
      {data.length > 0 ? (
         <div className="flex flex-wrap gap-2">
             {data.map((skill, index) => (
-                <span key={index} className="flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-700">
+                <span key={index} className="flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
                     {skill}
                     <button 
                       onClick={() => removeSkill(index)} 
-                      className="ml-1 rounded-full p-0.5 transition-colors hover:bg-brand-100"
+                      className="ml-1 rounded-full p-0.5 transition-colors hover:bg-brand-100 dark:hover:bg-brand-500/20"
                     ><X className="w-3 h-3"/></button>   
                 </span>
             ))}
@@ -64,7 +64,7 @@ const SkillsForm = ({ data, onChange }) => {
             <p className="text-sm">Add your technical and soft skills</p>
         </div>
      )}
-     <div className="rounded-lg bg-brand-50 p-3 text-sm text-body">
+     <div className="rounded-lg bg-brand-50 p-3 text-sm text-body dark:bg-brand-500/10">
         <p><strong>Tip:</strong>  Add 8-12 relevant skills. Include both technical skills (programming languages, tools) and soft skills (leadership, communication).</p>
      </div>
 

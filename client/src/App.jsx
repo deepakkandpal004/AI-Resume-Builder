@@ -40,7 +40,23 @@ const App = () => {
   },[]);
   return (
     <>
-      <Toaster />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: "var(--color-surface)",
+            color: "var(--color-ink)",
+            border: "1px solid var(--color-line)",
+            borderRadius: "12px",
+          },
+          success: {
+            iconTheme: { primary: "#0D9488", secondary: "#ffffff" },
+          },
+          error: {
+            iconTheme: { primary: "#E11D48", secondary: "#ffffff" },
+          },
+        }}
+      />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="app" element={<Layout />}>

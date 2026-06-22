@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Logo from "../Logo";
 
 const Footer = () => {
   const sections = [
@@ -32,7 +33,7 @@ const Footer = () => {
     <footer className="border-t border-line bg-canvas">
       <div className="mx-auto flex max-w-7xl flex-col justify-between gap-12 px-6 py-14 md:flex-row md:px-10">
         <div className="max-w-xs">
-          <img src="/logo.svg" alt="logo" className="h-10 w-auto" />
+          <Logo className="h-9 w-auto text-ink" />
           <p className="mt-4 text-sm text-muted">
             Create professional, AI-powered resumes that help you land your next
             role faster.

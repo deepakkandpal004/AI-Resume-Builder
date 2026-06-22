@@ -13,7 +13,7 @@ const Hero = () => {
 
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-20 text-center md:pt-28">
         {/* Eyebrow */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-4 py-1.5 text-sm text-brand-700">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-4 py-1.5 text-sm text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300">
           <Sparkles className="size-4" />
           <span>AI-powered resume building</span>
         </div>

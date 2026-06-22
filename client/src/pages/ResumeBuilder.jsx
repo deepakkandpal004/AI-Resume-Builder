@@ -171,9 +171,9 @@ const ResumeBuilder = () => {
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Left Panel - Form */}
           <div className="relative lg:col-span-5 rounded-lg overflow-hidden">
-            <div className="bg-white rounded-lg shadow-sm border border-line p-6 pt-1">
+            <div className="bg-surface rounded-lg shadow-sm border border-line p-6 pt-1">
               {/* progress bar using activeSectionIndex */}
-              <hr className="absolute top-0 left-0 right-0 border-2 border-gray-200" />
+              <hr className="absolute top-0 left-0 right-0 border-2 border-line" />
               <hr
                 className="absolute top-0 left-0 h-1 bg-gradient-to-r from-brand-500 to-accent-500 border-none transition-all duration-500"
                 style={{
@@ -208,7 +208,7 @@ const ResumeBuilder = () => {
                 <div className="flex items-center">
                   {activeSectionIndex !== 0 && (
                     <button
-                      className="flex items-center gap-1 p-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all"
+                      className="flex items-center gap-1 p-3 rounded-lg text-sm font-medium text-muted hover:bg-canvas transition-all"
                       disabled={activeSectionIndex === 0}
                       onClick={() =>
                         setActiveSectionIndex((prevIndex) =>
@@ -220,7 +220,7 @@ const ResumeBuilder = () => {
                     </button>
                   )}
                   <button
-                    className={`flex items-center gap-1 p-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all ${
+                    className={`flex items-center gap-1 p-3 rounded-lg text-sm font-medium text-muted hover:bg-canvas transition-all ${
                       activeSectionIndex === sections.length - 1 && "opacity-50"
                     }`}
                     disabled={activeSectionIndex === sections.length - 1}
@@ -346,11 +346,11 @@ const ResumeBuilder = () => {
             <div className="relative w-full">
               <div className="absolute bottom-3 left-0 right-0 flex items-center justify-end gap-2">
                 {resumeData.public && (
-                  <button onClick={handleShare} className="flex items-center gap-2 rounded-lg bg-accent-50 px-4 py-2 text-xs font-medium text-accent-700 transition-colors hover:bg-accent-100">
+                  <button onClick={handleShare} className="flex items-center gap-2 rounded-lg bg-accent-50 px-4 py-2 text-xs font-medium text-accent-700 transition-colors hover:bg-accent-100 dark:bg-accent-500/10 dark:text-accent-300 dark:hover:bg-accent-500/20">
                     <Share2Icon className="size-4"/> Share 
                   </button>
                 )}
-                <button onClick={changeResumeVisibility} className="flex items-center gap-2 rounded-lg bg-canvas px-4 py-2 text-xs font-medium text-body ring-1 ring-line transition-colors hover:bg-white">
+                <button onClick={changeResumeVisibility} className="flex items-center gap-2 rounded-lg bg-canvas px-4 py-2 text-xs font-medium text-body ring-1 ring-line transition-colors hover:bg-surface">
                   {resumeData.public ? <EyeIcon className="size-4"/> : <EyeOffIcon className="size-4"/>}
                   {resumeData.public ? 'Public' : 'Private'}
                 </button>

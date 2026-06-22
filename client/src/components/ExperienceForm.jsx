@@ -59,7 +59,7 @@ const ExperienceForm = ({ data, onChange }) => {
         </div>
         <button
           onClick={addExperience}
-          className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100"
+          className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20"
         >
           <Plus size={16} />
           Add Experience
@@ -68,8 +68,8 @@ const ExperienceForm = ({ data, onChange }) => {
 
       {/* No Experience Case */}
       {data.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <Briefcase className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <div className="text-center py-8 text-muted">
+          <Briefcase className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-slate-600" />
           <p>No work experience added yet.</p>
           <p className="text-sm">Click "Add Experience" to get started.</p>
         </div>
@@ -78,7 +78,7 @@ const ExperienceForm = ({ data, onChange }) => {
           {data.map((experience, index) => (
             <div
               key={index}
-              className="p-4 border border-gray-200 rounded-lg space-y-3"
+              className="p-4 border border-line rounded-lg space-y-3"
             >
               {/* Header Row */}
               <div className="flex justify-between items-start">
@@ -140,7 +140,7 @@ const ExperienceForm = ({ data, onChange }) => {
                   onChange={(e) => {
                     updatedExperience(index, "is_current", e.target.checked ? true : false);}
                   }
-                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  className="rounded border-line text-brand-600 focus:ring-brand-500"
                 />
                 <span className="text-sm text-body">
                   Currently Working Here
@@ -149,7 +149,7 @@ const ExperienceForm = ({ data, onChange }) => {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">Job Description</label>
+                  <label className="text-sm font-medium text-body">Job Description</label>
                   <button onClick={() => generateDescription(index)} disabled={generatingIndex === index || !experience.position || !experience.company} className="flex items-center gap-1 rounded bg-gradient-to-r from-brand-600 to-accent-600 px-2.5 py-1 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50">
                     {generatingIndex === index ? (<Loader2 className="w-3 h-3 animate-spin" />) : (<Sparkles className="w-3 h-3" />)}
                     Enhance with AI

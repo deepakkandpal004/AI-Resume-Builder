@@ -32,7 +32,7 @@ const ProjectForm = ({ data, onChange }) => {
         </div>
         <button
           onClick={addProject}
-          className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100"
+          className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20"
         >
           <Plus className="size-4" />
           Add Project
@@ -43,7 +43,7 @@ const ProjectForm = ({ data, onChange }) => {
         {data.map((project, index) => (
           <div
             key={index}
-            className="p-4 border border-gray-200 rounded-lg space-y-3"
+            className="p-4 border border-line rounded-lg space-y-3"
           >
             <div className="flex justify-between items-start">
               <h4 className="font-semibold">Project #{index + 1}</h4>

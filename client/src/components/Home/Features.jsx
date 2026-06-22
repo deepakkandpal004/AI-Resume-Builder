@@ -55,8 +55,8 @@ const features = [
 ];
 
 const colorMap = {
-  brand: "bg-brand-50 text-brand-600",
-  accent: "bg-accent-50 text-accent-600",
+  brand: "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300",
+  accent: "bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-300",
 };
 
 const Features = () => {
@@ -65,7 +65,7 @@ const Features = () => {
       id="features"
       className="mx-auto flex max-w-6xl scroll-mt-20 flex-col items-center px-6 py-20"
     >
-      <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-sm text-brand-700">
+      <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-sm text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
         <Sparkles className="size-4" />
         <span>Everything you need</span>
       </div>
@@ -81,7 +81,7 @@ const Features = () => {
           return (
             <div
               key={f.title}
-              className="group rounded-2xl border border-line bg-white p-6 transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100/50"
+              className="group rounded-2xl border border-line bg-surface p-6 transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100/50 dark:hover:shadow-black/20"
             >
               <div
                 className={`mb-4 inline-flex size-12 items-center justify-center rounded-xl ${colorMap[f.color]}`}

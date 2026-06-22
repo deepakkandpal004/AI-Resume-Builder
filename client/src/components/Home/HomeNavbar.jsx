@@ -2,6 +2,8 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import ThemeToggle from "../ThemeToggle";
+import Logo from "../Logo";
 
 const HomeNavbar = () => {
   const { user } = useSelector((state) => state.auth);
@@ -15,10 +17,10 @@ const HomeNavbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-line/70 bg-white/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-line/70 bg-surface/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5 md:px-10">
         <Link to="/">
-          <img src="/logo.svg" alt="logo" className="h-10 w-auto" />
+          <Logo className="h-9 w-auto text-ink" />
         </Link>
 
         <div className="hidden items-center gap-8 text-sm text-body md:flex">
@@ -30,6 +32,7 @@ const HomeNavbar = () => {
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {user ? (
             <Link to="/app" className="btn-brand px-7 py-2 text-sm">
               Dashboard
@@ -57,7 +60,7 @@ const HomeNavbar = () => {
 
       {/* Mobile menu */}
       <div
-        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-white text-lg transition-transform duration-300 md:hidden ${
+        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-surface text-lg transition-transform duration-300 md:hidden ${
           menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -68,6 +71,8 @@ const HomeNavbar = () => {
         >
           <X size={28} />
         </button>
+
+        <ThemeToggle />
 
         {links.map((l) => (
           <a
