@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 import ResumePreview from "../components/ResumePreview";
 import Loader from "../components/Loader";
-import { ArrowLeftIcon } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import api from "../configs/api";
 
 const Preview = () => {
@@ -11,7 +11,6 @@ const Preview = () => {
   const cleanId = (resumeId || "").match(/[a-fA-F0-9]{24}/)?.[0] || resumeId;
 
   const [isLoading, setIsLoading] = React.useState(true);
-
   const [resumeData, setResumeData] = React.useState(null);
 
   const loadResume = async () => {
@@ -22,14 +21,13 @@ const Preview = () => {
         ...resume,
         accent_color: resume.accent_color?.startsWith("#")
           ? resume.accent_color
-          : `#${resume.accent_color || "3B82F6"}`
+          : `#${resume.accent_color || "4F46E5"}`,
       };
       setResumeData(normalized);
       setIsLoading(false);
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -37,24 +35,51 @@ const Preview = () => {
   useEffect(() => {
     loadResume();
   }, [resumeId]);
+
   return resumeData ? (
-    <div className="bg-slate-100">
-      <div className="max-w-3xl mx-auto py-10">
-        <ResumePreview data={resumeData} template={resumeData.template} accentColor={resumeData.accent_color} classes="py-4 bg-white"/>
+    <div className="min-h-screen bg-canvas">
+      {/* Public header — hidden when printing */}
+      <header className="sticky top-0 z-40 border-b border-line bg-white/80 backdrop-blur-md print:hidden">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+          <Link to="/">
+            <img src="/logo.svg" alt="logo" className="h-9 w-auto" />
+          </Link>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-700"
+          >
+            <DownloadIcon className="size-4" /> Download PDF
+          </button>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-3xl px-4 py-10 print:p-0">
+        <ResumePreview
+          data={resumeData}
+          template={resumeData.template}
+          accentColor={resumeData.accent_color}
+          classes="py-4 bg-white"
+        />
       </div>
     </div>
-    ):(
-      <div>
-        {isLoading ? <Loader/> : (
-          <div className="flex flex-col items-center justify-center h-screen gap-4">
-            <p className="text-center text-6xl text-slate-400 font-medium">Resume not found</p>
-            <a href="/" className="mt-6 bg-green-500 hover:bg-green-600 text-white px-6 h-9 m-1 ring-offset-1 ring-1 ring-green-400 rounded-full flex items-center transition-colors">
-              <ArrowLeftIcon className="mr-2 size-4"/> Go to home page
-            </a>
-          </div>
-        )}
-      </div>
-    );
+  ) : (
+    <div>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <div className="flex h-screen flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
+          <p className="text-7xl font-bold text-line">404</p>
+          <p className="text-2xl font-semibold text-ink">Resume not found</p>
+          <p className="max-w-sm text-sm text-muted">
+            This resume may have been removed or set to private.
+          </p>
+          <Link to="/" className="btn-brand mt-2">
+            <ArrowLeftIcon className="size-4" /> Go to home page
+          </Link>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default Preview;

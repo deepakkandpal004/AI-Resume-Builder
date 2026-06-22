@@ -1,37 +1,30 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 const CallToAction = () => {
   return (
-    <div className="border-y border-dashed border-slate-200 w-full max-w-5xl mx-auto px-10 sm:px-16 mt-28">
-      <div className="flex flex-col md:flex-row text-center md:text-left items-center justify-between gap-8 px-3 md:px-10 border-x border-dashed border-slate-200 py-16 sm:py-20 -mt-10 -mb-10 w-full">
-        <p className="text-xl font-medium max-w-md text-slate-800">
-          Build a Professional Resume That Helps You Stand Out and Get Hired
+    <section id="cta" className="px-6 py-20">
+      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 to-accent-600 px-8 py-16 text-center sm:px-16">
+        <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 size-64 rounded-full bg-white/10 blur-2xl" />
+
+        <h2 className="relative mx-auto max-w-2xl text-3xl font-bold text-white sm:text-4xl">
+          Build a resume that helps you stand out and get hired
+        </h2>
+        <p className="relative mx-auto mt-4 max-w-md text-white/80">
+          Join thousands of job seekers creating professional resumes in minutes.
         </p>
 
-        <a
-          href="https://prebuiltui.com"
-          className="flex items-center gap-2 rounded py-3 px-8 bg-green-600 hover:bg-green-700 transition text-white"
+        <Link
+          to="/app"
+          className="relative mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 font-medium text-brand-700 transition-all hover:bg-brand-50 active:scale-95"
         >
-          <span>Get Started</span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4.5"
-          >
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-          </svg>
-        </a>
+          Get started free
+          <ArrowRight className="size-4" />
+        </Link>
       </div>
-    </div>
+    </section>
   );
 };
 

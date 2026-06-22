@@ -1,4 +1,4 @@
-import React, { use } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useSelector } from "react-redux";
@@ -14,7 +14,7 @@ const Layout = () => {
   return (
     <div>
       {user ? (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-canvas">
           <Navbar />
           <Outlet />
         </div>

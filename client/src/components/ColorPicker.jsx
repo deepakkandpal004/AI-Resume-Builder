@@ -3,16 +3,16 @@ import React, { useState } from "react";
 
 const ColorPicker = ({ selectedColor, onChange }) => {
   const colors = [
-    { name: "Blue", value: "#3B82F6" },
-    { name: "Red", value: "#EF4444" },
-    { name: "Green", value: "#10B981" },
-    { name: "Purple", value: "#8B5CF6" },
-    { name: "Orange", value: "#F59E0B" },
-    { name: "Teal", value: "#14B8A6" },
-    { name: "Pink", value: "#EC4899" },
-    { name: "Gray", value: "#6B7280" },
-    { name: "Indigo", value: "#6366F1" },
-    { name: "Black", value: "#1F2937" },
+    { name: "Indigo", value: "#4F46E5" },
+    { name: "Teal", value: "#0D9488" },
+    { name: "Navy", value: "#1E3A8A" },
+    { name: "Violet", value: "#7C3AED" },
+    { name: "Blue", value: "#2563EB" },
+    { name: "Emerald", value: "#059669" },
+    { name: "Rose", value: "#E11D48" },
+    { name: "Amber", value: "#D97706" },
+    { name: "Slate", value: "#475569" },
+    { name: "Ink", value: "#0F172A" },
   ];
 
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +20,7 @@ const ColorPicker = ({ selectedColor, onChange }) => {
   return (
     <div className="relative">
       <button
-        className="flex items-center gap-1 text-sm text-purple-600 bg-gradient-to-br from-purple-50 to-purple-100 ring-purple-300 hover:ring transition-all px-3 py-2 rounded-lg cursor-pointer"
+        className="flex items-center gap-1.5 text-sm text-brand-700 bg-brand-50 border border-brand-100 hover:bg-brand-100 transition-all px-3 py-2 rounded-lg cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Palette size={16} /> <span className="max-sm:hidden">Accent</span>

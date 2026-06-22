@@ -1,13 +1,15 @@
 import React from "react";
+import { Sparkles } from "lucide-react";
 
 const Banner = () => {
   return (
-    <div className="w-full py-2.5 font-medium text-sm text-green-800 text-center bg-gradient-to-r from-[#ABFF7E] to-[#FDFEFF]">
-      <p>
-        <span className="px-3 py-1 rounded-lg text-white bg-green-600 mr-2">
+    <div className="w-full bg-gradient-to-r from-brand-600 to-accent-600 py-2.5 text-center text-sm font-medium text-white">
+      <p className="inline-flex items-center justify-center gap-2">
+        <span className="rounded-md bg-white/20 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">
           New
         </span>
-        AI Feature Added
+        <Sparkles className="size-4" />
+        Enhance your resume with AI-powered writing
       </p>
     </div>
   );

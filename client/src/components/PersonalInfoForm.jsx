@@ -72,8 +72,8 @@ const PersonalInfoForm = ({
   ];
   return (
     <div>
-      <h3 className="font-bold">Personal Information</h3>
-      <p>Get Started with the personal information</p>
+      <h3 className="text-lg font-semibold text-ink">Personal Information</h3>
+      <p className="text-sm text-muted">Get started with your personal information</p>
       <div className="flex items-center gap-2">
         <label>
           {data.image ? (
@@ -113,7 +113,7 @@ const PersonalInfoForm = ({
                 }}
                 checked={removeBackground}
               />
-              <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200 "></div>
+              <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-brand-600 transition-colors duration-200 "></div>
               <span className="dot absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 ease peer-checked:translate-x-4 "></span>
             </label>
           </div>
@@ -123,17 +123,17 @@ const PersonalInfoForm = ({
         const Icon = field.icon;
         return (
           <div key={field.key} className="space-y-1 mt-5">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <label className="flex items-center gap-2 text-sm font-medium text-body">
               <Icon className="size-4" />
               {field.label}
-              {field.required && <span className="text-red-500">*</span>}
+              {field.required && <span className="text-rose-500">*</span>}
             </label>
             <input
               type={field.type}
               value={data[field.key] || ""}
               required={field.required}
               onChange={(e) => handleChange(field.key, e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm"
+              className="mt-1 w-full px-3 py-2 text-sm"
               placeholder={`Enter your ${field.label.toLowerCase()}`}
             />
           </div>

@@ -50,16 +50,16 @@ const ExperienceForm = ({ data, onChange }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
             Professional Experience
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Add your work experience details here
           </p>
         </div>
         <button
           onClick={addExperience}
-          className="flex items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100"
         >
           <Plus size={16} />
           Add Experience
@@ -140,9 +140,9 @@ const ExperienceForm = ({ data, onChange }) => {
                   onChange={(e) => {
                     updatedExperience(index, "is_current", e.target.checked ? true : false);}
                   }
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-body">
                   Currently Working Here
                 </span>
               </label>
@@ -150,7 +150,7 @@ const ExperienceForm = ({ data, onChange }) => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-gray-700">Job Description</label>
-                  <button onClick={() => generateDescription(index)} disabled={generatingIndex === index || !experience.position || !experience.company} className="flex items-center gap-1 px-2 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50">
+                  <button onClick={() => generateDescription(index)} disabled={generatingIndex === index || !experience.position || !experience.company} className="flex items-center gap-1 rounded bg-gradient-to-r from-brand-600 to-accent-600 px-2.5 py-1 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50">
                     {generatingIndex === index ? (<Loader2 className="w-3 h-3 animate-spin" />) : (<Sparkles className="w-3 h-3" />)}
                     Enhance with AI
                   </button>

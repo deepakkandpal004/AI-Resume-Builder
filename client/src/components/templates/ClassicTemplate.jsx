@@ -11,10 +11,10 @@ const ClassicTemplate = ({ data, accentColor }) => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-8 bg-white text-gray-800 leading-relaxed">
+        <div className="max-w-4xl mx-auto p-10 bg-white text-gray-800 leading-relaxed">
             {/* Header */}
             <header className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: accentColor }}>
-                <h1 className="text-3xl font-bold mb-2" style={{ color: accentColor }}>
+                <h1 className="font-display text-4xl font-bold mb-2 tracking-tight" style={{ color: accentColor }}>
                     {data.personal_info?.full_name || "Your Name"}
                 </h1>
 
@@ -55,7 +55,7 @@ const ClassicTemplate = ({ data, accentColor }) => {
             {/* Professional Summary */}
             {data.professional_summary && (
                 <section className="mb-6">
-                    <h2 className="text-xl font-semibold mb-3" style={{ color: accentColor }}>
+                    <h2 className="font-display text-lg font-semibold tracking-wide mb-3" style={{ color: accentColor }}>
                         PROFESSIONAL SUMMARY
                     </h2>
                     <p className="text-gray-700 leading-relaxed">{data.professional_summary}</p>
@@ -65,7 +65,7 @@ const ClassicTemplate = ({ data, accentColor }) => {
             {/* Experience */}
             {data.experience && data.experience.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xl font-semibold mb-4" style={{ color: accentColor }}>
+                    <h2 className="font-display text-lg font-semibold tracking-wide mb-4" style={{ color: accentColor }}>
                         PROFESSIONAL EXPERIENCE
                     </h2>
 
@@ -95,7 +95,7 @@ const ClassicTemplate = ({ data, accentColor }) => {
             {/* Projects */}
             {data.project && data.project.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xl font-semibold mb-4" style={{ color: accentColor }}>
+                    <h2 className="font-display text-lg font-semibold tracking-wide mb-4" style={{ color: accentColor }}>
                         PROJECTS
                     </h2>
 
@@ -115,7 +115,7 @@ const ClassicTemplate = ({ data, accentColor }) => {
             {/* Education */}
             {data.education && data.education.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xl font-semibold mb-4" style={{ color: accentColor }}>
+                    <h2 className="font-display text-lg font-semibold tracking-wide mb-4" style={{ color: accentColor }}>
                         EDUCATION
                     </h2>
 
@@ -141,11 +141,11 @@ const ClassicTemplate = ({ data, accentColor }) => {
             {/* Skills */}
             {data.skills && data.skills.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xl font-semibold mb-4" style={{ color: accentColor }}>
+                    <h2 className="font-display text-lg font-semibold tracking-wide mb-4" style={{ color: accentColor }}>
                         CORE SKILLS
                     </h2>
 
-                    <div className="flex gap-4 flex-wrap">
+                    <div className="flex gap-x-5 gap-y-2 flex-wrap">
                         {data.skills.map((skill, index) => (
                             <div key={index} className="text-gray-700">
                                 • {skill}

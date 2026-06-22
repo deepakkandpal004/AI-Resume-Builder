@@ -1,17 +1,92 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
+/* ----------------------------------------------------------------------------
+   Design tokens — "Indigo & Slate"
+   Brand: indigo  •  Accent: teal  •  Neutrals: slate
+---------------------------------------------------------------------------- */
+@theme {
+  /* Brand (indigo) */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+
+  /* Accent (teal) */
+  --color-accent-50: #f0fdfa;
+  --color-accent-100: #ccfbf1;
+  --color-accent-300: #5eead4;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
+  --color-accent-700: #0f766e;
+
+  /* Semantic neutrals */
+  --color-ink: #0f172a;
+  --color-body: #334155;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-canvas: #f8fafc;
+
+  /* Typography */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii */
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+}
+
 * {
-  font-family:Arial, Helvetica, sans-serif
+  font-family: var(--font-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--color-body);
+  background-color: #ffffff;
 }
 
 @layer base {
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+  }
+
   button {
     @apply cursor-pointer;
   }
-  input:not([type="checkbox"]),
-  textarea {
-    @apply outline-none focus:ring border border-gray-300 
-      focus:ring-blue-500 focus:border-blue-500 rounded-lg;
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    @apply outline-none border rounded-lg transition-colors;
+    border-color: var(--color-line);
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):focus,
+  textarea:focus,
+  select:focus {
+    @apply ring-2;
+    border-color: var(--color-brand-500);
+    --tw-ring-color: var(--color-brand-200);
+  }
+}
+
+@layer components {
+  .btn-brand {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-600 px-6 py-2.5 text-white font-medium transition-all hover:bg-brand-700 active:scale-95;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border px-6 py-2.5 font-medium text-ink transition-all hover:bg-canvas active:scale-95;
+    border-color: var(--color-line);
   }
 }

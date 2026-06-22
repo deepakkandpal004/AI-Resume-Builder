@@ -25,10 +25,10 @@ const ProfessionalSummary = ({data, onChange}) => {
     <div className='space-y-4'>
         <div className='flex justify-between items-center'>
             <div>
-                <h3 className='flex items-center gap-2 tex-lg font-semibold text-gray-900'>Professional Summary</h3>
-                <p className='text-sm text-gray-500'>Add Summay for your resume here</p>
+                <h3 className='flex items-center gap-2 text-lg font-semibold text-ink'>Professional Summary</h3>
+                <p className='text-sm text-muted'>Add a summary for your resume here</p>
             </div>
-            <button disabled={isGenerating} onClick={generateSummary} className='flex items-center gap-2 px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50'>
+            <button disabled={isGenerating} onClick={generateSummary} className='flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-600 to-accent-600 px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50'>
                 {isGenerating ? (<Loader2 className='size-4 animate-spin'/>) : (<Sparkles className='size-4'/>)}
                 {isGenerating ? "Enhancing..." : "AI Enhance"}
             </button>
@@ -37,8 +37,8 @@ const ProfessionalSummary = ({data, onChange}) => {
         <div className='mt-6'>
             <textarea value={data || ""} onChange={(e) => {
                 onChange(e.target.value);
-            }} rows={7} name="" id="" className='w-full p-3 px-4 mt-2 border text-sm border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline transition-colors resize-none' placeholder='Write a compelling professional Summary that highlights your key strength and carrer Objectives...'/>
-            <p className='text-sm text-gray-500 max-4/5 mx-auto text-center'>Tip: Keep it concise (3-4 Sentences) and focus on your most relevant achievements and skills</p>
+            }} rows={7} className='mt-2 w-full resize-none rounded-lg border border-line p-3 px-4 text-sm transition-colors' placeholder='Write a compelling professional summary that highlights your key strengths and career objectives...'/>
+            <p className='mx-auto mt-2 text-center text-sm text-muted'>Tip: Keep it concise (3-4 sentences) and focus on your most relevant achievements and skills</p>
         </div>
     </div>
   )

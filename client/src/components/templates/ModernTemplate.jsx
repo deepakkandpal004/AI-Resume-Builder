@@ -14,7 +14,7 @@ const ModernTemplate = ({ data, accentColor }) => {
 		<div className="max-w-4xl mx-auto bg-white text-gray-800">
 			{/* Header */}
 			<header className="p-8 text-white" style={{ backgroundColor: accentColor }}>
-				<h1 className="text-4xl font-light mb-3">
+				<h1 className="font-display text-4xl font-semibold mb-3 tracking-tight">
 					{data.personal_info?.full_name || "Your Name"}
 				</h1>
 
@@ -56,7 +56,7 @@ const ModernTemplate = ({ data, accentColor }) => {
 				{/* Professional Summary */}
 				{data.professional_summary && (
 					<section className="mb-8">
-						<h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+						<h2 className="font-display text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
 							Professional Summary
 						</h2>
 						<p className="text-gray-700 ">{data.professional_summary}</p>
@@ -66,7 +66,7 @@ const ModernTemplate = ({ data, accentColor }) => {
 				{/* Experience */}
 				{data.experience && data.experience.length > 0 && (
 					<section className="mb-8">
-						<h2 className="text-2xl font-light mb-6 pb-2 border-b border-gray-200">
+						<h2 className="font-display text-xl font-semibold mb-6 pb-2 border-b border-gray-200">
 							Experience
 						</h2>
 
@@ -97,7 +97,7 @@ const ModernTemplate = ({ data, accentColor }) => {
 				{/* Projects */}
 				{data.project && data.project.length > 0 && (
 					<section className="mb-8">
-						<h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+						<h2 className="font-display text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
 							Projects
 						</h2>
 
@@ -126,7 +126,7 @@ const ModernTemplate = ({ data, accentColor }) => {
 					{/* Education */}
 					{data.education && data.education.length > 0 && (
 						<section>
-							<h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+							<h2 className="font-display text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
 								Education
 							</h2>
 
@@ -150,7 +150,7 @@ const ModernTemplate = ({ data, accentColor }) => {
 					{/* Skills */}
 					{data.skills && data.skills.length > 0 && (
 						<section>
-							<h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+							<h2 className="font-display text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
 								Skills
 							</h2>
 
