@@ -1,5 +1,5 @@
 import { stringify } from "querystring";
-import imagekit from "../config/imageKit.js";
+import getImageKit from "../config/imageKit.js";
 import mongoose from "mongoose";
 import Resume from "../models/resume.js";
 import fs from "fs";
@@ -144,7 +144,7 @@ export const updateResume = async (req, res) => {
       }
       let uploadFailed = false;
       try {
-        const response = await imagekit.files.upload(uploadOptions);
+        const response = await getImageKit().files.upload(uploadOptions);
         const endpoint = process.env.IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/deepakkandpal";
         const basePath = response?.filePath
           ? `${endpoint}/${response.filePath}`

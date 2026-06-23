@@ -1,103 +1,90 @@
-// controller for enhancing a resume's professional summary
-// POST: /api/ai/enhance-pro-sum
-
-import ai from "../config/ai.js";
+import getAI from "../config/ai.js";
 import Resume from "../models/resume.js";
-import { GEMINI_MODELS } from "../config/geminiModels.js";
 
+// Translate raw API errors into clean user-facing messages
+const handleAIError = (error, res) => {
+  const msg = error.message || "";
+  if (msg.includes("429") || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED")) {
+    return res.status(429).json({ message: "AI service is busy. Please try again in a moment." });
+  }
+  if (msg.includes("401") || msg.includes("API key") || msg.includes("INVALID_ARGUMENT")) {
+    return res.status(500).json({ message: "AI service configuration error. Please contact support." });
+  }
+  if (msg.includes("timeout") || msg.includes("timed out")) {
+    return res.status(504).json({ message: "AI request timed out. Please try again." });
+  }
+  return res.status(500).json({ message: "AI service error. Please try again." });
+};
+
+// POST /api/ai/enhance-pro-sum
 export const enhanceProfessionalSummary = async (req, res) => {
   try {
     const { userContent } = req.body;
-
     if (!userContent) {
-      return res.status(400).json({ message: "Missing require fields" });
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const response = await ai.chat.completions.create({
-      model: process.env.GEMINI_MODEL || GEMINI_MODELS.GEMINI_FLASH_LATEST,
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL,
       messages: [
         {
           role: "system",
           content:
-            "You are an expert in resume writing. Your task is to enhance the professional summary of a resume. The summary should be 1-2 sentences also highlighting key skills, experience, and career objectives. Make it compelling and ATS-friendly. and only return text no options or anything else.",
+            "You are an expert resume writer. Enhance the professional summary in 2-3 compelling sentences highlighting key skills, experience, and career objectives. Make it ATS-friendly. Return only the text, no options or formatting.",
         },
-        {
-          role: "user",
-          content: userContent,
-        },
+        { role: "user", content: userContent },
       ],
     });
+
     const enhancedContent = response.choices[0].message.content;
     return res.status(200).json({ enhancedContent });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Server Error", error: error.message });
+    return handleAIError(error, res);
   }
 };
 
-// controller for enhancing a resume's job description
-// POST: /api/ai/enhance-job-desc
-
+// POST /api/ai/enhance-job-desc
 export const enhanceJobDescription = async (req, res) => {
   try {
     const { userContent } = req.body;
-
     if (!userContent) {
-      return res.status(400).json({ message: "Missing require fields" });
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const response = await ai.chat.completions.create({
-      model: process.env.GEMINI_MODEL || GEMINI_MODELS.GEMINI_FLASH_LATEST,
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL,
       messages: [
         {
           role: "system",
           content:
-            "You are an expert in resume writing. Your task is to enhance the job description of a resume. The job description should be only in 1-2 sentence also highlighting key responsibilities and achievements. Use action verbs and quantifiable results where possible. Make it ATS-friendly. and only return text no options or anything else.",
+            "You are an expert resume writer. Enhance this job description in 1-2 sentences highlighting key responsibilities and achievements. Use action verbs and quantifiable results. Make it ATS-friendly. Return only the text, no options or formatting.",
         },
-        {
-          role: "user",
-          content: userContent,
-        },
+        { role: "user", content: userContent },
       ],
     });
+
     const enhancedContent = response.choices[0].message.content;
     return res.status(200).json({ enhancedContent });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Server Error", error: error.message });
+    return handleAIError(error, res);
   }
 };
 
-// controller for uploading a resume to the database
-// POST: /api/ai/upload-resume
-
+// POST /api/ai/upload-resume
 export const uploadResume = async (req, res) => {
   try {
-    console.log("=== Upload Resume Started ===");
-    console.log("Request body keys:", Object.keys(req.body));
-    console.log("User ID:", req.userId);
-
     const { resumeText, title } = req.body;
     const userId = req.userId;
 
-    // Validate userId
     if (!userId) {
-      console.error("No userId found - auth middleware issue");
-      return res.status(401).json({ message: "Unauthorized - No user ID" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
-
-    // Validate resumeText
     if (!resumeText || resumeText.trim() === "") {
-      console.error("Resume text is missing or empty");
       return res.status(400).json({ message: "Resume text is required" });
     }
 
-    console.log("Resume text length:", resumeText.length);
-    console.log("Title:", title);
-
-    const systemPrompt = "You are an expert at extracting structured data from resumes. You MUST respond with ONLY valid JSON, no other text or markdown formatting.";
+    const systemPrompt =
+      "You are an expert at extracting structured data from resumes. Respond with ONLY valid JSON, no markdown or explanation.";
 
     const userPrompt = `Extract all information from this resume and return ONLY valid JSON:
 
@@ -115,105 +102,68 @@ Use this exact structure:
   "linkedin": "url or empty string",
   "website": "url or empty string",
   "experience": [
-    {
-      "company": "name",
-      "position": "title",
-      "start_date": "date",
-      "end_date": "date",
-      "description": "text",
-      "is_current": false
-    }
+    { "company": "name", "position": "title", "start_date": "YYYY-MM", "end_date": "YYYY-MM", "description": "text", "is_current": false }
   ],
   "project": [
-    {
-      "name": "name",
-      "type": "type",
-      "description": "text"
-    }
+    { "name": "name", "type": "type", "description": "text" }
   ],
   "education": [
-    {
-      "institution": "name",
-      "degree": "degree",
-      "field": "field",
-      "graduation_date": "date",
-      "gpa": "gpa"
-    }
+    { "institution": "name", "degree": "degree", "field": "field", "graduation_date": "YYYY-MM", "gpa": "gpa" }
   ]
-}
+}`;
 
-Return ONLY the JSON object. No markdown, no explanation.`;
-
-    console.log("Calling AI API...");
-    
-    const response = await ai.chat.completions.create({
-      model: process.env.GEMINI_MODEL || GEMINI_MODELS.GEMINI_FLASH_LATEST,
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL,
       messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ],
     });
 
-    console.log("AI API Response received");
-    
-    if (!response || !response.choices || !response.choices[0]) {
+    if (!response?.choices?.[0]) {
       throw new Error("Invalid AI API response");
     }
 
-    const extractedData = response.choices[0].message.content;
-    console.log("Raw AI response:", extractedData.substring(0, 200) + "...");
-    
-    // Clean the response - remove markdown and extra whitespace
-    let cleanedData = extractedData
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
+    // Strip markdown fences if the model adds them despite instructions
+    const cleanedData = response.choices[0].message.content
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
       .trim();
-    
-    console.log("Cleaned data:", cleanedData.substring(0, 200) + "...");
 
-    // Parse JSON with error handling
     let parseData;
     try {
       parseData = JSON.parse(cleanedData);
-      console.log("JSON parsed successfully");
     } catch (parseError) {
-      console.error("JSON Parse Error:", parseError.message);
-      console.error("Failed to parse:", cleanedData);
       throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
     }
 
-    // Helper to sanitize array of objects
     const sanitizeArray = (arr, fields) => {
       if (!Array.isArray(arr)) return [];
-      return arr.map(item => {
-        const sanitizedItem = {};
-        fields.forEach(field => {
-          sanitizedItem[field] = item[field] ? String(item[field]) : "";
+      return arr.map((item) => {
+        const out = {};
+        fields.forEach((f) => {
+          out[f] = f === "is_current" ? Boolean(item[f]) : item[f] ? String(item[f]) : "";
         });
-        // Handle boolean is_current specifically if needed, but schema says Boolean. 
-        // If schema is Boolean, String("false") is "false", which casts to true in JS boolean logic? 
-        // No, Mongoose casts "false" string to false boolean.
-        if (item.is_current !== undefined && fields.includes('is_current')) {
-             sanitizedItem.is_current = item.is_current;
-        }
-        return sanitizedItem;
+        return out;
       });
     };
 
-    // Restructure data to match your schema
     const resumeData = {
       userId,
-      title: title && title.trim() !== "" ? title.trim() : "Untitled Resume",
-      professional_summary: parseData.professional_summary ? String(parseData.professional_summary) : "",
-      skills: parseData.skills ? (Array.isArray(parseData.skills) ? parseData.skills.map(String) : String(parseData.skills).split(',').map(s => s.trim())) : [],
+      title: title?.trim() || "Untitled Resume",
+      professional_summary: parseData.professional_summary
+        ? String(parseData.professional_summary)
+        : "",
+      skills: parseData.skills
+        ? Array.isArray(parseData.skills)
+          ? parseData.skills.map(String)
+          : String(parseData.skills)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+        : [],
       personal_info: {
-        image: parseData.image ? String(parseData.image) : "",
+        image: "",
         full_name: parseData.full_name ? String(parseData.full_name) : "",
         profession: parseData.profession ? String(parseData.profession) : "",
         email: parseData.email ? String(parseData.email) : "",
@@ -222,45 +172,29 @@ Return ONLY the JSON object. No markdown, no explanation.`;
         linkedin: parseData.linkedin ? String(parseData.linkedin) : "",
         website: parseData.website ? String(parseData.website) : "",
       },
-      experience: sanitizeArray(parseData.experience, ['company', 'position', 'start_date', 'end_date', 'description', 'is_current']),
-      project: sanitizeArray(parseData.project, ['name', 'type', 'description']),
-      education: sanitizeArray(parseData.education, ['institution', 'degree', 'field', 'graduation_date', 'gpa']),
+      experience: sanitizeArray(parseData.experience, [
+        "company", "position", "start_date", "end_date", "description", "is_current",
+      ]),
+      project: sanitizeArray(parseData.project, ["name", "type", "description"]),
+      education: sanitizeArray(parseData.education, [
+        "institution", "degree", "field", "graduation_date", "gpa",
+      ]),
     };
 
-    console.log("Resume data structured, creating in database...");
-    console.log("Resume data:", JSON.stringify(resumeData, null, 2));
-
     const newResume = await Resume.create(resumeData);
-    console.log("Resume created successfully with ID:", newResume._id);
-
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Resume uploaded successfully",
-      resumeId: newResume._id 
+      resumeId: newResume._id,
     });
-    
   } catch (error) {
-    console.error("=== Upload Resume Error ===");
-    console.error("Error name:", error.name);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
-    
-    // Send appropriate error response
-    let errorMessage = "Server Error";
-    let statusCode = 500;
-
-    if (error.message.includes("JSON")) {
-      errorMessage = "Failed to process resume data. Please try again.";
-    } else if (error.message.includes("AI API")) {
-      errorMessage = "AI service error. Please try again.";
-    } else if (error.name === "ValidationError") {
-      errorMessage = "Invalid resume data: " + error.message;
-      statusCode = 400;
+    // Validation errors (Mongoose)
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Invalid resume data: " + error.message });
     }
-    
-    return res.status(statusCode).json({ 
-      message: errorMessage, 
-      error: error.message,
-      errorType: error.name 
-    });
+    // JSON parsing failure
+    if (error.message?.includes("JSON")) {
+      return res.status(500).json({ message: "Failed to process resume. Please try again." });
+    }
+    return handleAIError(error, res);
   }
 };
