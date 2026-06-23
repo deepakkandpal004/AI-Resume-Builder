@@ -3,237 +3,262 @@ import { getContainerStyle } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 
 const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
-    const formatDate = (dateStr) => {
-        if (!dateStr) return "";
-        const [year, month] = dateStr.split("-");
-        return new Date(year, month - 1).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-        });
-    };
+  const accent = accentColor || "#4F46E5";
 
-    // Resolve section heading: use custom value if set, otherwise fall back to default
-    const heading = (key) =>
-        (data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key]);
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const [year, month] = dateStr.split("-");
+    return new Date(year, month - 1).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+    });
+  };
 
-    // Resolve profile image src — handle both URL strings and File objects
-    const resolveImageSrc = () => {
-        const image = data.personal_info?.image;
-        if (!image) return null;
-        if (typeof image === "string") return image;
-        if (typeof image === "object") {
-            try {
-                return URL.createObjectURL(image);
-            } catch {
-                return null;
-            }
-        }
-        return null;
-    };
+  const heading = (key) =>
+    data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key];
 
-    const imageSrc = resolveImageSrc();
+  const resolveImageSrc = () => {
+    const image = data.personal_info?.image;
+    if (!image) return null;
+    if (typeof image === "string") return image;
+    if (typeof image === "object") {
+      try { return URL.createObjectURL(image); } catch { return null; }
+    }
+    return null;
+  };
 
-    return (
-        <div
-            style={getContainerStyle(styleOptions)}
-            className="max-w-5xl mx-auto bg-white text-zinc-800"
-        >
-            {/* === Header: flex row — image + name side by side === */}
-            <header className="flex items-center gap-6 px-8 py-8">
-                {imageSrc ? (
-                    <div className="shrink-0">
-                        <img
-                            src={imageSrc}
-                            alt="Profile"
-                            className="w-24 h-24 rounded-full object-cover"
-                            style={{ background: accentColor + "70" }}
-                        />
-                    </div>
-                ) : null}
-                <div>
-                    <h1 className="font-resume text-4xl font-bold tracking-tight text-zinc-800">
-                        {data.personal_info?.full_name || "Your Name"}
-                    </h1>
-                    <p className="uppercase text-zinc-600 font-medium text-sm tracking-widest">
-                        {data?.personal_info?.profession || "Profession"}
-                    </p>
-                </div>
-            </header>
+  const imageSrc = resolveImageSrc();
 
-            {/* === Body: two-column grid — sidebar + main === */}
-            <div className="grid grid-cols-3">
+  // ── Shared sidebar section heading style ───────────────────────────────────
+  const sidebarHeading = {
+    fontSize: "0.7em",
+    fontWeight: 600,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "#52525b",
+    marginBottom: "0.75em",
+    display: "block",
+  };
 
-                {/* Left Sidebar */}
-                <aside className="col-span-1 border-r border-zinc-300 px-6 pt-6 pb-8">
+  // ── Main section heading style ─────────────────────────────────────────────
+  const mainHeading = {
+    fontSize: "0.7em",
+    fontWeight: 600,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: accent,
+    marginBottom: "0.75em",
+    display: "block",
+  };
 
-                    {/* Contact */}
-                    <section className="mb-8">
-                        <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
-                            CONTACT
-                        </h2>
-                        <div className="space-y-2 text-sm">
-                            {data.personal_info?.phone && (
-                                <div className="flex items-center gap-2">
-                                    <Phone size={14} style={{ color: accentColor }} />
-                                    <span>{data.personal_info.phone}</span>
-                                </div>
-                            )}
-                            {data.personal_info?.email && (
-                                <div className="flex items-center gap-2">
-                                    <Mail size={14} style={{ color: accentColor }} />
-                                    <span>{data.personal_info.email}</span>
-                                </div>
-                            )}
-                            {data.personal_info?.location && (
-                                <div className="flex items-center gap-2">
-                                    <MapPin size={14} style={{ color: accentColor }} />
-                                    <span>{data.personal_info.location}</span>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
-                    {/* Education */}
-                    {data.education && data.education.length > 0 && (
-                        <section className="mb-8">
-                            <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
-                                {heading("education").toUpperCase()}
-                            </h2>
-                            <div className="space-y-4 text-sm">
-                                {data.education.map((edu, index) => (
-                                    <div key={index}>
-                                        <p className="font-semibold uppercase">{edu.degree}</p>
-                                        <p className="text-zinc-600">{edu.institution}</p>
-                                        <p className="text-xs text-zinc-500">
-                                            {formatDate(edu.graduation_date)}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Skills */}
-                    {data.skills && data.skills.length > 0 && (
-                        <section>
-                            <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
-                                {heading("skills").toUpperCase()}
-                            </h2>
-                            <ul className="space-y-1 text-sm">
-                                {data.skills.map((skill, index) => (
-                                    <li key={index}>{skill}</li>
-                                ))}
-                            </ul>
-                        </section>
-                    )}
-                </aside>
-
-                {/* Right Main Content */}
-                <main className="col-span-2 px-8 pt-6 pb-8">
-
-                    {/* Summary */}
-                    {data.professional_summary && (
-                        <section className="mb-8">
-                            <h2
-                                className="text-sm font-semibold tracking-widest mb-3"
-                                style={{ color: accentColor }}
-                            >
-                                {heading("summary").toUpperCase()}
-                            </h2>
-                            <p className="text-zinc-700 leading-relaxed">
-                                {data.professional_summary}
-                            </p>
-                        </section>
-                    )}
-
-                    {/* Experience */}
-                    {data.experience && data.experience.length > 0 && (
-                        <section className="mb-8">
-                            <h2
-                                className="text-sm font-semibold tracking-widest mb-4"
-                                style={{ color: accentColor }}
-                            >
-                                {heading("experience").toUpperCase()}
-                            </h2>
-                            <div className="space-y-6">
-                                {data.experience.map((exp, index) => (
-                                    <div key={index}>
-                                        <div className="flex justify-between items-center">
-                                            <h3 className="font-semibold text-zinc-900">
-                                                {exp.position}
-                                            </h3>
-                                            <span className="text-xs text-zinc-500">
-                                                {formatDate(exp.start_date)} –{" "}
-                                                {exp.is_current ? "Present" : formatDate(exp.end_date)}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm mb-2" style={{ color: accentColor }}>
-                                            {exp.company}
-                                        </p>
-                                        {exp.description && (
-                                            <ul className="list-disc list-inside text-sm text-zinc-700 leading-relaxed space-y-1">
-                                                {exp.description.split("\n").map((line, i) => (
-                                                    <li key={i}>{line}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Projects */}
-                    {data.project && data.project.length > 0 && (
-                        <section className="mb-8">
-                            <h2
-                                className="text-sm uppercase tracking-widest font-semibold"
-                                style={{ color: accentColor }}
-                            >
-                                {heading("projects").toUpperCase()}
-                            </h2>
-                            <div className="space-y-4 mt-3">
-                                {data.project.map((project, index) => (
-                                    <div key={index}>
-                                        <h3 className="text-md font-medium text-zinc-800">
-                                            {project.name}
-                                        </h3>
-                                        <p className="text-sm mb-1" style={{ color: accentColor }}>
-                                            {project.type}
-                                        </p>
-                                        {project.description && (
-                                            <ul className="list-disc list-inside text-sm text-zinc-700 space-y-1">
-                                                {project.description.split("\n").map((line, i) => (
-                                                    <li key={i}>{line}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Custom Sections */}
-                    {(data.custom_sections || []).map((section) =>
-                        section.heading?.trim() || section.content?.trim() ? (
-                            <div key={section.id} className="mb-6">
-                                <h2
-                                    className="text-sm font-semibold tracking-widest mb-3"
-                                    style={{ color: accentColor }}
-                                >
-                                    {(section.heading || "Untitled").toUpperCase()}
-                                </h2>
-                                <div className="whitespace-pre-line text-sm text-zinc-700">
-                                    {section.content}
-                                </div>
-                            </div>
-                        ) : null
-                    )}
-                </main>
-            </div>
+  return (
+    <div
+      style={{
+        ...getContainerStyle(styleOptions),
+        maxWidth: "64rem",
+        margin: "0 auto",
+        backgroundColor: "#ffffff",
+        color: "#27272a",
+      }}
+    >
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1.5em",
+          padding: "2em 2em 1.5em",
+        }}
+      >
+        {imageSrc && (
+          <div style={{ flexShrink: 0 }}>
+            <img
+              src={imageSrc}
+              alt="Profile"
+              style={{
+                width: "5.5em",
+                height: "5.5em",
+                borderRadius: "9999px",
+                objectFit: "cover",
+                background: accent + "30",
+              }}
+            />
+          </div>
+        )}
+        <div>
+          <h1
+            style={{
+              fontSize: "2em",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: "#18181b",
+              marginBottom: "0.1em",
+            }}
+          >
+            {data.personal_info?.full_name || "Your Name"}
+          </h1>
+          <p
+            style={{
+              fontSize: "0.8em",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "#71717a",
+              fontWeight: 500,
+            }}
+          >
+            {data.personal_info?.profession || ""}
+          </p>
         </div>
-    );
+      </header>
+
+      {/* ── Body: sidebar + main ──────────────────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr" }}>
+
+        {/* Sidebar */}
+        <aside
+          style={{
+            borderRight: "1px solid #e4e4e7",
+            padding: "0 1.5em 2em",
+          }}
+        >
+          {/* Contact */}
+          <section style={{ marginBottom: "1.75em" }}>
+            <span style={sidebarHeading}>Contact</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5em", fontSize: "0.88em" }}>
+              {data.personal_info?.phone && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5em" }}>
+                  <Phone size="1em" style={{ color: accent, flexShrink: 0 }} />
+                  <span>{data.personal_info.phone}</span>
+                </div>
+              )}
+              {data.personal_info?.email && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5em" }}>
+                  <Mail size="1em" style={{ color: accent, flexShrink: 0 }} />
+                  <span style={{ wordBreak: "break-all" }}>{data.personal_info.email}</span>
+                </div>
+              )}
+              {data.personal_info?.location && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5em" }}>
+                  <MapPin size="1em" style={{ color: accent, flexShrink: 0 }} />
+                  <span>{data.personal_info.location}</span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Education */}
+          {data.education?.length > 0 && (
+            <section style={{ marginBottom: "1.75em" }}>
+              <span style={sidebarHeading}>{heading("education").toUpperCase()}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1em", fontSize: "0.88em" }}>
+                {data.education.map((edu, i) => (
+                  <div key={i}>
+                    <div style={{ fontWeight: 600, textTransform: "uppercase", fontSize: "0.9em" }}>
+                      {edu.degree}
+                    </div>
+                    {edu.field && <div style={{ color: "#52525b" }}>{edu.field}</div>}
+                    <div style={{ color: "#71717a" }}>{edu.institution}</div>
+                    <div style={{ fontSize: "0.85em", color: "#a1a1aa" }}>
+                      {formatDate(edu.graduation_date)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Skills */}
+          {data.skills?.length > 0 && (
+            <section>
+              <span style={sidebarHeading}>{heading("skills").toUpperCase()}</span>
+              <ul style={{ display: "flex", flexDirection: "column", gap: "0.35em", fontSize: "0.88em", listStyle: "none", padding: 0, margin: 0 }}>
+                {data.skills.map((skill, i) => (
+                  <li key={i}>{skill}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </aside>
+
+        {/* Main content */}
+        <main style={{ padding: "0 2em 2em" }}>
+
+          {/* Summary */}
+          {data.professional_summary && (
+            <section style={{ marginBottom: "1.75em" }}>
+              <span style={mainHeading}>{heading("summary").toUpperCase()}</span>
+              <p style={{ color: "#3f3f46" }}>{data.professional_summary}</p>
+            </section>
+          )}
+
+          {/* Experience */}
+          {data.experience?.length > 0 && (
+            <section style={{ marginBottom: "1.75em" }}>
+              <span style={mainHeading}>{heading("experience").toUpperCase()}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25em" }}>
+                {data.experience.map((exp, i) => (
+                  <div key={i}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.15em" }}>
+                      <span style={{ fontWeight: 600, color: "#18181b" }}>{exp.position}</span>
+                      <span style={{ fontSize: "0.8em", color: "#71717a", flexShrink: 0, marginLeft: "0.5em" }}>
+                        {formatDate(exp.start_date)} – {exp.is_current ? "Present" : formatDate(exp.end_date)}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "0.88em", color: accent, marginBottom: "0.4em" }}>{exp.company}</p>
+                    {exp.description && (
+                      <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46" }}>
+                        {exp.description.split("\n").filter(Boolean).map((line, j) => (
+                          <li key={j} style={{ marginBottom: "0.2em" }}>{line}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Projects */}
+          {data.project?.length > 0 && (
+            <section style={{ marginBottom: "1.75em" }}>
+              <span style={mainHeading}>{heading("projects").toUpperCase()}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1em" }}>
+                {data.project.map((proj, i) => (
+                  <div key={i}>
+                    <div style={{ fontWeight: 500, color: "#18181b" }}>{proj.name}</div>
+                    {proj.type && (
+                      <div style={{ fontSize: "0.85em", color: accent }}>{proj.type}</div>
+                    )}
+                    {proj.description && (
+                      <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46" }}>
+                        {proj.description.split("\n").filter(Boolean).map((line, j) => (
+                          <li key={j} style={{ marginBottom: "0.2em" }}>{line}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Custom Sections */}
+          {(data.custom_sections || []).map((section) =>
+            section.heading?.trim() || section.content?.trim() ? (
+              <section key={section.id} style={{ marginBottom: "1.75em" }}>
+                <span style={mainHeading}>
+                  {(section.heading || "Untitled").toUpperCase()}
+                </span>
+                <div style={{ fontSize: "0.88em", color: "#3f3f46", whiteSpace: "pre-line" }}>
+                  {section.content}
+                </div>
+              </section>
+            ) : null
+          )}
+        </main>
+      </div>
+    </div>
+  );
 };
 
 export default MinimalImageTemplate;
