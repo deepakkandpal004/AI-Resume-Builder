@@ -115,6 +115,26 @@ const ResumeSchema = new mongoose.Schema({
             },
         }
     ],
+    section_headings: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
+    },
+    custom_sections: {
+        type: [
+            {
+                id:      { type: String, required: true },
+                heading: { type: String, default: "" },
+                content: { type: String, default: "" },
+            }
+        ],
+        default: [],
+    },
+    style_options: {
+        fontFamily:   { type: String, default: "inter" },
+        fontSize:     { type: Number, default: 14 },
+        lineSpacing:  { type: Number, default: 1.5 },
+        sectionOrder: { type: [String], default: [] },
+    },
 }, {timestamps: true, minimize: false})
 
 const Resume = mongoose.model("Resume", ResumeSchema);

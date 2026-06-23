@@ -16,19 +16,17 @@ const App = () => {
   const getUserData = async () => {
     const token = localStorage.getItem("token");
     try {
-      if (!token) {
+      if (token) {
         const { data } = await api.get("/api/users/data", {
           headers: {
-            Authorization: token,
+            Authorization: `Bearer ${token}`,
           },
         });
         if (data.user) {
           dispatch(login({ user: data.user, token }));
         }
-        dispatch(setLoading(false));
-      } else {
-        dispatch(setLoading(false));
       }
+      dispatch(setLoading(false));
     } catch (error) {
       dispatch(setLoading(false));
       console.log(error.message);

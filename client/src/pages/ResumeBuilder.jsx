@@ -14,6 +14,8 @@ import {
   FileText,
   FolderIcon,
   GraduationCap,
+  Palette,
+  Settings2,
   Share2Icon,
   Sparkles,
   User,
@@ -28,6 +30,8 @@ import ExperienceForm from "../components/ExperienceForm";
 import EducationForm from "../components/EducationForm";
 import ProjectForm from "../components/ProjectForm";
 import SkillsForm from "../components/SkillsForm";
+import SectionManager from "../components/SectionManager";
+import StylesPanel from "../components/StylesPanel";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
@@ -45,6 +49,14 @@ const ResumeBuilder = () => {
     template: "classic",
     accent_color: "#4F46E5",
     public: false,
+    section_headings: {},
+    custom_sections: [],
+    style_options: {
+      fontFamily: "inter",
+      fontSize: 14,
+      lineSpacing: 1.5,
+      sectionOrder: [],
+    },
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +72,16 @@ const ResumeBuilder = () => {
           ...data.resume,
           accent_color: data.resume.accent_color?.startsWith("#")
             ? data.resume.accent_color
-            : `#${data.resume.accent_color || "4F46E5"}`
+            : `#${data.resume.accent_color || "4F46E5"}`,
+          section_headings: data.resume.section_headings ?? {},
+          custom_sections: data.resume.custom_sections ?? [],
+          style_options: {
+            fontFamily: "inter",
+            fontSize: 14,
+            lineSpacing: 1.5,
+            sectionOrder: [],
+            ...data.resume.style_options,
+          },
         };
         setResumeData(normalized);
         document.title = data.resume.title;
@@ -91,6 +112,10 @@ const ResumeBuilder = () => {
         }
       }
 
+      resumeDataToSend.custom_sections = resumeDataToSend.custom_sections.filter(
+        s => s.heading.trim() !== "" || s.content.trim() !== ""
+      );
+
       formData.append("resumeData", JSON.stringify(resumeDataToSend));
       formData.append("removeBackground", removeBackground);
       
@@ -118,6 +143,8 @@ const ResumeBuilder = () => {
     { id: "education", name: "Education", icon: GraduationCap },
     { id: "projects", name: "Projects", icon: FolderIcon },
     { id: "skills", name: "Skills", icon: Sparkles },
+    { id: "sections", name: "Sections", icon: Settings2 },
+    { id: "styles", name: "Styles", icon: Palette },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -330,6 +357,29 @@ const ResumeBuilder = () => {
                     }}
                   />
                 )}
+
+                {activeSection.id === "sections" && (
+                  <SectionManager
+                    sectionHeadings={resumeData.section_headings}
+                    onSectionHeadingsChange={(h) =>
+                      setResumeData((prev) => ({ ...prev, section_headings: h }))
+                    }
+                    customSections={resumeData.custom_sections}
+                    onCustomSectionsChange={(cs) =>
+                      setResumeData((prev) => ({ ...prev, custom_sections: cs }))
+                    }
+                  />
+                )}
+
+                {activeSection.id === "styles" && (
+                  <StylesPanel
+                    styleOptions={resumeData.style_options}
+                    onChange={(so) =>
+                      setResumeData((prev) => ({ ...prev, style_options: so }))
+                    }
+                    resumeData={resumeData}
+                  />
+                )}
               </div>
               <button
                 onClick={saveResume}
@@ -363,6 +413,7 @@ const ResumeBuilder = () => {
               data={resumeData}
               accentColor={resumeData.accent_color}
               template={resumeData.template}
+              styleOptions={resumeData.style_options}
             />
           </div>
         </div>

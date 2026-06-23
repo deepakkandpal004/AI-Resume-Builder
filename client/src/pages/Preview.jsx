@@ -18,11 +18,19 @@ const Preview = () => {
     try {
       const response = await api.get(`/api/resumes/public/${cleanId}`);
       const resume = response.data;
+      const styleOptions = {
+        fontFamily: "inter",
+        fontSize: 14,
+        lineSpacing: 1.5,
+        sectionOrder: [],
+        ...resume.style_options,
+      };
       const normalized = {
         ...resume,
         accent_color: resume.accent_color?.startsWith("#")
           ? resume.accent_color
           : `#${resume.accent_color || "4F46E5"}`,
+        style_options: styleOptions,
       };
       setResumeData(normalized);
       setIsLoading(false);
@@ -59,6 +67,7 @@ const Preview = () => {
           data={resumeData}
           template={resumeData.template}
           accentColor={resumeData.accent_color}
+          styleOptions={resumeData.style_options}
           classes="py-4 bg-white"
         />
       </div>
