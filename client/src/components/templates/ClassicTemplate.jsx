@@ -3,226 +3,292 @@ import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 import { getContainerStyle, buildSectionOrder } from "../../utils/templateHelpers";
 
 const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
-    const formatDate = (dateStr) => {
-        if (!dateStr) return "";
-        const [year, month] = dateStr.split("-");
-        return new Date(year, month - 1).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short"
-        });
-    };
+  const accent = accentColor || "#4F46E5";
 
-    // Resolve section heading: use custom heading if set and non-empty, else fall back to default
-    const heading = (key) =>
-        (data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key]);
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const [year, month] = dateStr.split("-");
+    return new Date(year, month - 1).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+    });
+  };
 
-    // Build the ordered list of sections to render
-    const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
+  const heading = (key) =>
+    data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key];
 
-    // Render a single built-in section by key
-    const renderBuiltInSection = (key) => {
-        switch (key) {
-            case "summary":
-                return data.professional_summary ? (
-                    <section key="summary" className="mb-6">
-                        <h2 className="font-resume text-lg font-semibold tracking-wide mb-3 uppercase" style={{ color: accentColor }}>
-                            {heading("summary")}
-                        </h2>
-                        <p className="text-gray-700 leading-relaxed">{data.professional_summary}</p>
-                    </section>
-                ) : null;
+  const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
+  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
+  const customSectionIds = new Set((data.custom_sections || []).map((s) => s.id));
 
-            case "experience":
-                return data.experience && data.experience.length > 0 ? (
-                    <section key="experience" className="mb-6">
-                        <h2 className="font-resume text-lg font-semibold tracking-wide mb-4 uppercase" style={{ color: accentColor }}>
-                            {heading("experience")}
-                        </h2>
-                        <div className="space-y-4">
-                            {data.experience.map((exp, index) => (
-                                <div
-                                    key={index}
-                                    className="pl-4"
-                                    style={{ borderLeft: `4px solid ${accentColor || "#4F46E5"}` }}
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900">{exp.position}</h3>
-                                            <p className="text-gray-700 font-medium">{exp.company}</p>
-                                        </div>
-                                        <div className="text-right text-sm text-gray-600">
-                                            <p>{formatDate(exp.start_date)} - {exp.is_current ? "Present" : formatDate(exp.end_date)}</p>
-                                        </div>
-                                    </div>
-                                    {exp.description && (
-                                        <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                            {exp.description}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                ) : null;
+  // ── Section renderers ──────────────────────────────────────────────────────
 
-            case "projects":
-                return data.project && data.project.length > 0 ? (
-                    <section key="projects" className="mb-6">
-                        <h2 className="font-resume text-lg font-semibold tracking-wide mb-4 uppercase" style={{ color: accentColor }}>
-                            {heading("projects")}
-                        </h2>
-                        <ul className="space-y-3">
-                            {data.project.map((proj, index) => (
-                                <div
-                                    key={index}
-                                    className="flex justify-between items-start pl-4"
-                                    style={{ borderLeft: `4px solid ${accentColor || "#4F46E5"}` }}
-                                >
-                                    <div>
-                                        <li className="font-semibold text-gray-800">{proj.name}</li>
-                                        <p className="text-gray-600">{proj.description}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </ul>
-                    </section>
-                ) : null;
-
-            case "education":
-                return data.education && data.education.length > 0 ? (
-                    <section key="education" className="mb-6">
-                        <h2 className="font-resume text-lg font-semibold tracking-wide mb-4 uppercase" style={{ color: accentColor }}>
-                            {heading("education")}
-                        </h2>
-                        <div className="space-y-3">
-                            {data.education.map((edu, index) => (
-                                <div key={index} className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900">
-                                            {edu.degree} {edu.field && `in ${edu.field}`}
-                                        </h3>
-                                        <p className="text-gray-700">{edu.institution}</p>
-                                        {edu.gpa && <p className="text-sm text-gray-600">GPA: {edu.gpa}</p>}
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        <p>{formatDate(edu.graduation_date)}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                ) : null;
-
-            case "skills":
-                return data.skills && data.skills.length > 0 ? (
-                    <section key="skills" className="mb-6">
-                        <h2 className="font-resume text-lg font-semibold tracking-wide mb-4 uppercase" style={{ color: accentColor }}>
-                            {heading("skills")}
-                        </h2>
-                        <div className="flex gap-x-5 gap-y-2 flex-wrap">
-                            {data.skills.map((skill, index) => (
-                                <div key={index} className="text-gray-700">
-                                    • {skill}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                ) : null;
-
-            default:
-                return null;
-        }
-    };
-
-    // Render custom sections by id
-    const renderCustomSection = (id) => {
-        const section = (data.custom_sections || []).find((s) => s.id === id);
-        if (!section) return null;
-        if (!section.heading.trim() && !section.content.trim()) return null;
-        return (
-            <section key={section.id} className="mb-6">
-                <h2 className="font-resume text-lg font-semibold tracking-wide mb-3 uppercase" style={{ color: accentColor }}>
-                    {section.heading || "Untitled"}
-                </h2>
-                <div className="whitespace-pre-line text-gray-700">{section.content}</div>
-            </section>
-        );
-    };
-
-    const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
-    const customSectionIds = new Set((data.custom_sections || []).map((s) => s.id));
-
-    return (
-        <div
-            className="max-w-4xl mx-auto p-10 bg-white text-gray-800 leading-relaxed"
-            style={getContainerStyle(styleOptions)}
+  const renderSummary = () =>
+    data.professional_summary ? (
+      <section key="summary" style={{ marginBottom: "1.5em" }}>
+        <h2
+          style={{
+            color: accent,
+            fontSize: "0.8em",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            marginBottom: "0.75em",
+            paddingBottom: "0.25em",
+            borderBottom: `1px solid #e5e7eb`,
+          }}
         >
-            {/* Header */}
-            <header className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: accentColor }}>
-                <h1 className="font-resume text-4xl font-bold mb-2 tracking-tight" style={{ color: accentColor }}>
-                    {data.personal_info?.full_name || "Your Name"}
-                </h1>
+          {heading("summary")}
+        </h2>
+        <p style={{ color: "#374151" }}>{data.professional_summary}</p>
+      </section>
+    ) : null;
 
-                <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                    {data.personal_info?.email && (
-                        <div className="flex items-center gap-1">
-                            <Mail className="size-4" />
-                            <span>{data.personal_info.email}</span>
-                        </div>
-                    )}
-                    {data.personal_info?.phone && (
-                        <div className="flex items-center gap-1">
-                            <Phone className="size-4" />
-                            <span>{data.personal_info.phone}</span>
-                        </div>
-                    )}
-                    {data.personal_info?.location && (
-                        <div className="flex items-center gap-1">
-                            <MapPin className="size-4" />
-                            <span>{data.personal_info.location}</span>
-                        </div>
-                    )}
-                    {data.personal_info?.linkedin && (
-                        <div className="flex items-center gap-1">
-                            <Linkedin className="size-4" />
-                            <span className="break-all">{data.personal_info.linkedin}</span>
-                        </div>
-                    )}
-                    {data.personal_info?.website && (
-                        <div className="flex items-center gap-1">
-                            <Globe className="size-4" />
-                            <span className="break-all">{data.personal_info.website}</span>
-                        </div>
-                    )}
+  const renderExperience = () =>
+    data.experience?.length > 0 ? (
+      <section key="experience" style={{ marginBottom: "1.5em" }}>
+        <h2
+          style={{
+            color: accent,
+            fontSize: "0.8em",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            marginBottom: "0.75em",
+            paddingBottom: "0.25em",
+            borderBottom: `1px solid #e5e7eb`,
+          }}
+        >
+          {heading("experience")}
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1em" }}>
+          {data.experience.map((exp, i) => (
+            <div
+              key={i}
+              style={{
+                paddingLeft: "0.9em",
+                borderLeft: `3px solid ${accent}`,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25em" }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: "#111827" }}>{exp.position}</div>
+                  <div style={{ color: "#374151" }}>{exp.company}</div>
                 </div>
-            </header>
-
-            {/* Sections rendered in the resolved order */}
-            {sectionOrder.map((key) => {
-                if (builtInKeys.has(key)) {
-                    return renderBuiltInSection(key);
-                }
-                if (customSectionIds.has(key)) {
-                    return renderCustomSection(key);
-                }
-                return null;
-            })}
-
-            {/* Custom sections not yet in sectionOrder (fallback) */}
-            {(data.custom_sections || [])
-                .filter((s) => !sectionOrder.includes(s.id))
-                .map((section) =>
-                    section.heading.trim() || section.content.trim() ? (
-                        <section key={section.id} className="mb-6">
-                            <h2 className="font-resume text-lg font-semibold tracking-wide mb-3 uppercase" style={{ color: accentColor }}>
-                                {section.heading || "Untitled"}
-                            </h2>
-                            <div className="whitespace-pre-line text-gray-700">{section.content}</div>
-                        </section>
-                    ) : null
-                )}
+                <div style={{ fontSize: "0.85em", color: "#6b7280", textAlign: "right", flexShrink: 0, marginLeft: "1em" }}>
+                  {formatDate(exp.start_date)} – {exp.is_current ? "Present" : formatDate(exp.end_date)}
+                </div>
+              </div>
+              {exp.description && (
+                <div style={{ color: "#374151", whiteSpace: "pre-line", marginTop: "0.4em" }}>
+                  {exp.description}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
+      </section>
+    ) : null;
+
+  const renderEducation = () =>
+    data.education?.length > 0 ? (
+      <section key="education" style={{ marginBottom: "1.5em" }}>
+        <h2
+          style={{
+            color: accent,
+            fontSize: "0.8em",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            marginBottom: "0.75em",
+            paddingBottom: "0.25em",
+            borderBottom: `1px solid #e5e7eb`,
+          }}
+        >
+          {heading("education")}
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75em" }}>
+          {data.education.map((edu, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontWeight: 600, color: "#111827" }}>
+                  {edu.degree}{edu.field ? ` in ${edu.field}` : ""}
+                </div>
+                <div style={{ color: "#374151" }}>{edu.institution}</div>
+                {edu.gpa && <div style={{ fontSize: "0.85em", color: "#6b7280" }}>GPA: {edu.gpa}</div>}
+              </div>
+              <div style={{ fontSize: "0.85em", color: "#6b7280", flexShrink: 0, marginLeft: "1em" }}>
+                {formatDate(edu.graduation_date)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderProjects = () =>
+    data.project?.length > 0 ? (
+      <section key="projects" style={{ marginBottom: "1.5em" }}>
+        <h2
+          style={{
+            color: accent,
+            fontSize: "0.8em",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            marginBottom: "0.75em",
+            paddingBottom: "0.25em",
+            borderBottom: `1px solid #e5e7eb`,
+          }}
+        >
+          {heading("projects")}
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75em" }}>
+          {data.project.map((proj, i) => (
+            <div
+              key={i}
+              style={{ paddingLeft: "0.9em", borderLeft: `3px solid ${accent}` }}
+            >
+              <div style={{ fontWeight: 600, color: "#111827" }}>{proj.name}</div>
+              {proj.description && (
+                <div style={{ color: "#4b5563", marginTop: "0.25em" }}>{proj.description}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderSkills = () =>
+    data.skills?.length > 0 ? (
+      <section key="skills" style={{ marginBottom: "1.5em" }}>
+        <h2
+          style={{
+            color: accent,
+            fontSize: "0.8em",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            marginBottom: "0.75em",
+            paddingBottom: "0.25em",
+            borderBottom: `1px solid #e5e7eb`,
+          }}
+        >
+          {heading("skills")}
+        </h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5em 1.25em" }}>
+          {data.skills.map((skill, i) => (
+            <span key={i} style={{ color: "#374151" }}>• {skill}</span>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderCustomSection = (id) => {
+    const section = (data.custom_sections || []).find((s) => s.id === id);
+    if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
+    return (
+      <section key={section.id} style={{ marginBottom: "1.5em" }}>
+        <h2
+          style={{
+            color: accent,
+            fontSize: "0.8em",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            marginBottom: "0.75em",
+            paddingBottom: "0.25em",
+            borderBottom: `1px solid #e5e7eb`,
+          }}
+        >
+          {section.heading || "Untitled"}
+        </h2>
+        <div style={{ whiteSpace: "pre-line", color: "#374151" }}>{section.content}</div>
+      </section>
     );
+  };
+
+  const sectionRenderers = {
+    summary: renderSummary,
+    experience: renderExperience,
+    education: renderEducation,
+    projects: renderProjects,
+    skills: renderSkills,
+  };
+
+  return (
+    <div
+      style={{
+        ...getContainerStyle(styleOptions),
+        maxWidth: "56rem",
+        margin: "0 auto",
+        padding: "2.5em",
+        backgroundColor: "#ffffff",
+        color: "#1f2937",
+      }}
+    >
+      {/* Header */}
+      <header
+        style={{
+          textAlign: "center",
+          marginBottom: "2em",
+          paddingBottom: "1.25em",
+          borderBottom: `2px solid ${accent}`,
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2em",
+            fontWeight: 700,
+            color: accent,
+            marginBottom: "0.25em",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {data.personal_info?.full_name || "Your Name"}
+        </h1>
+        {data.personal_info?.profession && (
+          <p style={{ color: "#6b7280", marginBottom: "0.5em", fontSize: "0.95em" }}>
+            {data.personal_info.profession}
+          </p>
+        )}
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.25em 1em", fontSize: "0.85em", color: "#6b7280" }}>
+          {data.personal_info?.email && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.3em" }}>
+              <Mail size="1em" /> {data.personal_info.email}
+            </span>
+          )}
+          {data.personal_info?.phone && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.3em" }}>
+              <Phone size="1em" /> {data.personal_info.phone}
+            </span>
+          )}
+          {data.personal_info?.location && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.3em" }}>
+              <MapPin size="1em" /> {data.personal_info.location}
+            </span>
+          )}
+          {data.personal_info?.linkedin && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.3em" }}>
+              <Linkedin size="1em" /> {data.personal_info.linkedin}
+            </span>
+          )}
+          {data.personal_info?.website && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.3em" }}>
+              <Globe size="1em" /> {data.personal_info.website}
+            </span>
+          )}
+        </div>
+      </header>
+
+      {/* Sections in resolved order */}
+      {sectionOrder.map((key) => {
+        if (builtInKeys.has(key)) return sectionRenderers[key]?.() ?? null;
+        if (customSectionIds.has(key)) return renderCustomSection(key);
+        return null;
+      })}
+    </div>
+  );
 };
 
 export default ClassicTemplate;
