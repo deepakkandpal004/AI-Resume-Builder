@@ -23,8 +23,16 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
   const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
 
-  // Track if education+skills block has been rendered (they share one block)
-  let educationSkillsDone = false;
+  // Find which index (education or skills) comes first — that's where the
+  // combined block will be rendered; the second occurrence is skipped.
+  const educationIndex = sectionOrder.indexOf("education");
+  const skillsIndex = sectionOrder.indexOf("skills");
+  const educationSkillsRenderIndex =
+    educationIndex !== -1
+      ? skillsIndex !== -1
+        ? Math.min(educationIndex, skillsIndex)
+        : educationIndex
+      : skillsIndex;
 
   // ── Shared heading style ────────────────────────────────────────────────────
   const sectionHeadingStyle = {
@@ -249,17 +257,17 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
       {/* Body */}
       <div style={{ padding: "2em" }}>
-        {sectionOrder.map((key) => {
+        {sectionOrder.map((key, index) => {
           if (!builtInKeys.has(key)) {
             // Custom section
             return renderCustomSection(key);
           }
           if (key === "education" || key === "skills") {
-            if (!educationSkillsDone) {
-              educationSkillsDone = true;
-              return renderEducationSkills();
-            }
-            return null;
+            // Render the combined block only at the position of whichever
+            // key (education or skills) appears first; skip the second.
+            return index === educationSkillsRenderIndex
+              ? renderEducationSkills()
+              : null;
           }
           if (key === "summary") return renderSummary();
           if (key === "experience") return renderExperience();
