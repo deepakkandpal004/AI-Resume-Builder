@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, Phone, MapPin } from "lucide-react";
-import { getContainerStyle, buildSectionOrder } from "../../utils/templateHelpers";
+import { getContainerStyle, getHeadingStyle, getContentStyle, buildSectionOrder } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 
 /**
@@ -44,6 +44,9 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
   // Build the full resolved section order
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
 
+  const hStyle = getHeadingStyle(styleOptions);
+  const cStyle = getContentStyle(styleOptions);
+
   // Split sections into sidebar keys and main keys, preserving sectionOrder
   const sidebarKeys = ["education", "skills"];
   const mainKeys = ["summary", "experience", "projects"];
@@ -59,22 +62,22 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
   // ── Shared heading styles ──────────────────────────────────────────────────
   const sidebarHeadingStyle = {
     fontSize: "0.7em",
-    fontWeight: 600,
     letterSpacing: "0.12em",
     textTransform: "uppercase",
     color: "#52525b",
     marginBottom: "0.75em",
     display: "block",
+    ...hStyle,
   };
 
   const mainHeadingStyle = {
     fontSize: "0.7em",
-    fontWeight: 600,
     letterSpacing: "0.12em",
     textTransform: "uppercase",
     color: accent,
     marginBottom: "0.75em",
     display: "block",
+    ...hStyle,
   };
 
   const sectionStyle = { marginBottom: "1.75em" };
@@ -120,7 +123,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
     data.professional_summary ? (
       <section style={sectionStyle}>
         <span style={mainHeadingStyle}>{heading("summary").toUpperCase()}</span>
-        <p style={{ color: "#3f3f46" }}>{data.professional_summary}</p>
+        <p style={{ color: "#3f3f46", ...cStyle }}>{data.professional_summary}</p>
       </section>
     ) : null;
 
@@ -139,7 +142,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
               </div>
               <p style={{ fontSize: "0.88em", color: accent, marginBottom: "0.4em" }}>{exp.company}</p>
               {exp.description && (
-                <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46" }}>
+                <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46", ...cStyle }}>
                   {exp.description.split("\n").filter(Boolean).map((line, j) => (
                     <li key={j} style={{ marginBottom: "0.2em" }}>{line}</li>
                   ))}
@@ -163,7 +166,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
                 <div style={{ fontSize: "0.85em", color: accent }}>{proj.type}</div>
               )}
               {proj.description && (
-                <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46" }}>
+                <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46", ...cStyle }}>
                   {proj.description.split("\n").filter(Boolean).map((line, j) => (
                     <li key={j} style={{ marginBottom: "0.2em" }}>{line}</li>
                   ))}
@@ -183,7 +186,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
         <span style={mainHeadingStyle}>
           {(section.heading || "Untitled").toUpperCase()}
         </span>
-        <div style={{ fontSize: "0.88em", color: "#3f3f46", whiteSpace: "pre-line" }}>
+        <div style={{ fontSize: "0.88em", color: "#3f3f46", whiteSpace: "pre-line", ...cStyle }}>
           {section.content}
         </div>
       </section>

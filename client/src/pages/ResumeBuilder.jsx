@@ -56,6 +56,10 @@ const ResumeBuilder = () => {
       fontSize: 14,
       lineSpacing: 1.5,
       sectionOrder: [],
+      headingBold: true,
+      headingItalic: false,
+      contentBold: false,
+      contentItalic: false,
     },
   });
 
@@ -80,6 +84,10 @@ const ResumeBuilder = () => {
             fontSize: 14,
             lineSpacing: 1.5,
             sectionOrder: [],
+            headingBold: true,
+            headingItalic: false,
+            contentBold: false,
+            contentItalic: false,
             ...data.resume.style_options,
           },
         };

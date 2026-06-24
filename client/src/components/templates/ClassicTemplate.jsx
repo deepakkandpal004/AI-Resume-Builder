@@ -1,7 +1,7 @@
 import React from "react";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
-import { getContainerStyle, buildSectionOrder } from "../../utils/templateHelpers";
+import { getContainerStyle, getHeadingStyle, getContentStyle, buildSectionOrder } from "../../utils/templateHelpers";
 
 const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const accent = accentColor || "#4F46E5";
@@ -22,6 +22,21 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
   const customSectionIds = new Set((data.custom_sections || []).map((s) => s.id));
 
+  // Heading and content style modifiers from styleOptions
+  const hStyle = getHeadingStyle(styleOptions);
+  const cStyle = getContentStyle(styleOptions);
+
+  // Base section heading style
+  const sectionHeadingBase = {
+    color: accent,
+    fontSize: "0.8em",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    marginBottom: "0.75em",
+    paddingBottom: "0.25em",
+    borderBottom: `1px solid #e5e7eb`,
+  };
+
   // ── Section renderers ──────────────────────────────────────────────────────
   // NOTE: keys are intentionally omitted from section elements here.
   // The key is applied by the .map() caller below so React can track order.
@@ -29,50 +44,22 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const renderSummary = () =>
     data.professional_summary ? (
       <section style={{ marginBottom: "1.5em" }}>
-        <h2
-          style={{
-            color: accent,
-            fontSize: "0.8em",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "0.75em",
-            paddingBottom: "0.25em",
-            borderBottom: `1px solid #e5e7eb`,
-          }}
-        >
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>
           {heading("summary")}
         </h2>
-        <p style={{ color: "#374151" }}>{data.professional_summary}</p>
+        <p style={{ color: "#374151", ...cStyle }}>{data.professional_summary}</p>
       </section>
     ) : null;
 
   const renderExperience = () =>
     data.experience?.length > 0 ? (
       <section style={{ marginBottom: "1.5em" }}>
-        <h2
-          style={{
-            color: accent,
-            fontSize: "0.8em",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "0.75em",
-            paddingBottom: "0.25em",
-            borderBottom: `1px solid #e5e7eb`,
-          }}
-        >
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>
           {heading("experience")}
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "1em" }}>
           {data.experience.map((exp, i) => (
-            <div
-              key={i}
-              style={{
-                paddingLeft: "0.9em",
-                borderLeft: `3px solid ${accent}`,
-              }}
-            >
+            <div key={i} style={{ paddingLeft: "0.9em", borderLeft: `3px solid ${accent}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25em" }}>
                 <div>
                   <div style={{ fontWeight: 600, color: "#111827" }}>{exp.position}</div>
@@ -83,7 +70,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
                 </div>
               </div>
               {exp.description && (
-                <div style={{ color: "#374151", whiteSpace: "pre-line", marginTop: "0.4em" }}>
+                <div style={{ color: "#374151", whiteSpace: "pre-line", marginTop: "0.4em", ...cStyle }}>
                   {exp.description}
                 </div>
               )}
@@ -96,18 +83,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const renderEducation = () =>
     data.education?.length > 0 ? (
       <section style={{ marginBottom: "1.5em" }}>
-        <h2
-          style={{
-            color: accent,
-            fontSize: "0.8em",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "0.75em",
-            paddingBottom: "0.25em",
-            borderBottom: `1px solid #e5e7eb`,
-          }}
-        >
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>
           {heading("education")}
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75em" }}>
@@ -117,7 +93,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
                 <div style={{ fontWeight: 600, color: "#111827" }}>
                   {edu.degree}{edu.field ? ` in ${edu.field}` : ""}
                 </div>
-                <div style={{ color: "#374151" }}>{edu.institution}</div>
+                <div style={{ color: "#374151", ...cStyle }}>{edu.institution}</div>
                 {edu.gpa && <div style={{ fontSize: "0.85em", color: "#6b7280" }}>GPA: {edu.gpa}</div>}
               </div>
               <div style={{ fontSize: "0.85em", color: "#6b7280", flexShrink: 0, marginLeft: "1em" }}>
@@ -132,29 +108,15 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const renderProjects = () =>
     data.project?.length > 0 ? (
       <section style={{ marginBottom: "1.5em" }}>
-        <h2
-          style={{
-            color: accent,
-            fontSize: "0.8em",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "0.75em",
-            paddingBottom: "0.25em",
-            borderBottom: `1px solid #e5e7eb`,
-          }}
-        >
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>
           {heading("projects")}
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75em" }}>
           {data.project.map((proj, i) => (
-            <div
-              key={i}
-              style={{ paddingLeft: "0.9em", borderLeft: `3px solid ${accent}` }}
-            >
+            <div key={i} style={{ paddingLeft: "0.9em", borderLeft: `3px solid ${accent}` }}>
               <div style={{ fontWeight: 600, color: "#111827" }}>{proj.name}</div>
               {proj.description && (
-                <div style={{ color: "#4b5563", marginTop: "0.25em" }}>{proj.description}</div>
+                <div style={{ color: "#4b5563", marginTop: "0.25em", ...cStyle }}>{proj.description}</div>
               )}
             </div>
           ))}
@@ -165,23 +127,12 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const renderSkills = () =>
     data.skills?.length > 0 ? (
       <section style={{ marginBottom: "1.5em" }}>
-        <h2
-          style={{
-            color: accent,
-            fontSize: "0.8em",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "0.75em",
-            paddingBottom: "0.25em",
-            borderBottom: `1px solid #e5e7eb`,
-          }}
-        >
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>
           {heading("skills")}
         </h2>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5em 1.25em" }}>
           {data.skills.map((skill, i) => (
-            <span key={i} style={{ color: "#374151" }}>• {skill}</span>
+            <span key={i} style={{ color: "#374151", ...cStyle }}>• {skill}</span>
           ))}
         </div>
       </section>
@@ -192,21 +143,10 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
     return (
       <section key={section.id} style={{ marginBottom: "1.5em" }}>
-        <h2
-          style={{
-            color: accent,
-            fontSize: "0.8em",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "0.75em",
-            paddingBottom: "0.25em",
-            borderBottom: `1px solid #e5e7eb`,
-          }}
-        >
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>
           {section.heading || "Untitled"}
         </h2>
-        <div style={{ whiteSpace: "pre-line", color: "#374151" }}>{section.content}</div>
+        <div style={{ whiteSpace: "pre-line", color: "#374151", ...cStyle }}>{section.content}</div>
       </section>
     );
   };

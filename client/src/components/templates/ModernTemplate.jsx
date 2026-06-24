@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
-import { getContainerStyle, buildSectionOrder } from "../../utils/templateHelpers";
+import { getContainerStyle, getHeadingStyle, getContentStyle, buildSectionOrder } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 
 const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
@@ -24,6 +24,9 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
   const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
 
+  const hStyle = getHeadingStyle(styleOptions);
+  const cStyle = getContentStyle(styleOptions);
+
   // Find which index (education or skills) comes first — that's where the
   // combined block will be rendered; the second occurrence is skipped.
   const educationIndex = sectionOrder.indexOf("education");
@@ -38,11 +41,11 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
   // ── Shared heading style ────────────────────────────────────────────────────
   const sectionHeadingStyle = {
     fontSize: "1.05em",
-    fontWeight: 600,
     marginBottom: "0.75em",
     paddingBottom: "0.4em",
     borderBottom: "1px solid #e5e7eb",
     color: "#111827",
+    ...hStyle,
   };
 
   const sectionStyle = { marginBottom: "2em" };
@@ -91,7 +94,7 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
                 </div>
               </div>
               {exp.description && (
-                <div style={{ color: "#374151", whiteSpace: "pre-line", marginTop: "0.5em" }}>
+                <div style={{ color: "#374151", whiteSpace: "pre-line", marginTop: "0.5em", ...cStyle }}>
                   {exp.description}
                 </div>
               )}
@@ -113,7 +116,7 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
             >
               <div style={{ fontSize: "1.05em", fontWeight: 500, color: "#111827" }}>{p.name}</div>
               {p.description && (
-                <div style={{ color: "#374151", marginTop: "0.3em" }}>{p.description}</div>
+                <div style={{ color: "#374151", marginTop: "0.3em", ...cStyle }}>{p.description}</div>
               )}
             </div>
           ))}
@@ -186,7 +189,7 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
         <h2 style={{ ...sectionHeadingStyle, color: accent }}>
           {section.heading || "Untitled"}
         </h2>
-        <div style={{ color: "#374151", whiteSpace: "pre-line" }}>{section.content}</div>
+        <div style={{ color: "#374151", whiteSpace: "pre-line", ...cStyle }}>{section.content}</div>
       </section>
     );
   };
