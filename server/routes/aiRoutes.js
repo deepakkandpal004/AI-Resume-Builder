@@ -6,12 +6,12 @@ import atsRateLimiter from "../middlewares/atsRateLimiter.js";
 
 const aiRouter = express.Router();
 
-aiRouter.post('/enhance-pro-sum', protect, enhanceProfessionalSummary);
-aiRouter.post('/enhance-job-desc', protect, enhanceJobDescription);
-aiRouter.post('/upload-resume', protect, uploadResume);
+aiRouter.post('/enhance-pro-sum', atsRateLimiter, protect, enhanceProfessionalSummary);
+aiRouter.post('/enhance-job-desc', atsRateLimiter, protect, enhanceJobDescription);
+aiRouter.post('/upload-resume', atsRateLimiter, protect, uploadResume);
 
 // ATS Score Checker routes (Requirements: 10.1, 11.1)
-aiRouter.post('/ats-score', protect, atsRateLimiter, runAtsScan);
-aiRouter.get('/ats-score/:resumeId', protect, getScanHistory);
+aiRouter.post('/ats-score', atsRateLimiter, protect, runAtsScan);
+aiRouter.get('/ats-score/:resumeId', atsRateLimiter, protect, getScanHistory);
 
 export default aiRouter;
