@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    subscriptionTier: {
+        type: String,
+        enum: ["free", "premium"],
+        default: "free"
+    },
 }, { timestamps: true });
 
 userSchema.methods.comparePassword = async function(password) {
