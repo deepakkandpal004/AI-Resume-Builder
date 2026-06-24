@@ -5,7 +5,8 @@
   "main": "sever.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "server": "nodemon server.js"
   },
   "keywords": [],
@@ -24,6 +25,9 @@
     "openapi": "^1.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "fast-check": "^3.22.0",
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.10",
+    "vitest": "^1.6.0"
   }
 }

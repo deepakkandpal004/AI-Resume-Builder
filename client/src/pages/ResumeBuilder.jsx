@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import api from "../configs/api";
 import {
   ArrowLeftIcon,
+  BarChart2,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -20,6 +21,9 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
+import { resetAts } from "../app/features/atsSlice";
+import JD_Input_Panel from "../components/ats/JD_Input_Panel";
+import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
 
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
@@ -36,6 +40,7 @@ import StylesPanel from "../components/StylesPanel";
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
   const { token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const [resumeData, setResumeData] = useState({
     _id: "",
@@ -153,6 +158,7 @@ const ResumeBuilder = () => {
     { id: "skills", name: "Skills", icon: Sparkles },
     { id: "sections", name: "Sections", icon: Settings2 },
     { id: "styles", name: "Styles", icon: Palette },
+    { id: "ats", name: "ATS Score", icon: BarChart2 },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -162,6 +168,12 @@ const ResumeBuilder = () => {
       loadExistingResume();
     }
   }, [resumeId, token]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetAts());
+    };
+  }, [resumeId, dispatch]);
 
   const changeResumeVisibility = async() => {
     try {
@@ -387,6 +399,13 @@ const ResumeBuilder = () => {
                     }
                     resumeData={resumeData}
                   />
+                )}
+
+                {activeSection.id === "ats" && (
+                  <div className="space-y-4">
+                    <JD_Input_Panel resumeId={resumeId} />
+                    <ATS_Results_Panel resumeId={resumeId} onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)} />
+                  </div>
                 )}
               </div>
               <button
