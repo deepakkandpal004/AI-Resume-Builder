@@ -11,7 +11,10 @@ export const runScan = createAsyncThunk(
       const response = await api.post(
         "/api/ai/ats-score",
         { resumeId, jobDescription },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 35000, // 35s client timeout (slightly more than server's 25s AI timeout)
+        }
       );
       return response.data;
     } catch (err) {
@@ -19,6 +22,12 @@ export const runScan = createAsyncThunk(
         return rejectWithValue({
           message: "Daily scan limit reached.",
           quotaExhausted: true,
+        });
+      }
+      // Axios timeout
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        return rejectWithValue({
+          message: "Analysis timed out. Please try again.",
         });
       }
       return rejectWithValue({
@@ -54,7 +63,8 @@ export const fetchLatestScan = createAsyncThunk(
 );
 
 const initialState = {
-  scanStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+  scanStatus: "idle",     // 'idle' | 'loading' | 'succeeded' | 'failed' — tracks runScan only
+  historyStatus: "idle",  // 'idle' | 'loading' | 'failed' — tracks fetchLatestScan
   error: null,
   quotaExhausted: false,
   scansRemainingToday: null,
@@ -109,15 +119,13 @@ const atsSlice = createSlice({
 
       // fetchLatestScan cases
       .addCase(fetchLatestScan.pending, (state) => {
-        // Only set loading if there is no existing scan to avoid wiping a displayed result
-        if (state.currentScan === null) {
-          state.scanStatus = "loading";
-        }
+        // Use historyStatus so it doesn't disable the Analyze button
+        state.historyStatus = "loading";
         state.error = null;
       })
       .addCase(fetchLatestScan.fulfilled, (state, action) => {
         const { scans } = action.payload;
-        state.scanStatus = "idle";
+        state.historyStatus = "idle";
         state.history = scans;
 
         if (scans.length > 0) {
@@ -137,7 +145,7 @@ const atsSlice = createSlice({
         }
       })
       .addCase(fetchLatestScan.rejected, (state, action) => {
-        state.scanStatus = "failed";
+        state.historyStatus = "failed";
         state.error = action.payload?.message || "Failed to load history";
       });
   },

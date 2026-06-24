@@ -100,7 +100,7 @@ const PriorityBadge = ({ priority }) => {
 // ---------------------------------------------------------------------------
 const ATS_Results_Panel = ({ resumeId, onNavigateTab }) => {
   const dispatch = useDispatch();
-  const { scanStatus, currentScan, error, quotaExhausted, scansRemainingToday } =
+  const { scanStatus, historyStatus, currentScan, error, quotaExhausted, scansRemainingToday } =
     useSelector((state) => state.ats);
 
   // Part 12.2 — collapsible section state
@@ -116,10 +116,10 @@ const ATS_Results_Panel = ({ resumeId, onNavigateTab }) => {
 
   // Part 12.1 — fetch on mount when idle with no data
   useEffect(() => {
-    if (resumeId && currentScan === null && scanStatus === 'idle') {
+    if (resumeId && currentScan === null && scanStatus === 'idle' && historyStatus === 'idle') {
       dispatch(fetchLatestScan(resumeId));
     }
-  }, [resumeId, currentScan, scanStatus, dispatch]);
+  }, [resumeId, currentScan, scanStatus, historyStatus, dispatch]);
 
   // Part 12.1 — show toast for non-429 errors
   useEffect(() => {
@@ -129,13 +129,25 @@ const ATS_Results_Panel = ({ resumeId, onNavigateTab }) => {
   }, [scanStatus, quotaExhausted, error]);
 
   // -------------------------------------------------------------------------
-  // STATE: Loading skeleton
+  // STATE: Loading skeleton — only for active scan, not for history fetch
   // -------------------------------------------------------------------------
   if (scanStatus === 'loading') {
     return (
       <div className="space-y-4" aria-busy="true" aria-label="Loading ATS results">
         <SkeletonSection />
         <SkeletonSection />
+        <SkeletonSection />
+        <SkeletonSection />
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // STATE: Loading history (first visit, no scan yet) — subtle indicator
+  // -------------------------------------------------------------------------
+  if (historyStatus === 'loading' && currentScan === null) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading previous scan">
         <SkeletonSection />
         <SkeletonSection />
       </div>
@@ -155,7 +167,7 @@ const ATS_Results_Panel = ({ resumeId, onNavigateTab }) => {
   }
 
   // -------------------------------------------------------------------------
-  // STATE: Error (non-quota)
+  // STATE: Error (non-quota, scan error only)
   // -------------------------------------------------------------------------
   if (scanStatus === 'failed' && !quotaExhausted) {
     return (
@@ -175,9 +187,9 @@ const ATS_Results_Panel = ({ resumeId, onNavigateTab }) => {
   }
 
   // -------------------------------------------------------------------------
-  // STATE: Idle with no scan
+  // STATE: Idle with no scan (show empty state once history has been checked)
   // -------------------------------------------------------------------------
-  if (scanStatus === 'idle' && currentScan === null) {
+  if (scanStatus === 'idle' && currentScan === null && historyStatus !== 'loading') {
     return (
       <div className="rounded-xl border border-dashed border-line bg-surface px-6 py-12 text-center">
         <p className="text-sm text-muted">
