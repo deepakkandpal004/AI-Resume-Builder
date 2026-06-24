@@ -18,7 +18,7 @@ const authSlice = createSlice({
   initialState: {
     token: tokenFromStorage || null,
     user: safeParseJSON(userFromStorage),
-    loading: false,
+    loading: !!tokenFromStorage, // true only when there's a token to verify on mount
   },
   reducers: {
     login: (state, action) => {
