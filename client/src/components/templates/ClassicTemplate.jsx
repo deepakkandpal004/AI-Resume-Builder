@@ -1,3 +1,4 @@
+import React from "react";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 import { getContainerStyle, buildSectionOrder } from "../../utils/templateHelpers";
@@ -22,10 +23,12 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const customSectionIds = new Set((data.custom_sections || []).map((s) => s.id));
 
   // ── Section renderers ──────────────────────────────────────────────────────
+  // NOTE: keys are intentionally omitted from section elements here.
+  // The key is applied by the .map() caller below so React can track order.
 
   const renderSummary = () =>
     data.professional_summary ? (
-      <section key="summary" style={{ marginBottom: "1.5em" }}>
+      <section style={{ marginBottom: "1.5em" }}>
         <h2
           style={{
             color: accent,
@@ -46,7 +49,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
   const renderExperience = () =>
     data.experience?.length > 0 ? (
-      <section key="experience" style={{ marginBottom: "1.5em" }}>
+      <section style={{ marginBottom: "1.5em" }}>
         <h2
           style={{
             color: accent,
@@ -92,7 +95,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
   const renderEducation = () =>
     data.education?.length > 0 ? (
-      <section key="education" style={{ marginBottom: "1.5em" }}>
+      <section style={{ marginBottom: "1.5em" }}>
         <h2
           style={{
             color: accent,
@@ -128,7 +131,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
   const renderProjects = () =>
     data.project?.length > 0 ? (
-      <section key="projects" style={{ marginBottom: "1.5em" }}>
+      <section style={{ marginBottom: "1.5em" }}>
         <h2
           style={{
             color: accent,
@@ -161,7 +164,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
   const renderSkills = () =>
     data.skills?.length > 0 ? (
-      <section key="skills" style={{ marginBottom: "1.5em" }}>
+      <section style={{ marginBottom: "1.5em" }}>
         <h2
           style={{
             color: accent,
@@ -283,7 +286,10 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
       {/* Sections in resolved order */}
       {sectionOrder.map((key) => {
-        if (builtInKeys.has(key)) return sectionRenderers[key]?.() ?? null;
+        if (builtInKeys.has(key)) {
+          const content = sectionRenderers[key]?.() ?? null;
+          return content ? <React.Fragment key={key}>{content}</React.Fragment> : null;
+        }
         if (customSectionIds.has(key)) return renderCustomSection(key);
         return null;
       })}

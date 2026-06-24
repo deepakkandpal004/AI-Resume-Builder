@@ -1,3 +1,4 @@
+import React from "react";
 import { buildSectionOrder, getContainerStyle } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 
@@ -174,8 +175,13 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
       {/* Sections in resolved order */}
       {sectionOrder.map((key) => {
-        if (builtInKeys.has(key)) return sectionRenderers[key]?.() ?? null;
-        return renderCustomSection(key);
+        let content = null;
+        if (builtInKeys.has(key)) {
+          content = sectionRenderers[key]?.() ?? null;
+        } else {
+          content = renderCustomSection(key);
+        }
+        return content ? <React.Fragment key={key}>{content}</React.Fragment> : null;
       })}
     </div>
   );

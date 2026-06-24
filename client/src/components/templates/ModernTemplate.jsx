@@ -1,3 +1,4 @@
+import React from "react";
 import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
 import { getContainerStyle, buildSectionOrder } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
@@ -258,21 +259,19 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
       {/* Body */}
       <div style={{ padding: "2em" }}>
         {sectionOrder.map((key, index) => {
+          let content = null;
           if (!builtInKeys.has(key)) {
-            // Custom section
-            return renderCustomSection(key);
+            content = renderCustomSection(key);
+          } else if (key === "education" || key === "skills") {
+            content = index === educationSkillsRenderIndex ? renderEducationSkills() : null;
+          } else if (key === "summary") {
+            content = renderSummary();
+          } else if (key === "experience") {
+            content = renderExperience();
+          } else if (key === "projects") {
+            content = renderProjects();
           }
-          if (key === "education" || key === "skills") {
-            // Render the combined block only at the position of whichever
-            // key (education or skills) appears first; skip the second.
-            return index === educationSkillsRenderIndex
-              ? renderEducationSkills()
-              : null;
-          }
-          if (key === "summary") return renderSummary();
-          if (key === "experience") return renderExperience();
-          if (key === "projects") return renderProjects();
-          return null;
+          return content ? <React.Fragment key={key}>{content}</React.Fragment> : null;
         })}
       </div>
     </div>
