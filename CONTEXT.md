@@ -1,7 +1,7 @@
 # AI Resume Builder — Product Context
 
-> This file is the single source of truth for the product. Update it whenever a feature is added, changed, or removed.
-> Use it to onboard new contributors and as context when planning upcoming features.
+> Single source of truth for the product. Update this file whenever a feature is added, changed, or removed.
+> Use it as context when planning new features and for onboarding.
 
 ---
 
@@ -20,11 +20,11 @@ Active branch: `feature/resume-customization`
 
 ```
 Resume Builder/
-├── client/          # React SPA (Vite)
-└── server/          # Express REST API (Node.js)
+├── client/          # React SPA (Vite) — frontend
+└── server/          # Express REST API — backend
 ```
 
-The client and server are **separate apps** deployed independently. The client talks to the server via Axios (`client/src/configs/api.js`).
+Separate apps, deployed independently. Client communicates with server via Axios. Base URL configured via `VITE_BASE_URL` env var.
 
 ---
 
@@ -36,119 +36,145 @@ The client and server are **separate apps** deployed independently. The client t
 |---|---|---|
 | Framework | React | 19.1 |
 | Build tool | Vite | 7.x |
-| Styling | Tailwind CSS v4 | 4.1 |
+| Styling | Tailwind CSS v4 (no `tailwind.config.js`, uses `@theme` in CSS) | 4.1 |
 | State management | Redux Toolkit + React-Redux | 2.x / 9.x |
 | Routing | React Router DOM | 7.x |
-| HTTP client | Axios | 1.x |
-| Drag and drop | @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities | 6.x / 10.x |
+| HTTP client | Axios (base instance at `client/src/configs/api.js`, uses `VITE_BASE_URL`) | 1.x |
+| Drag and drop | @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities | 6.x / 10.x / 3.x |
 | Icons | Lucide React | 0.546 |
 | Notifications | React Hot Toast | 2.x |
-| PDF parsing | react-pdftotext | 1.x |
-| Fonts | Google Fonts (Inter, Poppins, Merriweather, Playfair Display, Lato, Raleway, Source Serif 4, Nunito Sans, EB Garamond, IBM Plex Serif) | — |
+| PDF parsing (client-side) | react-pdftotext | 1.x |
+| Google Fonts | Inter, Poppins, Merriweather, Playfair Display, Lato, Raleway, Source Serif 4, Nunito Sans, EB Garamond, IBM Plex Serif | — |
 
 ### Backend (`server/`)
 
 | Layer | Technology | Version |
 |---|---|---|
-| Runtime | Node.js (ESM modules) | — |
+| Runtime | Node.js with ESM (`"type": "module"`) | — |
 | Framework | Express | 5.x |
 | Database | MongoDB via Mongoose | 8.x |
-| Auth | JWT (jsonwebtoken) + bcrypt | 9.x / 6.x |
-| File uploads | Multer (multipart/form-data) | 2.x |
-| Image hosting | ImageKit.io SDK (`@imagekit/nodejs`) | 7.x |
-| AI | OpenAI SDK | 6.x |
+| Auth | JWT (`jsonwebtoken`) + bcrypt | 9.x / 6.x |
+| File uploads | Multer (disk storage, temp files) | 2.x |
+| Image hosting | ImageKit.io (`@imagekit/nodejs`) | 7.x |
+| AI | Groq API via OpenAI-compatible SDK (`openai` package, `baseURL = GROQ_BASE_URL`) | 6.x |
 | Dev server | Nodemon | 3.x |
-| Config | dotenv | 17.x |
+| Config | dotenv (`import "dotenv/config"` in server.js) | 17.x |
 | CORS | cors | 2.x |
 
-### Design tokens (Tailwind theme — `index.css`)
+> **Important:** The AI integration uses **Groq** (not OpenAI directly). The `openai` npm package is used as the HTTP client because Groq exposes an OpenAI-compatible API. The model is configured via `GROQ_MODEL` env var.
 
-- **Brand:** Indigo (`brand-*`)
-- **Accent:** Teal (`accent-*`)
-- **Neutrals:** Slate (`ink`, `body`, `muted`, `line`, `canvas`, `surface`)
-- **Fonts:** `--font-sans` Inter · `--font-display` Poppins · `--font-resume` Inter (overridden per resume)
-- **Dark mode:** class-based (`.dark` on `<html>`)
+### Design tokens (Tailwind v4 `@theme` in `index.css`)
+
+- **Brand:** Indigo (`brand-50` → `brand-900`)
+- **Accent:** Teal (`accent-50` → `accent-700`)
+- **Semantic neutrals:** `ink`, `body`, `muted`, `line`, `canvas`, `surface` (all override-able in `.dark`)
+- **Font vars:** `--font-sans` = Inter · `--font-display` = Poppins · `--font-resume` = Inter
+- **Dark mode:** class-based (`.dark` on `<html>`), applied before paint via inline `<script>` in `index.html`
 
 ---
 
 ## Folder Structure
 
-### Client
+### Client (`client/src/`)
 
 ```
-client/src/
-├── App.jsx                        # Root routes
-├── index.css                      # Global styles + Tailwind theme tokens
-├── main.jsx                       # React entry point
-├── app/
-│   ├── store.js                   # Redux store
-│   └── features/authSlice.js      # Auth state (token, user, loading)
-├── configs/
-│   └── api.js                     # Axios base instance
-├── hooks/
-│   └── useTheme.js                # Dark/light theme toggle hook
-├── pages/
-│   ├── Home.jsx                   # Landing page
-│   ├── Layout.jsx                 # App shell (protected routes)
-│   ├── Login.jsx                  # Login / register page
-│   ├── Dashboard.jsx              # Resume list + create/delete
-│   ├── ResumeBuilder.jsx          # Main builder page (owns all resume state)
-│   └── Preview.jsx                # Public resume view (/view/:resumeId)
-├── components/
-│   ├── Navbar.jsx                 # App navbar
-│   ├── Logo.jsx
-│   ├── Loader.jsx
-│   ├── ThemeToggle.jsx
-│   ├── TemplateSelector.jsx       # Template switcher (Classic/Modern/Minimal/MinimalImage)
-│   ├── ColorPicker.jsx            # Accent color picker
-│   ├── ResumePreview.jsx          # Renders the active template; receives styleOptions
-│   ├── PersonalInfoForm.jsx       # Personal info section form
-│   ├── ProfessionalSummary.jsx    # Summary + AI generation
-│   ├── ExperienceForm.jsx
-│   ├── EducationForm.jsx
-│   ├── ProjectForm.jsx
-│   ├── SkillsForm.jsx
-│   ├── SectionManager.jsx         # Rename headings + add/remove custom sections
-│   ├── StylesPanel.jsx            # Font, size, spacing, bold/italic, section order
-│   ├── templates/
-│   │   ├── ClassicTemplate.jsx
-│   │   ├── ModernTemplate.jsx
-│   │   ├── MinimalTemplate.jsx
-│   │   └── MinimalImageTemplate.jsx
-│   └── Home/
-│       ├── Hero.jsx · Banner.jsx · Features.jsx
-│       ├── HowItWorks.jsx · CallToAction.jsx
-│       ├── Footer.jsx · HomeNavbar.jsx · Title.jsx
-└── utils/
-    └── templateHelpers.js         # FONT_FAMILY_MAP, getContainerStyle,
-                                   # getHeadingStyle, getContentStyle,
-                                   # DEFAULT_ORDER, buildSectionOrder
+App.jsx                          # Root: defines all routes
+index.css                        # Global styles, Tailwind @theme tokens, font scoping
+main.jsx                         # React DOM entry point
+
+app/
+  store.js                       # Redux store (auth slice only)
+  features/authSlice.js          # Auth state: { token, user, loading }
+                                 # Persists token + user to localStorage
+
+configs/
+  api.js                         # Axios instance with baseURL = VITE_BASE_URL
+
+hooks/
+  useTheme.js                    # Dark/light theme toggle (localStorage)
+
+pages/
+  Home.jsx                       # Landing/marketing page
+  Layout.jsx                     # App shell wrapper for protected routes (/app/*)
+  Login.jsx                      # Login + Register page
+  Dashboard.jsx                  # Resume list, create, upload PDF, edit title, delete
+  ResumeBuilder.jsx              # Main builder — owns ALL resume state as useState
+  Preview.jsx                    # Public resume view at /view/:resumeId
+
+components/
+  Navbar.jsx                     # App top navbar (shows in Layout)
+  Logo.jsx
+  Loader.jsx
+  ThemeToggle.jsx                # Dark/light toggle button
+
+  TemplateSelector.jsx           # Dropdown/selector for 4 templates
+  ColorPicker.jsx                # Accent color hex picker
+  ResumePreview.jsx              # Receives { data, template, accentColor, styleOptions }
+                                 # Renders the active template inside #resume-preview div
+
+  PersonalInfoForm.jsx           # Personal info fields + image upload + bg removal toggle
+  ProfessionalSummary.jsx        # Summary textarea + "AI Enhance" button (POST /api/ai/enhance-pro-sum)
+  ExperienceForm.jsx             # Multi-entry experience form + "Enhance with AI" per entry
+                                 # (POST /api/ai/enhance-job-desc)
+  EducationForm.jsx
+  ProjectForm.jsx
+  SkillsForm.jsx
+  SectionManager.jsx             # Rename built-in headings + add/remove custom sections
+                                 # Exports DEFAULT_SECTION_HEADINGS constant
+  StylesPanel.jsx                # Font family, font size, line spacing,
+                                 # heading bold/italic, content bold/italic,
+                                 # drag-and-drop section order (@dnd-kit)
+
+  templates/
+    ClassicTemplate.jsx          # Single-column, centered header, accent headings
+    ModernTemplate.jsx           # Single-column, colored header band, badge skills,
+                                 # Education+Skills side-by-side grid
+    MinimalTemplate.jsx          # Single-column, minimal typography, uppercase labels
+    MinimalImageTemplate.jsx     # Two-column (sidebar: Contact/Education/Skills |
+                                 # main: Summary/Experience/Projects), flex header with image
+
+  Home/
+    Hero.jsx · Banner.jsx · Features.jsx
+    HowItWorks.jsx · CallToAction.jsx
+    Footer.jsx · HomeNavbar.jsx · Title.jsx
+
+utils/
+  templateHelpers.js             # Shared helpers for all templates (see section below)
 ```
 
-### Server
+### Server (`server/`)
 
 ```
-server/
-├── server.js                      # Express app entry, mounts routes
-├── config/
-│   ├── db.js                      # Mongoose connection
-│   ├── ai.js                      # OpenAI client setup
-│   ├── imageKit.js                # ImageKit client setup
-│   └── multer.js                  # Multer upload config (temp disk storage)
-├── models/
-│   ├── User.js                    # User schema (name, email, password hash)
-│   └── resume.js                  # Resume schema (see Data Model section)
-├── controllers/
-│   ├── userController.js          # register, login, getUserData
-│   ├── resumeController.js        # createResume, getResumeById, updateResume,
-│   │                              # deleteResume, getPublicResumeById
-│   └── aiController.js            # AI content generation endpoints
-├── middlewares/
-│   └── authMiddleware.js          # JWT verification, attaches req.userId
-└── routes/
-    ├── userRoute.js               # /api/users/*
-    ├── resumeRoute.js             # /api/resumes/*
-    └── aiRoutes.js                # /api/ai/*
+server.js                        # Entry: loads dotenv, creates Express app, mounts routes
+                                 # Uses top-level await for connectDB()
+
+config/
+  db.js                          # Mongoose connect to MONGODB_URI/resume-builder
+  ai.js                          # Lazy getter: returns OpenAI-compatible client
+                                 # pointed at GROQ_BASE_URL with GROQ_API_KEY
+                                 # timeout: 25s, maxRetries: 0
+  imageKit.js                    # Lazy getter: returns ImageKit client
+  multer.js                      # Multer with diskStorage({}) — temp files, no dest
+
+models/
+  User.js                        # { name, email, password (hashed), timestamps }
+                                 # Instance method: comparePassword(plain) → boolean
+  resume.js                      # Full resume schema (see Data Model section)
+
+controllers/
+  userController.js              # registerUser, loginUser, getUserId, getUserResumes
+  resumeController.js            # createResume, getResumeById, updateResume,
+                                 # deleteResume, getPublicResumeById
+  aiController.js                # enhanceProfessionalSummary, enhanceJobDescription,
+                                 # uploadResume (PDF text → Groq → structured JSON → new Resume)
+
+middlewares/
+  authMiddleware.js              # protect: verifies JWT Bearer token, sets req.userId
+
+routes/
+  userRoute.js                   # /api/users/*
+  resumeRoute.js                 # /api/resumes/*
+  aiRoutes.js                    # /api/ai/*
 ```
 
 ---
@@ -157,244 +183,317 @@ server/
 
 ```js
 {
-  userId:               ObjectId (ref: User),
-  title:                String (default: "untitled resume"),
-  public:               Boolean (default: false),
-  template:             String (default: "classic"),  // classic | modern | minimal | minimal-image
-  accent_color:         String (default: "#3B82F6"),  // hex with #
+  userId:               ObjectId (ref: "User"),
+  title:                String    (default: "untitled resume"),
+  public:               Boolean   (default: false),
+  template:             String    (default: "classic"),
+                        // "classic" | "modern" | "minimal" | "minimal-image"
+  accent_color:         String    (default: "#3B82F6"),  // always stored with #
 
-  // Content sections
-  professional_summary: String,
-  skills:               [String],
+  professional_summary: String    (default: ""),
+  skills:               [String]  (default: []),
+
   personal_info: {
-    image, full_name, profession, email, phone, location, linkedin, website
+    image:      String  // ImageKit URL or ""
+    full_name:  String
+    profession: String
+    email:      String
+    phone:      String
+    location:   String
+    linkedin:   String
+    website:    String
   },
+
   experience: [{
-    company, position, start_date, end_date, description, is_current
+    company, position, start_date (YYYY-MM), end_date (YYYY-MM),
+    description, is_current (Boolean)
   }],
+
   project: [{
     name, type, description
   }],
+
   education: [{
-    institution, degree, field, graduation_date, gpa
+    institution, degree, field, graduation_date (YYYY-MM), gpa
   }],
 
-  // Customization (added in resume-customization feature)
-  section_headings:  Mixed  // { summary: "About Me", experience: "Work History", ... }
-  custom_sections:   [{
-    id: String (required),
-    heading: String,
-    content: String
+  // ── Customization fields (added in resume-customization feature) ──
+
+  section_headings: Mixed   // { summary: "About Me", experience: "Work History", ... }
+                            // keys not present → template uses DEFAULT_SECTION_HEADINGS
+
+  custom_sections: [{
+    id:      String (required, crypto.randomUUID())
+    heading: String (default "")
+    content: String (default "")
   }],
+
   style_options: {
-    fontFamily:    String   // "inter" | "georgia" | "merriweather" | "courier"
-                            // | "playfair" | "lato" | "raleway" | "sourceserif"
-                            // | "nunitosans" | "garamond" | "ibmplexserif"
-    fontSize:      Number   // 11–16 (px, applied as base font size)
+    fontFamily:    String   // stored key: "inter"|"georgia"|"merriweather"|"courier"
+                            // |"playfair"|"lato"|"raleway"|"sourceserif"
+                            // |"nunitosans"|"garamond"|"ibmplexserif"
+    fontSize:      Number   // 11–16 (px, base font size on container)
     lineSpacing:   Number   // 1.2 | 1.5 | 1.8
     sectionOrder:  [String] // ordered array of section keys + custom section IDs
-    headingBold:   Boolean  // default true
-    headingItalic: Boolean  // default false
-    contentBold:   Boolean  // default false
-    contentItalic: Boolean  // default false
+    headingBold:   Boolean  // default: true
+    headingItalic: Boolean  // default: false
+    contentBold:   Boolean  // default: false
+    contentItalic: Boolean  // default: false
   }
 }
+// Schema options: { timestamps: true, minimize: false }
+// minimize: false ensures empty objects {} and arrays [] are saved to MongoDB
 ```
-
-Schema options: `{ timestamps: true, minimize: false }` — `minimize: false` ensures empty objects/arrays are persisted correctly.
 
 ---
 
 ## API Routes
 
-### Auth — `/api/users`
+### Users — `/api/users`
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/register` | No | Create account |
-| POST | `/login` | No | Login, returns JWT |
-| GET | `/data` | Yes | Get current user info |
+| Method | Path | Auth | Controller | Description |
+|---|---|---|---|---|
+| POST | `/register` | No | `registerUser` | Create account, returns token + user |
+| POST | `/login` | No | `loginUser` | Login, returns token + user |
+| GET | `/data` | Yes | `getUserId` | Get current user (used on app boot) |
+| GET | `/resumes` | Yes | `getUserResumes` | Get all resumes for logged-in user |
 
 ### Resumes — `/api/resumes`
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/create` | Yes | Create blank resume |
-| GET | `/get/:resumeId` | Yes | Get resume by ID (owner only) |
-| PUT | `/update` | Yes | Update resume (multipart/form-data: resumeId, resumeData JSON, optional image file, removeBackground flag) |
-| DELETE | `/delete/:resumeId` | Yes | Delete resume |
-| GET | `/public/:resumeId` | No | Get public resume (for /view/:id page) |
+| Method | Path | Auth | Middleware | Controller | Description |
+|---|---|---|---|---|---|
+| POST | `/create` | Yes | — | `createResume` | Create blank resume with title |
+| GET | `/get/:resumeId` | Yes | — | `getResumeById` | Get resume (owner only), validates ObjectId |
+| PUT | `/update` | Yes | `upload.single('image')` → `protect` | `updateResume` | Full resume update (multipart/form-data). Fields: resumeId, resumeData (JSON string), optional image file, removeBackground flag |
+| DELETE | `/delete/:resumeId` | Yes | — | `deleteResume` | Delete resume |
+| GET | `/public/:resumeId` | No | — | `getPublicResumeById` | Fetch public resume for /view/:id page |
+
+> Note: `upload` middleware runs **before** `protect` on the update route so Multer parses the multipart body before JWT auth reads `req.body`.
 
 ### AI — `/api/ai`
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/generate-summary` | Yes | Generate professional summary from job data |
-| (others) | — | — | Additional AI generation endpoints (see aiController.js) |
+| Method | Path | Auth | Controller | Description |
+|---|---|---|---|---|
+| POST | `/enhance-pro-sum` | Yes | `enhanceProfessionalSummary` | Enhance professional summary text via Groq. Body: `{ userContent }` |
+| POST | `/enhance-job-desc` | Yes | `enhanceJobDescription` | Enhance job description text via Groq. Body: `{ userContent }` |
+| POST | `/upload-resume` | Yes | `uploadResume` | Parse PDF text → Groq → structured JSON → creates new Resume doc. Body: `{ title, resumeText }` |
 
 ---
 
 ## State Management (Client)
 
-### Redux store
+### Redux store — `auth` slice
 
-```
-auth: { user, token, isLoading }
+```js
+{ token, user, loading }
 ```
 
-Token is also persisted in `localStorage`. On app load, `getUserData()` in `App.jsx` re-validates the token and hydrates the store.
+- Initialized from `localStorage` on startup (`token` + serialized `user`)
+- `login(payload)` sets state + writes to localStorage
+- `logout()` clears state + localStorage
+- On app boot, `App.jsx` calls `GET /api/users/data` to re-validate token and hydrate `user`
 
 ### ResumeBuilder local state
 
-`ResumeBuilder.jsx` owns all resume state as a single `resumeData` object (shape mirrors the MongoDB schema). Child form components receive their slice via props and call `onChange` to update parent state. The full object is sent to `PUT /api/resumes/update` on save.
+`ResumeBuilder.jsx` owns **all resume state** as a single `resumeData` object in `useState`. The shape mirrors the MongoDB schema exactly. All form components are fully controlled — they receive their slice as props and call `onChange` to update parent state. The full object is serialized as `resumeData` JSON and sent to `PUT /api/resumes/update` on save (inside `FormData` as multipart).
 
 ---
 
 ## Implemented Features
 
 ### 1. Authentication
-- Register / Login with email + password
-- Passwords hashed with bcrypt
-- JWT-based session (stored in localStorage)
-- Protected routes via `authMiddleware.js` on server and Redux auth state on client
+- Register / Login with name, email, password
+- Passwords hashed with bcrypt (10 salt rounds)
+- JWT tokens, 7-day expiry
+- Token + user persisted in `localStorage`
+- `protect` middleware: reads `Authorization: Bearer <token>` header, verifies JWT, sets `req.userId`
 
 ### 2. Resume Dashboard
-- List all user resumes
-- Create new resume (creates blank document in MongoDB)
-- Delete resume
-- Navigate to builder
+- Grid view of all user resumes with accent color strip, title, last-updated date
+- **Create Resume** — modal with title input → `POST /api/resumes/create` → navigate to builder
+- **Upload Existing Resume (PDF)** — modal: select PDF → `react-pdftotext` extracts text client-side → `POST /api/ai/upload-resume` → Groq parses into structured JSON → new Resume created → navigate to builder
+- **Edit title** — inline pencil icon on hover → modal
+- **Delete** — confirm dialog → `DELETE /api/resumes/delete/:id`
+- Accent color for cards uses `resume.accent_color` with fallback rotation
 
 ### 3. Resume Builder (`/app/builder/:resumeId`)
-- 8-section tabbed sidebar: Personal Info, Summary, Experience, Education, Projects, Skills, Sections, Styles
-- Progress bar showing active tab position
-- Previous / Next navigation between tabs
-- Auto-loads existing resume on mount
-- Save via `PUT /api/resumes/update`
-- Print / Download (window.print with CSS @page rules)
-- Public/Private toggle
-- Share button (Web Share API)
-- Real-time preview on the right panel
+Sidebar has **8 tabs** (section navigation):
 
-### 4. Resume Sections
-- **Personal Info:** name, profession, email, phone, location, LinkedIn, website, profile photo upload
-- **Professional Summary:** freeform text + AI generation
-- **Experience:** multiple entries, company, position, dates, is_current flag, description
-- **Education:** institution, degree, field, graduation date, GPA
-- **Projects:** name, type, description
-- **Skills:** tag list
-
-### 5. Profile Image Upload
-- Upload via multipart form
-- Hosted on ImageKit.io with face-focused crop transform
-- Optional background removal (ImageKit remove-bg extension)
-
-### 6. Template System
-Four resume templates, all sharing the same data shape:
-
-| Key | Component | Layout style |
+| Tab | Component | Purpose |
 |---|---|---|
-| `classic` | ClassicTemplate | Single column, centered header, accent-colored section headings |
-| `modern` | ModernTemplate | Single column, colored header band, skill badges, Education+Skills grid |
-| `minimal` | MinimalTemplate | Single column, minimal typography, uppercase section labels |
-| `minimal-image` | MinimalImageTemplate | Two-column sidebar (Contact/Education/Skills) + main (Summary/Experience/Projects) with profile image in header |
+| Personal Info | `PersonalInfoForm` | Name, profession, contact details, profile photo |
+| Summary | `ProfessionalSummary` | Freeform text + AI Enhance button |
+| Experience | `ExperienceForm` | Multi-entry, each with AI Enhance button |
+| Education | `EducationForm` | Multi-entry |
+| Projects | `ProjectForm` | Multi-entry |
+| Skills | `SkillsForm` | Tag/list input |
+| Sections | `SectionManager` | Rename headings + custom sections |
+| Styles | `StylesPanel` | Font, size, spacing, bold/italic, section order |
+
+- Progress bar reflecting active tab position
+- Previous / Next navigation
+- Template selector + color picker in toolbar
+- **Save Changes** → `PUT /api/resumes/update` (multipart: `resumeData` JSON + optional image)
+- **Download** → `window.print()` with `@page { size: letter; margin: 0 }` CSS
+- **Public/Private toggle** → `PUT /api/resumes/update` with `{ public: bool }`
+- **Share** → Web Share API (shows when `resume.public === true`)
+- Real-time preview in right panel
+
+### 4. Profile Image Upload
+- Uploaded via `multipart/form-data` to server
+- Stored on **ImageKit.io** in `user-resumes/` folder
+- Face-focused crop transform: `tr=c-maintain_ratio,fo-face,w-300,h-300`
+- Optional **background removal** via ImageKit `remove-bg` extension (`e-bgremove` transform appended)
+- On upload failure, existing image is preserved
+
+### 5. Template System (4 templates)
+
+| Key | Component | Layout |
+|---|---|---|
+| `classic` | ClassicTemplate | Single column, centered header with accent underline, uppercase section headings in accent color, left border on experience/project entries |
+| `modern` | ModernTemplate | Single column, full-width accent header band, pill-style skill badges, Education+Skills conditionally in 2-column grid (single column if only one has data) |
+| `minimal` | MinimalTemplate | Single column, very clean, uppercase spaced section labels, font-light body |
+| `minimal-image` | MinimalImageTemplate | Flex header (image + name), two-column body: sidebar (Contact, Education, Skills) + main (Summary, Experience, Projects, custom sections) |
 
 All templates:
-- Accept `{ data, accentColor, styleOptions }` props
-- Apply `getContainerStyle(styleOptions)` on outermost div for font/size/line-height
-- Use `buildSectionOrder(styleOptions, customSections)` to render sections in user-defined order
-- Use `getHeadingStyle(styleOptions)` and `getContentStyle(styleOptions)` for bold/italic
-- Resolve section headings via `data.section_headings[key] || DEFAULT_SECTION_HEADINGS[key]`
+- Accept `{ data, accentColor, styleOptions }` props — no local state
+- Apply `getContainerStyle(styleOptions)` on outermost `div` (font-family, font-size, line-height)
+- Apply `getHeadingStyle(styleOptions)` on section heading elements (font-weight, font-style)
+- Apply `getContentStyle(styleOptions)` on body/description text (font-weight, font-style)
+- Use `buildSectionOrder(styleOptions, customSections)` to resolve render order
+- Resolve headings: `data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key]`
 - Render custom sections in order
-- Use `React.Fragment key={key}` at the `.map()` level so React can correctly reorder DOM
+- Use **`React.Fragment key={sectionKey}`** at the `.map()` level so React reorders DOM correctly when `sectionOrder` changes
+- Use **inline styles only** (no Tailwind classes inside templates) so font/size/spacing inherit correctly without specificity conflicts
+- Use **`em` units** for all sizes so base `fontSize` on the container scales everything proportionally
 
-### 7. Accent Color
-- Color picker in builder toolbar
-- Stored as hex in `accent_color`
-- Applied to headers, borders, section headings across all templates
+### 6. Accent Color
+- Hex color picker in builder toolbar
+- Stored as `accent_color` (always with `#` prefix)
+- Applied to header backgrounds, section heading colors, border colors, badge backgrounds across templates
 
-### 8. Custom Section Headings (`SectionManager`)
-- Rename any of the 5 built-in section headings (summary, experience, education, projects, skills)
-- Max 100 characters per heading
-- Empty/whitespace reverts to default
-- Changes reflected in preview in real time
+### 7. Custom Section Headings (`SectionManager`)
+- Rename any of 5 built-in headings: Summary, Experience, Education, Projects, Skills
+- Max 100 chars. Empty/whitespace input reverts to default on blur
+- Stored in `section_headings` map on the resume document
+- Preview updates in real time (< 300ms, React state)
 
-### 9. Custom Sections (`SectionManager`)
+### 8. Custom Sections (`SectionManager`)
 - Add up to 10 user-defined sections (e.g. Certifications, Volunteering, Awards)
-- Each has a heading and freeform text content
-- Newlines in content rendered as visual line breaks (`whitespace-pre-line`)
-- Remove individual custom sections
-- Blank sections (both heading and content empty) are filtered before save
+- Each has a heading and freeform text content area
+- Newlines preserved with `whitespace-pre-line`
+- Remove individual sections (trash icon)
+- At save time, sections where both `heading` and `content` are blank are filtered out
 
-### 10. Styles Panel (`StylesPanel`)
+### 9. Styles Panel (`StylesPanel`)
 
-**Font Family** (11 options, grouped):
+**Font Family** (11 options, grouped by category):
 - Sans-serif: Inter, Lato, Raleway, Nunito Sans
 - Serif: Georgia, Merriweather, Playfair Display, Source Serif 4, EB Garamond, IBM Plex Serif
 - Mono: Courier New
+- Each button previewed in its own font
 
-**Font Size:** stepper 11–16px, applied as base `fontSize` on resume container
+**Font Size:** stepper `−` / `+`, range 11–16px, displays current value as `{n}px`
 
-**Line Spacing:** Compact (1.2) / Normal (1.5) / Relaxed (1.8)
+**Line Spacing:** 3 options — Compact (1.2) / Normal (1.5) / Relaxed (1.8)
 
-**Heading Style:** Bold toggle + Italic toggle for all section headings (live preview in panel)
+**Heading Style:** Bold toggle + Italic toggle — applied to all section heading elements. Live preview in panel showing "Professional Experience" in selected styles.
 
-**Content Style:** Bold toggle + Italic toggle for body/description text (live preview in panel)
+**Content Style:** Bold toggle + Italic toggle — applied to description/body text. Live preview in panel showing sample sentence.
 
-**Section Order:** drag-and-drop reordering of all active sections (sections with content + custom sections). Uses @dnd-kit.
+**Section Order:** Drag-and-drop list of all active sections (built-in sections with content + all custom sections). Uses `@dnd-kit`. Order saved as array of section keys in `style_options.sectionOrder`.
+
+### 10. AI Features (powered by Groq)
+
+| Feature | Where | Endpoint | Behaviour |
+|---|---|---|---|
+| Enhance Professional Summary | Summary tab | `POST /api/ai/enhance-pro-sum` | Sends current summary text to Groq, returns 2-3 sentence enhanced version |
+| Enhance Job Description | Experience tab (per entry) | `POST /api/ai/enhance-job-desc` | Sends description + position + company to Groq, returns enhanced bullet-style description |
+| Upload Resume from PDF | Dashboard | `POST /api/ai/upload-resume` | `react-pdftotext` extracts text client-side → sent to Groq → parsed into structured JSON → new resume created |
+
+Error handling: 429 (rate limit), 401 (API key), timeout, and generic errors all return user-friendly messages.
 
 ### 11. Public Resume View (`/view/:resumeId`)
-- Publicly accessible if `resume.public === true`
-- Fetches from `GET /api/resumes/public/:resumeId`
-- Renders same `ResumePreview` with full `styleOptions` applied
+- Accessible without auth if `resume.public === true`
+- `GET /api/resumes/public/:resumeId`
+- Renders `ResumePreview` with full `styleOptions` applied (same visual as builder)
 
 ### 12. Dark Mode
-- Toggled via `.dark` class on `<html>`
-- Persisted in `localStorage`
-- Applied before paint to avoid flash (`<script>` in index.html)
-
-### 13. AI Integration
-- AI-powered professional summary generation via OpenAI API
-- Accessed from the Summary tab in the builder
+- Toggled via `.dark` class on `<html>`, persisted in `localStorage`
+- Applied before first paint via inline `<script>` in `index.html` to prevent flash
+- All UI colors reference CSS variables that flip in `.dark`
 
 ---
 
 ## Key Utilities (`client/src/utils/templateHelpers.js`)
 
 ```js
-FONT_FAMILY_MAP          // value → CSS font-family string (11 entries)
-getContainerStyle(opts)  // → { fontFamily, fontSize, lineHeight }
-getHeadingStyle(opts)    // → { fontWeight, fontStyle }
-getContentStyle(opts)    // → { fontWeight, fontStyle }
-DEFAULT_ORDER            // ["summary","experience","education","projects","skills"]
-buildSectionOrder(opts, customSections)
-  // Returns full ordered array: stored sectionOrder as base (or DEFAULT_ORDER),
-  // appends any keys not already present. Custom section IDs appended after built-ins.
+FONT_FAMILY_MAP
+  // Maps stored value → CSS font-family string. 11 entries.
+  // e.g. "playfair" → "'Playfair Display', serif"
+
+getContainerStyle(styleOptions)
+  // Returns { fontFamily, fontSize: "14px", lineHeight: 1.5 }
+  // Safe fallbacks: unknown fontFamily → Inter, fontSize outside 11-16 → 14, 
+  // lineSpacing not in {1.2,1.5,1.8} → 1.5
+
+getHeadingStyle(styleOptions)
+  // Returns { fontWeight: 700|400, fontStyle: "normal"|"italic" }
+  // headingBold defaults true, headingItalic defaults false
+
+getContentStyle(styleOptions)
+  // Returns { fontWeight: 700|400, fontStyle: "normal"|"italic" }
+  // contentBold defaults false, contentItalic defaults false
+
+DEFAULT_ORDER
+  // ["summary", "experience", "education", "projects", "skills"]
+
+buildSectionOrder(styleOptions, customSections)
+  // Returns full ordered array for rendering.
+  // Base = styleOptions.sectionOrder (if non-empty) else DEFAULT_ORDER.
+  // Appends any keys from DEFAULT_ORDER or customSection IDs not already in base.
 ```
 
 ---
 
 ## CSS Architecture
 
-- Tailwind v4 with `@theme` tokens (no `tailwind.config.js`)
-- Global font reset scoped away from resume preview:
-  ```css
-  *:not(#resume-preview, #resume-preview *) { font-family: var(--font-sans); }
-  #resume-preview * { font-family: inherit; }
-  :is(h1,h2,h3,h4,h5):not(#resume-preview *) { font-family: var(--font-display); }
-  ```
-- Resume container uses only inline styles (no Tailwind classes inside templates) so font/size/spacing from `styleOptions` cascade correctly
+Tailwind v4 with `@theme` tokens in `index.css` — no `tailwind.config.js`.
+
+**Critical font scoping rules** (prevents global font reset from overriding resume):
+```css
+/* Exclude resume preview from global font reset */
+*:not(#resume-preview, #resume-preview *) {
+  font-family: var(--font-sans);
+}
+
+/* Let the container's inline fontFamily cascade to all children */
+#resume-preview * {
+  font-family: inherit;
+}
+
+/* Exclude resume headings from Poppins display font */
+:is(h1, h2, h3, h4, h5):not(#resume-preview *) {
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+}
+```
+
+`#resume-preview` is the div ID on `ResumePreview`'s inner container.
 
 ---
 
-## Known Patterns & Conventions
+## Auth Flow
 
-- **Resume state lives entirely in `ResumeBuilder.jsx`** — all child components are controlled via props
-- **Templates are pure render components** — they receive data and styleOptions, render JSX, no local state
-- **All inline styles in templates** — avoids Tailwind specificity conflicts with the resume font/size
-- **`em` units throughout templates** — so `fontSize` on the container scales all child text proportionally
-- **`React.Fragment key={sectionKey}`** at `.map()` level — required for React to correctly reorder sections when `sectionOrder` changes
-- **Server `updateResume` controller** uses `findOneAndUpdate(filter, data, { new: true })` — passes plain object, not `$set`. All fields in the payload are merged into the document.
-- **`minimize: false`** on Mongoose schema — ensures empty objects/arrays (`{}`, `[]`) are saved to MongoDB and not stripped
+```
+User submits login →
+  POST /api/users/login →
+  Server returns { token, user } →
+  Redux login(payload) saves to state + localStorage →
+  App.jsx useEffect calls GET /api/users/data on every mount →
+  Re-validates token, re-hydrates user in store
+```
 
 ---
 
@@ -402,18 +501,20 @@ buildSectionOrder(opts, customSections)
 
 ### Server (`server/.env`)
 ```
-MONGODB_URI=
-JWT_SECRET=
+MONGODB_URI=           # MongoDB connection string (without database name — db name appended as /resume-builder)
+JWT_SECRET=            # Secret for signing JWTs
 IMAGEKIT_PUBLIC_KEY=
 IMAGEKIT_PRIVATE_KEY=
-IMAGEKIT_URL_ENDPOINT=
-OPENAI_API_KEY=
+IMAGEKIT_URL_ENDPOINT= # e.g. https://ik.imagekit.io/yourusername
+GROQ_API_KEY=          # Groq API key
+GROQ_BASE_URL=         # Groq API base URL (e.g. https://api.groq.com/openai/v1)
+GROQ_MODEL=            # Model name (e.g. llama3-8b-8192 or mixtral-8x7b-32768)
 PORT=3000
 ```
 
 ### Client (`client/.env` / `client/.env.local`)
 ```
-VITE_API_URL=   # Base URL of the server (e.g. http://localhost:3000)
+VITE_BASE_URL=         # Full URL of the backend server (e.g. http://localhost:3000)
 ```
 
 ---
@@ -421,32 +522,47 @@ VITE_API_URL=   # Base URL of the server (e.g. http://localhost:3000)
 ## Running Locally
 
 ```bash
-# Server
+# Backend
 cd server
-npm run server        # starts nodemon server.js on port 3000
+npm run server        # nodemon server.js on port 3000
 
-# Client
+# Frontend
 cd client
-npm run dev           # starts Vite dev server (usually port 5173)
+npm run dev           # Vite dev server (default port 5173)
 ```
 
 ---
 
-## Upcoming Feature Ideas (Backlog)
+## Patterns & Conventions to Follow
 
-Add your planned features here as you build them:
+When adding new features, follow these established patterns:
 
-- [ ] Resume score / ATS checker
-- [ ] Multiple accent color themes (not just one color)
+- **ResumeBuilder owns all state** — pass slices down as props, never lift state from children
+- **Templates are pure render components** — props in, JSX out, no useState/useEffect
+- **Inline styles only in templates** — never Tailwind utility classes inside template components
+- **`em` units in templates** — so the base `fontSize` on the container scales all child text
+- **`React.Fragment key={key}`** at `.map()` level when rendering ordered sections — required for React to reorder DOM
+- **Add new `style_options` fields** → update: (1) Mongoose schema, (2) ResumeBuilder initial state + load normalization, (3) StylesPanel UI, (4) templateHelpers.js helpers, (5) all 4 templates
+- **Add new section type** → update: SectionManager `DEFAULT_SECTION_HEADINGS`, all 4 templates, `buildSectionOrder` if needed
+- **`minimize: false`** is set on the Resume schema — always keep it, otherwise MongoDB strips empty `{}` and `[]` which breaks customization defaults
+- **Server update controller** uses `findOneAndUpdate(filter, plainObject, { new: true })` — not `$set`. The full payload replaces top-level fields.
+
+---
+
+## Upcoming Feature Backlog
+
+Add planned features here as you build them:
+
+- [ ] ATS resume score / keyword checker
 - [ ] Cover letter builder
-- [ ] Resume import from PDF / LinkedIn
-- [ ] Multiple resume versions / duplication
+- [ ] Multiple resume duplication / versioning
 - [ ] Template thumbnail previews in selector
-- [ ] AI-powered bullet point suggestions for experience
-- [ ] Export as PDF (server-side via Puppeteer instead of window.print)
+- [ ] AI bullet point suggestions for experience entries
+- [ ] Server-side PDF export via Puppeteer (more reliable than window.print)
+- [ ] Resume view count / analytics on public page
+- [ ] Custom accent color themes per template
+- [ ] Mobile-responsive builder UI
 - [ ] Collaborative editing / share-to-edit link
-- [ ] Resume analytics (view count on public page)
 - [ ] User profile / account settings page
 - [ ] Onboarding wizard for first resume
-- [ ] Custom color themes per template
-- [ ] Mobile-responsive builder UI
+- [ ] LinkedIn import
