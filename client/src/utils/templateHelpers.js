@@ -2,17 +2,24 @@
  * Shared utility helpers for all resume template components.
  */
 
+// Maps stored fontFamily value → CSS font-family string
 export const FONT_FAMILY_MAP = {
-  inter:        "Inter, sans-serif",
-  georgia:      "Georgia, serif",
-  merriweather: "Merriweather, serif",
-  courier:      "'Courier New', monospace",
+  inter:          "Inter, sans-serif",
+  georgia:        "Georgia, serif",
+  merriweather:   "Merriweather, serif",
+  courier:        "'Courier New', monospace",
+  playfair:       "'Playfair Display', serif",
+  lato:           "Lato, sans-serif",
+  raleway:        "Raleway, sans-serif",
+  sourceserif:    "'Source Serif 4', serif",
+  nunitosans:     "'Nunito Sans', sans-serif",
+  garamond:       "'EB Garamond', serif",
+  ibmplexserif:   "'IBM Plex Serif', serif",
 };
 
 /**
  * Returns the inline style object for the outermost resume container div.
- * fontSize is set in px on the root; all child sizes should use em so they
- * scale proportionally with this base value.
+ * Sets fontFamily, fontSize (px), and lineHeight so all children inherit.
  */
 export const getContainerStyle = (styleOptions = {}) => {
   const fontSize =
@@ -29,6 +36,23 @@ export const getContainerStyle = (styleOptions = {}) => {
 
   return { fontFamily, fontSize: `${fontSize}px`, lineHeight };
 };
+
+/**
+ * Returns extra inline styles to apply to section heading elements.
+ * Merges with whatever base heading style the template already uses.
+ */
+export const getHeadingStyle = (styleOptions = {}) => ({
+  fontWeight: styleOptions.headingBold !== false ? 700 : 400,
+  fontStyle:  styleOptions.headingItalic ? "italic" : "normal",
+});
+
+/**
+ * Returns extra inline styles to apply to body/content text elements.
+ */
+export const getContentStyle = (styleOptions = {}) => ({
+  fontWeight: styleOptions.contentBold   ? 700 : 400,
+  fontStyle:  styleOptions.contentItalic ? "italic" : "normal",
+});
 
 export const DEFAULT_ORDER = [
   "summary",
@@ -48,7 +72,6 @@ export const buildSectionOrder = (styleOptions, customSections) => {
 
   const customIds = (customSections || []).map((s) => s.id);
   const allKnown = new Set(base);
-  // Append any built-in or custom keys not already present
   const extra = [...DEFAULT_ORDER, ...customIds].filter((k) => !allKnown.has(k));
 
   return [...base, ...extra];

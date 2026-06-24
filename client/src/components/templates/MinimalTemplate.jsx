@@ -1,4 +1,5 @@
-import { buildSectionOrder, getContainerStyle } from "../../utils/templateHelpers";
+import React from "react";
+import { buildSectionOrder, getContainerStyle, getHeadingStyle, getContentStyle } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
 
 const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
@@ -19,15 +20,17 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
   const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
 
-  // ── Shared styles ─────────────────────────────────────────────────────────
+  const hStyle = getHeadingStyle(styleOptions);
+  const cStyle = getContentStyle(styleOptions);
+
   const labelStyle = {
     fontSize: "0.7em",
-    fontWeight: 500,
     letterSpacing: "0.15em",
     textTransform: "uppercase",
     color: accent,
     marginBottom: "1em",
     display: "block",
+    ...hStyle,
   };
 
   const sectionStyle = { marginBottom: "2.25em" };
@@ -38,7 +41,7 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
     data.professional_summary ? (
       <section key="summary" style={sectionStyle}>
         <span style={labelStyle}>{heading("summary")}</span>
-        <p style={{ color: "#374151" }}>{data.professional_summary}</p>
+        <p style={{ color: "#374151", ...cStyle }}>{data.professional_summary}</p>
       </section>
     ) : null;
 
@@ -57,7 +60,7 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
               </div>
               <p style={{ color: "#6b7280", marginBottom: "0.4em" }}>{exp.company}</p>
               {exp.description && (
-                <div style={{ color: "#374151", whiteSpace: "pre-line" }}>{exp.description}</div>
+                <div style={{ color: "#374151", whiteSpace: "pre-line", ...cStyle }}>{exp.description}</div>
               )}
             </div>
           ))}
@@ -119,7 +122,7 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
     return (
       <section key={section.id} style={sectionStyle}>
         <span style={labelStyle}>{section.heading || "Untitled"}</span>
-        <div style={{ color: "#374151", whiteSpace: "pre-line" }}>{section.content}</div>
+        <div style={{ color: "#374151", whiteSpace: "pre-line", ...cStyle }}>{section.content}</div>
       </section>
     );
   };
@@ -174,8 +177,13 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
       {/* Sections in resolved order */}
       {sectionOrder.map((key) => {
-        if (builtInKeys.has(key)) return sectionRenderers[key]?.() ?? null;
-        return renderCustomSection(key);
+        let content = null;
+        if (builtInKeys.has(key)) {
+          content = sectionRenderers[key]?.() ?? null;
+        } else {
+          content = renderCustomSection(key);
+        }
+        return content ? <React.Fragment key={key}>{content}</React.Fragment> : null;
       })}
     </div>
   );

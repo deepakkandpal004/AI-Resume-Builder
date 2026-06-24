@@ -130,10 +130,14 @@ const ResumeSchema = new mongoose.Schema({
         default: [],
     },
     style_options: {
-        fontFamily:   { type: String, default: "inter" },
-        fontSize:     { type: Number, default: 14 },
-        lineSpacing:  { type: Number, default: 1.5 },
-        sectionOrder: { type: [String], default: [] },
+        fontFamily:    { type: String, default: "inter" },
+        fontSize:      { type: Number, default: 14 },
+        lineSpacing:   { type: Number, default: 1.5 },
+        sectionOrder:  { type: [String], default: [] },
+        headingBold:   { type: Boolean, default: true },
+        headingItalic: { type: Boolean, default: false },
+        contentBold:   { type: Boolean, default: false },
+        contentItalic: { type: Boolean, default: false },
     },
 }, {timestamps: true, minimize: false})
 
