@@ -3,11 +3,21 @@ import { createSlice } from "@reduxjs/toolkit";
 const tokenFromStorage = localStorage.getItem("token");
 const userFromStorage = localStorage.getItem("user");
 
+// Safely parse JSON — returns null if the value is missing, "undefined", or malformed
+function safeParseJSON(value) {
+  if (!value || value === "undefined" || value === "null") return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
     token: tokenFromStorage || null,
-    user: userFromStorage ? JSON.parse(userFromStorage) : null,
+    user: safeParseJSON(userFromStorage),
     loading: false,
   },
   reducers: {
@@ -16,9 +26,11 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.loading = false;
 
-      // ✅ persist login
-      localStorage.setItem("token", action.payload.token);
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
+      localStorage.setItem("token", action.payload.token ?? "");
+      // Guard: only store if user is a real object, never store undefined
+      if (action.payload.user) {
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
+      }
     },
 
     logout: (state) => {
