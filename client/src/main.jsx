@@ -5,8 +5,12 @@ import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from './app/store.js'
 
+// On GitHub Pages the app is served under /AI-Resume-Builder/
+// In production (Render/Vercel) it's served from the root /
+const basename = import.meta.env.BASE_URL || '/'
+
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
+  <BrowserRouter basename={basename}>
     <Provider store={store}>
       <App />
     </Provider>
