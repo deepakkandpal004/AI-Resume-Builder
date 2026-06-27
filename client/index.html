@@ -18,6 +18,18 @@
         } catch (e) {}
       })();
     </script>
+    <script>
+      // GitHub Pages SPA redirect: restore path stored by 404.html
+      (function () {
+        var redirect = sessionStorage.getItem('gh-pages-redirect');
+        if (redirect) {
+          sessionStorage.removeItem('gh-pages-redirect');
+          if (redirect !== '/') {
+            window.history.replaceState(null, null, '/AI-Resume-Builder' + redirect);
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
