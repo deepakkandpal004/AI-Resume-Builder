@@ -13,7 +13,7 @@ export const runScan = createAsyncThunk(
         { resumeId, jobDescription },
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 35000, // 35s client timeout (slightly more than server's 25s AI timeout)
+          timeout: 35000, 
         }
       );
       return response.data;
