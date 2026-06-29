@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import api from "../configs/api";
 import {
   ArrowLeftIcon,
+  Award,
   BarChart2,
   Briefcase,
   ChevronLeft,
@@ -15,6 +16,7 @@ import {
   FileText,
   FolderIcon,
   GraduationCap,
+  Languages,
   Mail,
   MessageSquare,
   Palette,
@@ -42,6 +44,8 @@ import ProjectForm from "../components/ProjectForm";
 import SkillsForm from "../components/SkillsForm";
 import SectionManager from "../components/SectionManager";
 import StylesPanel from "../components/StylesPanel";
+import CertificationForm from "../components/CertificationForm";
+import LanguageForm from "../components/LanguageForm";
 import { getCompleteness, getCompletenessColor } from "../utils/completeness";
 
 const ResumeBuilder = () => {
@@ -58,6 +62,8 @@ const ResumeBuilder = () => {
     education: [],
     project: [],
     skills: [],
+    certifications: [],
+    languages: [],
     template: "classic",
     accent_color: "#4F46E5",
     public: false,
@@ -92,6 +98,8 @@ const ResumeBuilder = () => {
             : `#${data.resume.accent_color || "4F46E5"}`,
           section_headings: data.resume.section_headings ?? {},
           custom_sections: data.resume.custom_sections ?? [],
+          certifications: data.resume.certifications ?? [],
+          languages: data.resume.languages ?? [],
           style_options: {
             fontFamily: "inter",
             fontSize: 14,
@@ -212,17 +220,19 @@ const ResumeBuilder = () => {
   }, [resumeData]);
 
   const sections = [
-    { id: "personal", name: "Personal Info", icon: User },
-    { id: "summary", name: "Summary", icon: FileText },
-    { id: "experience", name: "Experience", icon: Briefcase },
-    { id: "education", name: "Education", icon: GraduationCap },
-    { id: "projects", name: "Projects", icon: FolderIcon },
-    { id: "skills", name: "Skills", icon: Sparkles },
-    { id: "sections", name: "Sections", icon: Settings2 },
-    { id: "styles", name: "Styles", icon: Palette },
-    { id: "ats", name: "ATS Score", icon: BarChart2 },
-    { id: "cover-letter", name: "Cover Letter", icon: Mail },
-    { id: "interview", name: "Interview Prep", icon: MessageSquare },
+    { id: "personal",      name: "Personal Info",   icon: User         },
+    { id: "summary",       name: "Summary",          icon: FileText     },
+    { id: "experience",    name: "Experience",       icon: Briefcase    },
+    { id: "education",     name: "Education",        icon: GraduationCap},
+    { id: "projects",      name: "Projects",         icon: FolderIcon   },
+    { id: "skills",        name: "Skills",           icon: Sparkles     },
+    { id: "certifications",name: "Certifications",   icon: Award        },
+    { id: "languages",     name: "Languages",        icon: Languages    },
+    { id: "sections",      name: "Sections",         icon: Settings2    },
+    { id: "styles",        name: "Styles",           icon: Palette      },
+    { id: "ats",           name: "ATS Score",        icon: BarChart2    },
+    { id: "cover-letter",  name: "Cover Letter",     icon: Mail         },
+    { id: "interview",     name: "Interview Prep",   icon: MessageSquare},
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -465,6 +475,24 @@ const ResumeBuilder = () => {
                         skills: data,
                       }));
                     }}
+                  />
+                )}
+
+                {activeSection.id === "certifications" && (
+                  <CertificationForm
+                    data={resumeData.certifications || []}
+                    onChange={(data) =>
+                      setResumeData((prev) => ({ ...prev, certifications: data }))
+                    }
+                  />
+                )}
+
+                {activeSection.id === "languages" && (
+                  <LanguageForm
+                    data={resumeData.languages || []}
+                    onChange={(data) =>
+                      setResumeData((prev) => ({ ...prev, languages: data }))
+                    }
                   />
                 )}
 

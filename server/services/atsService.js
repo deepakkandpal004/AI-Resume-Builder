@@ -269,6 +269,20 @@ export function buildResumeText(resumeDoc) {
     push(section?.content);
   }
 
+  // Certifications
+  const certifications = resumeDoc?.certifications ?? [];
+  for (const cert of certifications) {
+    push(cert?.name);
+    push(cert?.issuer);
+  }
+
+  // Languages
+  const languages = resumeDoc?.languages ?? [];
+  for (const lang of languages) {
+    push(lang?.name);
+    push(lang?.proficiency);
+  }
+
   return parts.join(" ");
 }
 

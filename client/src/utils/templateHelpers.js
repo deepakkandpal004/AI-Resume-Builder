@@ -60,6 +60,8 @@ export const DEFAULT_ORDER = [
   "education",
   "projects",
   "skills",
+  "certifications",
+  "languages",
 ];
 
 /**

@@ -119,6 +119,21 @@ const ResumeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Mixed,
         default: {},
     },
+    certifications: [
+        {
+            name:       { type: String, default: "" },
+            issuer:     { type: String, default: "" },
+            issue_date: { type: String, default: "" },
+            expiry_date:{ type: String, default: "" },
+            credential_url: { type: String, default: "" },
+        }
+    ],
+    languages: [
+        {
+            name:        { type: String, default: "" },
+            proficiency: { type: String, default: "Conversational" },
+        }
+    ],
     custom_sections: {
         type: [
             {

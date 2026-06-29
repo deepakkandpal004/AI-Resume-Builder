@@ -19,7 +19,7 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
     data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key];
 
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
-  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
+  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills", "certifications", "languages"]);
   const customSectionIds = new Set((data.custom_sections || []).map((s) => s.id));
 
   // Heading and content style modifiers from styleOptions
@@ -138,6 +138,60 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
       </section>
     ) : null;
 
+  const renderCertifications = () =>
+    data.certifications?.length > 0 ? (
+      <section style={{ marginBottom: "1.5em" }}>
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>{heading("certifications")}</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6em" }}>
+          {data.certifications.map((cert, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{cert.name}</span>
+                {cert.issuer && (
+                  <span style={{ color: "#6b7280", marginLeft: "0.4em" }}>· {cert.issuer}</span>
+                )}
+                {cert.credential_url && (
+                  <a
+                    href={cert.credential_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginLeft: "0.4em", color: accent, fontSize: "0.8em" }}
+                  >
+                    View ↗
+                  </a>
+                )}
+              </div>
+              {cert.issue_date && (
+                <span style={{ fontSize: "0.85em", color: "#6b7280", flexShrink: 0, marginLeft: "1em" }}>
+                  {formatDate(cert.issue_date)}
+                  {cert.expiry_date ? ` – ${formatDate(cert.expiry_date)}` : ""}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderLanguages = () =>
+    data.languages?.length > 0 ? (
+      <section style={{ marginBottom: "1.5em" }}>
+        <h2 style={{ ...sectionHeadingBase, ...hStyle }}>{heading("languages")}</h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5em 2em" }}>
+          {data.languages.map((lang, i) => (
+            <span key={i} style={{ color: "#374151", ...cStyle }}>
+              <strong style={{ color: "#111827" }}>{lang.name}</strong>
+              {lang.proficiency && (
+                <span style={{ color: "#6b7280", marginLeft: "0.35em", fontSize: "0.88em" }}>
+                  — {lang.proficiency}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   const renderCustomSection = (id) => {
     const section = (data.custom_sections || []).find((s) => s.id === id);
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
@@ -157,6 +211,8 @@ const ClassicTemplate = ({ data, accentColor, styleOptions = {} }) => {
     education: renderEducation,
     projects: renderProjects,
     skills: renderSkills,
+    certifications: renderCertifications,
+    languages: renderLanguages,
   };
 
   return (

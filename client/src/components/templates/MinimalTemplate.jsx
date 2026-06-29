@@ -18,7 +18,7 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
     data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key];
 
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
-  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
+  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills", "certifications", "languages"]);
 
   const hStyle = getHeadingStyle(styleOptions);
   const cStyle = getContentStyle(styleOptions);
@@ -116,6 +116,58 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
       </section>
     ) : null;
 
+  const renderCertifications = () =>
+    data.certifications?.length > 0 ? (
+      <section key="certifications" style={sectionStyle}>
+        <span style={labelStyle}>{heading("certifications")}</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6em" }}>
+          {data.certifications.map((cert, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div>
+                <span style={{ fontWeight: 500 }}>{cert.name}</span>
+                {cert.issuer && <span style={{ color: "#6b7280", marginLeft: "0.4em" }}>· {cert.issuer}</span>}
+                {cert.credential_url && (
+                  <a
+                    href={cert.credential_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginLeft: "0.4em", color: accent, fontSize: "0.8em" }}
+                  >View ↗</a>
+                )}
+              </div>
+              {cert.issue_date && (
+                <span style={{ fontSize: "0.82em", color: "#6b7280", flexShrink: 0, marginLeft: "1em" }}>
+                  {new Date(cert.issue_date + "-01").toLocaleDateString("en-US", { year: "numeric", month: "short" })}
+                  {cert.expiry_date
+                    ? ` – ${new Date(cert.expiry_date + "-01").toLocaleDateString("en-US", { year: "numeric", month: "short" })}`
+                    : ""}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderLanguages = () =>
+    data.languages?.length > 0 ? (
+      <section key="languages" style={sectionStyle}>
+        <span style={labelStyle}>{heading("languages")}</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4em 2em" }}>
+          {data.languages.map((lang, i) => (
+            <span key={i}>
+              <strong style={{ fontWeight: 500 }}>{lang.name}</strong>
+              {lang.proficiency && (
+                <span style={{ color: "#6b7280", marginLeft: "0.35em", fontSize: "0.88em" }}>
+                  — {lang.proficiency}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   const renderCustomSection = (id) => {
     const section = (data.custom_sections || []).find((s) => s.id === id);
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
@@ -133,6 +185,8 @@ const MinimalTemplate = ({ data, accentColor, styleOptions = {} }) => {
     projects: renderProjects,
     education: renderEducation,
     skills: renderSkills,
+    certifications: renderCertifications,
+    languages: renderLanguages,
   };
 
   return (
