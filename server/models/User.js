@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema({
         enum: ["free", "premium"],
         default: "free"
     },
+    resetPasswordToken:   { type: String,  default: undefined },
+    resetPasswordExpires: { type: Date,    default: undefined },
 }, { timestamps: true });
 
 userSchema.methods.comparePassword = async function(password) {

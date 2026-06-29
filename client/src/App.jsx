@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import Preview from "./pages/Preview";
 import Dashboard from "./pages/Dashboard";
+import ResetPassword from "./pages/ResetPassword";
 import Upgrade from "./pages/Upgrade";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
@@ -64,6 +65,7 @@ const App = () => {
           <Route path="upgrade" element={<Upgrade />} />
         </Route>
         <Route path="view/:resumeId" element={<Preview />} />
+        <Route path="reset-password" element={<ResetPassword />} />
       </Routes>
     </>
   );
