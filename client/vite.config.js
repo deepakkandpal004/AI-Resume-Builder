@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: process.env.GITHUB_ACTIONS ? '/AI-Resume-Builder/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/Resume-Builder-SaaS/' : '/',
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.js'],
