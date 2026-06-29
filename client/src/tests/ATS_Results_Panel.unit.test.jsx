@@ -11,14 +11,20 @@ import { configureStore } from '@reduxjs/toolkit';
 import { MemoryRouter } from 'react-router-dom';
 import ATS_Results_Panel from '../components/ats/ATS_Results_Panel';
 import atsReducer from '../app/features/atsSlice';
+import authReducer from '../app/features/authSlice';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 function createTestStore(atsOverrides = {}) {
   return configureStore({
-    reducer: { ats: atsReducer },
+    reducer: { ats: atsReducer, auth: authReducer },
     preloadedState: {
+      auth: {
+        token: 'test-token',
+        user: { id: 'test-user' },
+        loading: false,
+      },
       ats: {
         scanStatus: 'idle',
         error: null,

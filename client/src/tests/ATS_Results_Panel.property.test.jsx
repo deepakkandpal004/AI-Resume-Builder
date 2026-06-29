@@ -8,17 +8,26 @@ import { describe, test, expect } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
+import { MemoryRouter } from 'react-router-dom';
 import fc from 'fast-check';
 import ATS_Results_Panel from '../components/ats/ATS_Results_Panel';
 import atsReducer from '../app/features/atsSlice';
+import authReducer from '../app/features/authSlice';
 
 fc.configureGlobal({ numRuns: 100, verbose: true });
 
 // Helper: create a test Redux store with a given ATS state
 function createTestStore(atsState) {
   return configureStore({
-    reducer: { ats: atsReducer },
-    preloadedState: { ats: atsState },
+    reducer: { ats: atsReducer, auth: authReducer },
+    preloadedState: {
+      auth: {
+        token: 'test-token',
+        user: { id: 'test-user' },
+        loading: false,
+      },
+      ats: atsState,
+    },
   });
 }
 
@@ -52,7 +61,9 @@ describe('ATS_Results_Panel — Property 11: suggestion "+N pts" badge', () => {
 
           render(
             <Provider store={store}>
-              <ATS_Results_Panel resumeId="test-resume-id" />
+              <MemoryRouter>
+                <ATS_Results_Panel resumeId="test-resume-id" />
+              </MemoryRouter>
             </Provider>
           );
 

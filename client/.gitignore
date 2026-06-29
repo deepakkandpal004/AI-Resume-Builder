@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# Local env overrides (keep .env for production defaults)
 *.local
 
 # Editor directories and files

@@ -1,5 +1,13 @@
+import mongoose from "mongoose";
 import getAI from "../config/ai.js";
 import Resume from "../models/resume.js";
+import CoverLetter from "../models/CoverLetter.js";
+import User from "../models/User.js";
+
+// Free-tier daily cover-letter quota (kept in sync with coverLetterRateLimiter).
+const COVER_LETTER_DAILY_LIMIT = 3;
+// Max cover letters retained per resume; oldest is pruned beyond this.
+const COVER_LETTER_PER_RESUME_CAP = 10;
 
 // Translate raw API errors into clean user-facing messages
 const handleAIError = (error, res) => {
@@ -197,6 +205,196 @@ Use this exact structure:
     }
     return handleAIError(error, res);
   }
+};
+
+// POST /api/ai/generate-cover-letter
+export const generateCoverLetter = async (req, res) => {
+  try {
+    const { resumeId, jobDescription, companyName, positionTitle, tone } = req.body;
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (!resumeId || !jobDescription || !companyName || !positionTitle) {
+      return res.status(400).json({ message: "resumeId, jobDescription, companyName and positionTitle are required." });
+    }
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume ID." });
+    }
+    if (jobDescription.length < 50 || jobDescription.length > 10000) {
+      return res.status(400).json({ message: "jobDescription must be between 50 and 10,000 characters." });
+    }
+
+    const resume = await Resume.findOne({ _id: resumeId, userId });
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found." });
+    }
+
+    const fullName = resume.personal_info?.full_name || "Candidate";
+    const professionalSummary = resume.professional_summary || "";
+    const topExperiences = (resume.experience || []).slice(0, 3).map(exp =>
+      `${exp.position} at ${exp.company}: ${exp.description}`
+    ).join("\n");
+    const skills = (resume.skills || []).join(", ");
+
+    const toneMap = {
+      formal: "professional and formal",
+      conversational: "friendly and conversational",
+      enthusiastic: "enthusiastic and energetic",
+    };
+    const selectedTone = toneMap[tone] || "professional and formal";
+
+    const systemPrompt = `You are an expert cover letter writer. Generate a compelling, ATS-friendly cover letter that:
+- Matches the job description keywords naturally
+- Highlights relevant experience from the resume
+- Uses a ${selectedTone} tone
+- Is 250-350 words long
+- Has 3 paragraphs: intro (express interest + role fit), body (highlight relevant achievements), closing (call to action)
+- Return ONLY the cover letter body text, no subject line, no salutation, no sign-off — just the 3 paragraphs`;
+
+    const userPrompt = `Write a cover letter for:
+
+Candidate Name: ${fullName}
+Company: ${companyName}
+Position: ${positionTitle}
+
+Professional Summary: ${professionalSummary}
+
+Top Experience:
+${topExperiences}
+
+Skills: ${skills}
+
+Job Description:
+${jobDescription}`;
+
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL || "llama3-70b-8192",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    });
+
+    if (!response?.choices?.[0]) {
+      throw new Error("Invalid AI response");
+    }
+
+    const generatedContent = response.choices[0].message.content.trim();
+
+    // Enforce per-resume cap: prune the oldest letter once at the limit.
+    const existingCount = await CoverLetter.countDocuments({ resumeId });
+    if (existingCount >= COVER_LETTER_PER_RESUME_CAP) {
+      const oldest = await CoverLetter.findOne({ resumeId }).sort({ createdAt: 1 });
+      if (oldest) {
+        await CoverLetter.deleteOne({ _id: oldest._id });
+      }
+    }
+
+    // Persist the generated letter.
+    const letter = await CoverLetter.create({
+      userId,
+      resumeId,
+      companyName,
+      positionTitle,
+      jobDescription: jobDescription.slice(0, 2000),
+      tone: ["formal", "conversational", "enthusiastic"].includes(tone) ? tone : "formal",
+      content: generatedContent,
+    });
+
+    // Compute remaining daily quota for free-tier users (non-fatal on error).
+    let lettersRemainingToday = null;
+    try {
+      const user = await User.findById(userId).select("subscriptionTier");
+      if (!user || user.subscriptionTier !== "premium") {
+        const utcDayStart = new Date();
+        utcDayStart.setUTCHours(0, 0, 0, 0);
+        const todayCount = await CoverLetter.countDocuments({
+          userId,
+          createdAt: { $gte: utcDayStart },
+        });
+        lettersRemainingToday = Math.max(0, COVER_LETTER_DAILY_LIMIT - todayCount);
+      }
+    } catch (err) {
+      lettersRemainingToday = null;
+    }
+
+    return res.status(200).json({
+      coverLetterId: letter._id,
+      content: letter.content,
+      companyName: letter.companyName,
+      positionTitle: letter.positionTitle,
+      tone: letter.tone,
+      createdAt: letter.createdAt,
+      lettersRemainingToday,
+    });
+
+  } catch (error) {
+    return handleAIError(error, res);
+  }
+};
+
+// GET /api/ai/cover-letter/:resumeId
+export const getCoverLetterHistory = async (req, res) => {
+  const { resumeId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+    return res.status(400).json({ message: "Invalid resume ID." });
+  }
+
+  let resume;
+  try {
+    resume = await Resume.findById(resumeId);
+  } catch (err) {
+    return res.status(503).json({ message: "Database unavailable. Please try again." });
+  }
+
+  if (!resume) {
+    return res.status(404).json({ message: "Resume not found." });
+  }
+  if (resume.userId.toString() !== req.userId) {
+    return res.status(403).json({ message: "Access denied." });
+  }
+
+  const letters = await CoverLetter.find({ resumeId })
+    .sort({ createdAt: -1 })
+    .limit(COVER_LETTER_PER_RESUME_CAP);
+
+  const result = letters.map((doc) => ({
+    letterId: doc._id,
+    companyName: doc.companyName,
+    positionTitle: doc.positionTitle,
+    tone: doc.tone,
+    jobDescription: doc.jobDescription,
+    content: doc.content,
+    createdAt: doc.createdAt,
+  }));
+
+  return res.status(200).json({ letters: result });
+};
+
+// DELETE /api/ai/cover-letter/:letterId
+export const deleteCoverLetter = async (req, res) => {
+  const { letterId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(letterId)) {
+    return res.status(400).json({ message: "Invalid cover letter ID." });
+  }
+
+  let letter;
+  try {
+    letter = await CoverLetter.findOne({ _id: letterId, userId: req.userId });
+  } catch (err) {
+    return res.status(503).json({ message: "Database unavailable. Please try again." });
+  }
+
+  if (!letter) {
+    return res.status(404).json({ message: "Cover letter not found." });
+  }
+
+  await CoverLetter.deleteOne({ _id: letter._id });
+  return res.status(200).json({ message: "Cover letter deleted successfully." });
 };
 
 // POST /api/ai/tailor-resume
