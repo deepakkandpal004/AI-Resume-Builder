@@ -24,7 +24,22 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
             id: 'minimal',
             name: 'Minimal',
             preview: "Ultra-clean design that puts your content front and center"
-        }
+        },
+        {
+            id: 'executive',
+            name: 'Executive',
+            preview: "Bold gradient header banner with authoritative section styling for senior professionals"
+        },
+        {
+            id: 'creative',
+            name: 'Creative',
+            preview: "Two-column layout with a vibrant sidebar — perfect for designers and marketers"
+        },
+        {
+            id: 'compact',
+            name: 'Compact',
+            preview: "Dense, space-efficient single-column layout — fits more content on one page"
+        },
     ]
   return (
     <div className='relative'>

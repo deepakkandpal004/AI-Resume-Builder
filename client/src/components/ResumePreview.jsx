@@ -3,6 +3,9 @@ import ModernTemplate from "./templates/ModernTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
 import MinimalTemplate from "./templates/MinimalTemplate";
 import MinimalImageTemplate from "./templates/MinimalImageTemplate";
+import ExecutiveTemplate from "./templates/ExecutiveTemplate";
+import CreativeTemplate from "./templates/CreativeTemplate";
+import CompactTemplate from "./templates/CompactTemplate";
 
 const ResumePreview = ({ data, template, accentColor, styleOptions = {}, classes = "" }) => {
   const renderTemplate = () => {
@@ -13,6 +16,12 @@ const ResumePreview = ({ data, template, accentColor, styleOptions = {}, classes
         return <MinimalTemplate data={data} accentColor={accentColor} styleOptions={styleOptions} />;
       case "minimal-image":
         return <MinimalImageTemplate data={data} accentColor={accentColor} styleOptions={styleOptions} />;
+      case "executive":
+        return <ExecutiveTemplate data={data} accentColor={accentColor} styleOptions={styleOptions} />;
+      case "creative":
+        return <CreativeTemplate data={data} accentColor={accentColor} styleOptions={styleOptions} />;
+      case "compact":
+        return <CompactTemplate data={data} accentColor={accentColor} styleOptions={styleOptions} />;
       default:
         return <ClassicTemplate data={data} accentColor={accentColor} styleOptions={styleOptions} />;
     }
