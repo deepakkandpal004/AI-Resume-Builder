@@ -1,4 +1,5 @@
 import {
+  Copy,
   FileTextIcon,
   PencilIcon,
   PlusIcon,
@@ -14,7 +15,27 @@ import toast from "react-hot-toast";
 import api from "../configs/api";
 import pdfToText from "react-pdftotext";
 
-// Lightweight modal wrapper
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+// Colour band for ATS score badge
+const getAtsColor = (score) => {
+  if (score >= 75) return { bg: "bg-teal-50 dark:bg-teal-500/10",   text: "text-teal-700 dark:text-teal-300"   };
+  if (score >= 50) return { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-700 dark:text-amber-300" };
+  return              { bg: "bg-rose-50 dark:bg-rose-500/10",    text: "text-rose-700 dark:text-rose-300"   };
+};
+
+// Human-readable template label
+const TEMPLATE_LABELS = {
+  classic:       "Classic",
+  modern:        "Modern",
+  minimal:       "Minimal",
+  "minimal-image": "Minimal + Photo",
+  executive:     "Executive",
+  creative:      "Creative",
+  compact:       "Compact",
+};
+
+// ── Modal ──────────────────────────────────────────────────────────────────
 const Modal = ({ onClose, title, children }) => (
   <div
     onClick={onClose}
@@ -26,11 +47,7 @@ const Modal = ({ onClose, title, children }) => (
     >
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-ink">{title}</h2>
-        <button
-          onClick={onClose}
-          className="text-muted transition hover:text-ink"
-          aria-label="Close"
-        >
+        <button onClick={onClose} className="text-muted transition hover:text-ink" aria-label="Close">
           <XIcon className="size-5" />
         </button>
       </div>
@@ -39,18 +56,21 @@ const Modal = ({ onClose, title, children }) => (
   </div>
 );
 
+// ── Dashboard ──────────────────────────────────────────────────────────────
 const Dashboard = () => {
   const { user, token } = useSelector((state) => state.auth);
   const accents = ["#4F46E5", "#0D9488", "#7C3AED", "#2563EB", "#E11D48", "#D97706"];
 
-  const [allResumes, setAllResumes] = useState([]);
-  const [showCreateResume, setShowCreateResume] = useState(false);
-  const [showUploadResume, setShowUploadResume] = useState(false);
-  const [title, setTitle] = useState("");
-  const [resume, setResume] = useState(null);
-  const [editResumeId, setEditResumeId] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [allResumes, setAllResumes]         = useState([]);
+  const [showCreateResume, setShowCreate]   = useState(false);
+  const [showUploadResume, setShowUpload]   = useState(false);
+  const [title, setTitle]                   = useState("");
+  const [resume, setResume]                 = useState(null);
+  const [editResumeId, setEditResumeId]     = useState("");
+  const [isLoading, setIsLoading]           = useState(false);
   const navigate = useNavigate();
+
+  // ── API calls ─────────────────────────────────────────────────────────────
 
   const loadAllResumes = async () => {
     try {
@@ -72,9 +92,9 @@ const Dashboard = () => {
         { title },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setAllResumes([...allResumes, data.resume]);
+      setAllResumes((prev) => [...prev, data.resume]);
       setTitle("");
-      setShowCreateResume(false);
+      setShowCreate(false);
       navigate(`/app/builder/${data.resume._id}`);
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
@@ -83,10 +103,7 @@ const Dashboard = () => {
 
   const uploadResume = async (e) => {
     e.preventDefault();
-    if (!resume) {
-      toast.error("Please select a resume file");
-      return;
-    }
+    if (!resume) { toast.error("Please select a resume file"); return; }
     setIsLoading(true);
     try {
       const resumeText = await pdfToText(resume);
@@ -96,9 +113,7 @@ const Dashboard = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success("Resume uploaded successfully");
-      setTitle("");
-      setResume(null);
-      setShowUploadResume(false);
+      setTitle(""); setResume(null); setShowUpload(false);
       navigate(`/app/builder/${data.resumeId}`);
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
@@ -114,20 +129,13 @@ const Dashboard = () => {
     try {
       const formData = new FormData();
       formData.append("resumeId", editResumeId);
-      // Send personal_info too so the server doesn't clobber it
-      formData.append(
-        "resumeData",
-        JSON.stringify({ title, personal_info: target.personal_info || {} })
-      );
+      formData.append("resumeData", JSON.stringify({ title, personal_info: target.personal_info || {} }));
       await api.put("/api/resumes/update", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAllResumes((prev) =>
-        prev.map((r) => (r._id === editResumeId ? { ...r, title } : r))
-      );
+      setAllResumes((prev) => prev.map((r) => (r._id === editResumeId ? { ...r, title } : r)));
       toast.success("Title updated");
-      setEditResumeId("");
-      setTitle("");
+      setEditResumeId(""); setTitle("");
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
     }
@@ -147,12 +155,29 @@ const Dashboard = () => {
     }
   };
 
+  const duplicateResume = async (resumeId) => {
+    try {
+      const { data } = await api.post(
+        `/api/resumes/duplicate/${resumeId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAllResumes((prev) => [...prev, data.resume]);
+      toast.success("Resume duplicated");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+    }
+  };
+
   useEffect(() => {
     if (token) loadAllResumes();
   }, [token]);
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 md:px-6">
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-ink">
@@ -166,7 +191,7 @@ const Dashboard = () => {
       {/* Action tiles */}
       <div className="grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
         <button
-          onClick={() => setShowCreateResume(true)}
+          onClick={() => setShowCreate(true)}
           className="group flex items-center gap-4 rounded-2xl border border-dashed border-line bg-surface p-5 text-left transition-all hover:border-brand-400 hover:shadow-md"
         >
           <span className="flex size-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:group-hover:bg-brand-500/20">
@@ -179,7 +204,7 @@ const Dashboard = () => {
         </button>
 
         <button
-          onClick={() => setShowUploadResume(true)}
+          onClick={() => setShowUpload(true)}
           className="group flex items-center gap-4 rounded-2xl border border-dashed border-line bg-surface p-5 text-left transition-all hover:border-accent-500 hover:shadow-md"
         >
           <span className="flex size-12 items-center justify-center rounded-xl bg-accent-50 text-accent-600 transition-colors group-hover:bg-accent-100 dark:bg-accent-500/10 dark:text-accent-300 dark:group-hover:bg-accent-500/20">
@@ -192,77 +217,100 @@ const Dashboard = () => {
         </button>
       </div>
 
+      {/* Section label */}
       <div className="my-8 flex items-center gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Your Resumes
-        </h2>
-        <span className="rounded-full bg-canvas px-2 py-0.5 text-xs text-muted">
-          {allResumes.length}
-        </span>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Your Resumes</h2>
+        <span className="rounded-full bg-canvas px-2 py-0.5 text-xs text-muted">{allResumes.length}</span>
       </div>
 
       {/* Resume grid */}
       {allResumes.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line bg-surface py-16 text-center">
           <FileTextIcon className="mx-auto mb-3 size-10 text-muted/60" />
-          <p className="text-sm text-muted">
-            No resumes yet. Create or upload one to get started.
-          </p>
+          <p className="text-sm text-muted">No resumes yet. Create or upload one to get started.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {allResumes.map((r, index) => {
-            const accent =
-              r.accent_color?.startsWith("#")
-                ? r.accent_color
-                : accents[index % accents.length];
+            const accent = r.accent_color?.startsWith("#") ? r.accent_color : accents[index % accents.length];
+            const templateLabel = TEMPLATE_LABELS[r.template] || r.template || "Classic";
+            const ats = r.lastAts;
+            const atsColor = ats ? getAtsColor(ats.atsScore) : null;
+
             return (
               <div
                 key={r._id}
                 onClick={() => navigate(`/app/builder/${r._id}`)}
-                className="group relative flex h-52 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-line bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="group relative flex h-56 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-line bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
               >
                 {/* Accent strip */}
-                <span
-                  className="absolute inset-x-0 top-0 h-1.5"
-                  style={{ backgroundColor: accent }}
-                />
+                <span className="absolute inset-x-0 top-0 h-1.5" style={{ backgroundColor: accent }} />
 
-                <span
-                  className="flex size-11 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: accent + "1A", color: accent }}
-                >
-                  <FileTextIcon className="size-6" />
-                </span>
+                {/* Top area — icon + ATS badge */}
+                <div className="flex items-start justify-between mt-1">
+                  <span
+                    className="flex size-10 items-center justify-center rounded-xl shrink-0"
+                    style={{ backgroundColor: accent + "1A", color: accent }}
+                  >
+                    <FileTextIcon className="size-5" />
+                  </span>
 
-                <div>
-                  <p className="line-clamp-2 font-semibold text-ink">{r.title}</p>
-                  <p className="mt-1 text-xs text-muted">
-                    Updated {new Date(r.updatedAt).toLocaleDateString()}
-                  </p>
+                  {/* ATS score badge */}
+                  {ats && (
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums ${atsColor.bg} ${atsColor.text}`}>
+                      ATS {ats.atsScore}%
+                    </span>
+                  )}
                 </div>
 
-                {/* Hover actions */}
+                {/* Bottom — title, meta */}
+                <div>
+                  <p className="line-clamp-2 font-semibold text-ink text-sm">{r.title}</p>
+                  <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                    {/* Template chip */}
+                    <span className="rounded-full bg-canvas px-1.5 py-0.5 text-[10px] text-muted border border-line">
+                      {templateLabel}
+                    </span>
+                    {/* Last updated */}
+                    <span className="text-[10px] text-muted">
+                      {new Date(r.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Hover actions — stop propagation so clicks don't open builder */}
                 <div
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-2 top-2.5 hidden items-center gap-1 group-hover:flex"
                 >
+                  {/* Edit title */}
                   <button
-                    onClick={() => {
-                      setEditResumeId(r._id);
-                      setTitle(r.title);
-                    }}
+                    onClick={() => { setEditResumeId(r._id); setTitle(r.title); }}
                     className="rounded-lg bg-surface/90 p-1.5 text-muted shadow-sm transition hover:text-brand-600"
                     aria-label="Edit title"
+                    title="Rename"
                   >
-                    <PencilIcon className="size-4" />
+                    <PencilIcon className="size-3.5" />
                   </button>
+
+                  {/* Duplicate */}
+                  <button
+                    onClick={() => duplicateResume(r._id)}
+                    className="rounded-lg bg-surface/90 p-1.5 text-muted shadow-sm transition hover:text-accent-600"
+                    aria-label="Duplicate resume"
+                    title="Duplicate"
+                  >
+                    <Copy className="size-3.5" />
+                  </button>
+
+                  {/* Delete */}
                   <button
                     onClick={() => deleteResume(r._id)}
                     className="rounded-lg bg-surface/90 p-1.5 text-muted shadow-sm transition hover:text-rose-600"
                     aria-label="Delete resume"
+                    title="Delete"
                   >
-                    <TrashIcon className="size-4" />
+                    <TrashIcon className="size-3.5" />
                   </button>
                 </div>
               </div>
@@ -271,15 +319,10 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Create modal */}
+      {/* ── Modals ── */}
+
       {showCreateResume && (
-        <Modal
-          title="Create a Resume"
-          onClose={() => {
-            setShowCreateResume(false);
-            setTitle("");
-          }}
-        >
+        <Modal title="Create a Resume" onClose={() => { setShowCreate(false); setTitle(""); }}>
           <form onSubmit={createResume}>
             <input
               onChange={(e) => setTitle(e.target.value)}
@@ -289,23 +332,13 @@ const Dashboard = () => {
               className="mb-4 w-full px-4 py-2.5"
               required
             />
-            <button type="submit" className="btn-brand w-full">
-              Create Resume
-            </button>
+            <button type="submit" className="btn-brand w-full">Create Resume</button>
           </form>
         </Modal>
       )}
 
-      {/* Upload modal */}
       {showUploadResume && (
-        <Modal
-          title="Upload Resume"
-          onClose={() => {
-            setShowUploadResume(false);
-            setTitle("");
-            setResume(null);
-          }}
-        >
+        <Modal title="Upload Resume" onClose={() => { setShowUpload(false); setTitle(""); setResume(null); }}>
           <form onSubmit={uploadResume}>
             <input
               onChange={(e) => setTitle(e.target.value)}
@@ -328,13 +361,7 @@ const Dashboard = () => {
                 )}
               </div>
             </label>
-            <input
-              type="file"
-              id="resume-input"
-              accept=".pdf"
-              hidden
-              onChange={(e) => setResume(e.target.files[0])}
-            />
+            <input type="file" id="resume-input" accept=".pdf" hidden onChange={(e) => setResume(e.target.files[0])} />
             <button type="submit" disabled={isLoading} className="btn-brand w-full disabled:opacity-60">
               {isLoading ? "Processing..." : "Upload & Continue"}
             </button>
@@ -342,15 +369,8 @@ const Dashboard = () => {
         </Modal>
       )}
 
-      {/* Edit title modal */}
       {editResumeId && (
-        <Modal
-          title="Edit Resume Title"
-          onClose={() => {
-            setEditResumeId("");
-            setTitle("");
-          }}
-        >
+        <Modal title="Rename Resume" onClose={() => { setEditResumeId(""); setTitle(""); }}>
           <form onSubmit={editTitle}>
             <input
               onChange={(e) => setTitle(e.target.value)}

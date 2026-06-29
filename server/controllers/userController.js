@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Resume from "../models/resume.js";
+import AtsScore from "../models/AtsScore.js";
 
 const generateToken = (userId) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -104,15 +105,33 @@ export const getUserId = async (req, res) => {
 
 // controller for getting user resumes
 // GET: /api/users/resumes
+// Returns each resume enriched with its latest ATS score (if any)
 
 export const getUserResumes = async (req, res) => {
     try {
         const userId = req.userId;
-        
-        // return user resumes
-        const resumes = await Resume.find({userId})
 
-        return res.status(200).json({resumes})
+        const resumes = await Resume.find({ userId }).lean();
+
+        // Fetch the most recent ATS scan for each resume in one query
+        const resumeIds = resumes.map((r) => r._id);
+        const latestScans = await AtsScore.aggregate([
+            { $match: { resumeId: { $in: resumeIds } } },
+            { $sort:  { createdAt: -1 } },
+            { $group: { _id: "$resumeId", atsScore: { $first: "$atsScore" }, scannedAt: { $first: "$createdAt" } } },
+        ]);
+
+        // Map resumeId → score for O(1) lookup
+        const scoreMap = Object.fromEntries(
+            latestScans.map((s) => [s._id.toString(), { atsScore: s.atsScore, scannedAt: s.scannedAt }])
+        );
+
+        const enriched = resumes.map((r) => ({
+            ...r,
+            lastAts: scoreMap[r._id.toString()] ?? null,
+        }));
+
+        return res.status(200).json({ resumes: enriched });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
