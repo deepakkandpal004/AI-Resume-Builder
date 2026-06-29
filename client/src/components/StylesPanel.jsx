@@ -15,8 +15,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Bold, GripVertical, Italic, Palette } from "lucide-react";
+import { Bold, GripVertical, Italic, Palette, ImageIcon } from "lucide-react";
 import { DEFAULT_SECTION_HEADINGS } from "./SectionManager";
+import { applyPhotoEffect } from "../utils/imagekit";
 
 // ---------------------------------------------------------------------------
 // Font options — resume-appropriate typefaces
@@ -42,6 +43,14 @@ const LINE_SPACING_OPTIONS = [
   { value: 1.2, label: "Compact" },
   { value: 1.5, label: "Normal" },
   { value: 1.8, label: "Relaxed" },
+];
+
+// Photo effects applied via ImageKit URL transforms — no re-upload needed
+const PHOTO_EFFECT_OPTIONS = [
+  { value: "none",      label: "Original",      description: "No effect" },
+  { value: "grayscale", label: "Grayscale",      description: "Classic B&W look" },
+  { value: "contrast",  label: "High Contrast",  description: "Sharper definition" },
+  { value: "sharpen",   label: "Sharpen",        description: "Crisp details" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -165,6 +174,7 @@ const StylesPanel = ({ styleOptions, onChange, resumeData }) => {
   const headingItalic = styleOptions?.headingItalic ?? false;
   const contentBold   = styleOptions?.contentBold   ?? false;
   const contentItalic = styleOptions?.contentItalic ?? false;
+  const photoEffect   = styleOptions?.photoEffect   ?? "none";
 
   // Group fonts by category for the selector
   const categories = [...new Set(FONT_FAMILY_OPTIONS.map((f) => f.category))];
@@ -313,8 +323,51 @@ const StylesPanel = ({ styleOptions, onChange, resumeData }) => {
         </div>
       </div>
 
-      {/* ── Section Order ──────────────────────────────────────────── */}
-      <div className="space-y-2">
+      {/* ── Photo Style ────────────────────────────────────────────── */}
+      {resumeData?.personal_info?.image && typeof resumeData.personal_info.image === "string" && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-body uppercase tracking-wide flex items-center gap-2">
+            <ImageIcon className="size-4" /> Photo Style
+          </h4>
+          <p className="text-xs text-muted">
+            Applies a visual effect to your profile photo — no re-upload needed.
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {PHOTO_EFFECT_OPTIONS.map((opt) => {
+              const isActive = photoEffect === opt.value;
+              // Build a live preview URL using the actual stored photo
+              const previewUrl = opt.value === "none"
+                ? resumeData.personal_info.image
+                : applyPhotoEffect(resumeData.personal_info.image, opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => update("photoEffect", opt.value)}
+                  title={opt.description}
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-left transition-all ${
+                    isActive
+                      ? "border-brand-500 ring-2 ring-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+                      : "border-line bg-surface text-ink hover:border-brand-300 hover:bg-canvas"
+                  }`}
+                >
+                  <img
+                    src={previewUrl}
+                    alt={opt.label}
+                    className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-line"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                  <div>
+                    <p className="font-medium text-xs leading-tight">{opt.label}</p>
+                    <p className="text-[10px] text-muted leading-tight">{opt.description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Section Order ──────────────────────────────────────────── */}      <div className="space-y-2">
         <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Section Order</h4>
         <p className="text-xs text-muted">Drag to reorder how sections appear in the resume.</p>
         {activeSections.length === 0 ? (

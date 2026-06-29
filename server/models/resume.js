@@ -138,6 +138,7 @@ const ResumeSchema = new mongoose.Schema({
         headingItalic: { type: Boolean, default: false },
         contentBold:   { type: Boolean, default: false },
         contentItalic: { type: Boolean, default: false },
+        photoEffect:   { type: String, default: "none" },
     },
 }, {timestamps: true, minimize: false})
 

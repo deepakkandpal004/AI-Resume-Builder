@@ -1,5 +1,5 @@
 import express from "express"
-import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume, tailorResume, generateCoverLetter, getCoverLetterHistory, deleteCoverLetter, generateInterviewQuestions } from "../controllers/aiController.js";
+import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume, tailorResume, generateCoverLetter, getCoverLetterHistory, deleteCoverLetter, generateInterviewQuestions, getInterviewHistory } from "../controllers/aiController.js";
 import { runAtsScan, getScanHistory } from "../controllers/atsController.js";
 import protect from "../middlewares/authMiddleware.js";
 import atsRateLimiter from "../middlewares/atsRateLimiter.js";
@@ -25,5 +25,6 @@ aiRouter.delete('/cover-letter/:letterId', protect, deleteCoverLetter);
 
 // Interview Prep routes — generation is quota-limited for free tier
 aiRouter.post('/interview-questions', protect, interviewRateLimiter, generateInterviewQuestions);
+aiRouter.get('/interview-questions/:resumeId', protect, getInterviewHistory);
 
 export default aiRouter;
