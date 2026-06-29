@@ -7,6 +7,8 @@ export const DEFAULT_SECTION_HEADINGS = {
   education: "Education",
   projects: "Projects",
   skills: "Skills",
+  certifications: "Certifications",
+  languages: "Languages",
 };
 
 const SectionManager = ({
