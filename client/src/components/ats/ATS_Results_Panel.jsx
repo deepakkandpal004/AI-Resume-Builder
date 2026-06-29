@@ -113,7 +113,7 @@ const PriorityBadge = ({ priority }) => {
 const ATS_Results_Panel = ({ resumeId, resumeData, onNavigateTab, onReloadResume }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { token } = useSelector((state) => state.auth);
+  const token = useSelector((state) => state.auth?.token);
   const { scanStatus, historyStatus, currentScan, error, quotaExhausted, scansRemainingToday } =
     useSelector((state) => state.ats);
 

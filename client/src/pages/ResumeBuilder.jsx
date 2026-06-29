@@ -15,6 +15,7 @@ import {
   FileText,
   FolderIcon,
   GraduationCap,
+  Mail,
   Palette,
   Settings2,
   Share2Icon,
@@ -22,8 +23,10 @@ import {
   User,
 } from "lucide-react";
 import { resetAts } from "../app/features/atsSlice";
+import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import JD_Input_Panel from "../components/ats/JD_Input_Panel";
 import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
+import CoverLetterPanel from "../components/coverLetter/CoverLetterPanel";
 
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
@@ -159,6 +162,7 @@ const ResumeBuilder = () => {
     { id: "sections", name: "Sections", icon: Settings2 },
     { id: "styles", name: "Styles", icon: Palette },
     { id: "ats", name: "ATS Score", icon: BarChart2 },
+    { id: "cover-letter", name: "Cover Letter", icon: Mail },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -172,6 +176,7 @@ const ResumeBuilder = () => {
   useEffect(() => {
     return () => {
       dispatch(resetAts());
+      dispatch(resetCoverLetter());
     };
   }, [resumeId, dispatch]);
 
@@ -404,13 +409,17 @@ const ResumeBuilder = () => {
                 {activeSection.id === "ats" && (
                   <div className="space-y-4">
                     <JD_Input_Panel resumeId={resumeId} />
-                    <ATS_Results_Panel 
-                      resumeId={resumeId} 
+                    <ATS_Results_Panel
+                      resumeId={resumeId}
                       resumeData={resumeData}
-                      onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)} 
+                      onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)}
                       onReloadResume={loadExistingResume}
                     />
                   </div>
+                )}
+
+                {activeSection.id === "cover-letter" && (
+                  <CoverLetterPanel resumeId={resumeId} resumeData={resumeData} />
                 )}
               </div>
               <button
