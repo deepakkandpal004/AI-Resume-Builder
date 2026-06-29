@@ -117,3 +117,47 @@ export const getUserResumes = async (req, res) => {
         return res.status(400).json({ message: error.message });
     }
 }
+
+// POST /api/users/upgrade
+// Upgrades a user to premium tier.
+// In production: verify a payment provider webhook/session before calling this.
+// For now, accepts an optional promo code defined in PROMO_CODE env var
+// so the feature is fully functional without a payment integration.
+
+const VALID_PROMO_CODES = (process.env.PROMO_CODES || "")
+  .split(",")
+  .map((c) => c.trim().toUpperCase())
+  .filter(Boolean);
+
+export const upgradeUser = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { promoCode } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    if (user.subscriptionTier === "premium") {
+      return res.status(400).json({ message: "Your account is already premium." });
+    }
+
+    // Validate promo code when provided
+    if (promoCode) {
+      const normalised = promoCode.trim().toUpperCase();
+      if (VALID_PROMO_CODES.length > 0 && !VALID_PROMO_CODES.includes(normalised)) {
+        return res.status(400).json({ message: "Invalid promo code." });
+      }
+    }
+
+    user.subscriptionTier = "premium";
+    await user.save();
+
+    user.password = undefined;
+    return res.status(200).json({
+      message: "Upgrade successful! You now have Premium access.",
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
