@@ -404,7 +404,12 @@ const ResumeBuilder = () => {
                 {activeSection.id === "ats" && (
                   <div className="space-y-4">
                     <JD_Input_Panel resumeId={resumeId} />
-                    <ATS_Results_Panel resumeId={resumeId} onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)} />
+                    <ATS_Results_Panel 
+                      resumeId={resumeId} 
+                      resumeData={resumeData}
+                      onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)} 
+                      onReloadResume={loadExistingResume}
+                    />
                   </div>
                 )}
               </div>

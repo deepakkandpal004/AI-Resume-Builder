@@ -198,3 +198,105 @@ Use this exact structure:
     return handleAIError(error, res);
   }
 };
+
+// POST /api/ai/tailor-resume
+export const tailorResume = async (req, res) => {
+  try {
+    const { resumeId, jobDescription } = req.body;
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (!resumeId || !jobDescription) {
+      return res.status(400).json({ message: "resumeId and jobDescription are required." });
+    }
+
+    const resume = await Resume.findOne({ userId, _id: resumeId });
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found." });
+    }
+
+    const systemPrompt = "You are an expert ATS optimization engine. Respond with ONLY valid JSON, no markdown formatting or text outside the JSON.";
+
+    const userPrompt = `You are a professional resume writer. Your task is to tailor a user's resume for a specific Job Description (JD).
+Modify the professional summary, skills list, experience descriptions, and project descriptions to make them ATS-friendly and directly align with the requirements of the job.
+
+INSTRUCTIONS:
+1. Rewrite 'professional_summary' to highlight skills/experience matching the JD in 2-3 sentences.
+2. In 'skills', preserve their original skills and add relevant missing technical or soft skills mentioned in the JD that fit their profession. Return as a flat array of strings.
+3. In 'experience', rewrite the 'description' field for each experience. Keep the original 'company' and 'position'. Rewrite the 'description' to incorporate keywords from the JD, use active verbs, highlight achievements, and retain any metrics. Do NOT change dates or other fields. The array must contain exactly the same number of items, in the exact same order.
+4. In 'project', rewrite the 'description' field for each project to emphasize relevant technologies from the JD. The array must contain exactly the same number of items, in the exact same order.
+5. You MUST return ONLY a valid JSON object matching this structure:
+{
+  "professional_summary": "rewritten summary...",
+  "skills": ["skill1", "skill2", ...],
+  "experience": [
+    { "company": "original company name", "position": "original position", "description": "rewritten description..." }
+  ],
+  "project": [
+    { "name": "original project name", "description": "rewritten description..." }
+  ]
+}
+
+DATA:
+Job Description:
+${jobDescription}
+
+Current Resume Data:
+- Professional Summary: ${resume.professional_summary || ""}
+- Skills: ${JSON.stringify(resume.skills || [])}
+- Experience: ${JSON.stringify((resume.experience || []).map(exp => ({ company: exp.company, position: exp.position, description: exp.description })))}
+- Projects: ${JSON.stringify((resume.project || []).map(proj => ({ name: proj.name, description: proj.description })))}`;
+
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL || "llama3-70b-8192",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    if (!response?.choices?.[0]) {
+      throw new Error("Invalid AI response");
+    }
+
+    const cleanedData = response.choices[0].message.content
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+
+    let parseData;
+    try {
+      parseData = JSON.parse(cleanedData);
+    } catch (parseError) {
+      throw new Error("Failed to parse tailored data as JSON: " + parseError.message);
+    }
+
+    return res.status(200).json({
+      original: {
+        professional_summary: resume.professional_summary || "",
+        skills: resume.skills || [],
+        experience: (resume.experience || []).map(exp => ({ company: exp.company, position: exp.position, description: exp.description })),
+        project: (resume.project || []).map(proj => ({ name: proj.name, description: proj.description }))
+      },
+      tailored: {
+        professional_summary: parseData.professional_summary || "",
+        skills: Array.isArray(parseData.skills) ? parseData.skills.map(String) : [],
+        experience: Array.isArray(parseData.experience) ? parseData.experience.map(exp => ({
+          company: exp.company || "",
+          position: exp.position || "",
+          description: exp.description || ""
+        })) : [],
+        project: Array.isArray(parseData.project) ? parseData.project.map(proj => ({
+          name: proj.name || "",
+          description: proj.description || ""
+        })) : []
+      }
+    });
+
+  } catch (error) {
+    return handleAIError(error, res);
+  }
+};
