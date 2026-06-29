@@ -397,6 +397,128 @@ export const deleteCoverLetter = async (req, res) => {
   return res.status(200).json({ message: "Cover letter deleted successfully." });
 };
 
+// POST /api/ai/interview-questions
+export const generateInterviewQuestions = async (req, res) => {
+  try {
+    const { resumeId, targetRole, jobDescription } = req.body;
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (!resumeId) {
+      return res.status(400).json({ message: "resumeId is required." });
+    }
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume ID." });
+    }
+
+    const resume = await Resume.findOne({ _id: resumeId, userId });
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found." });
+    }
+
+    // Build a compact resume snapshot for the prompt
+    const fullName = resume.personal_info?.full_name || "the candidate";
+    const profession = resume.personal_info?.profession || "";
+    const summary = resume.professional_summary || "";
+    const skills = (resume.skills || []).slice(0, 20).join(", ");
+    const experienceSnippet = (resume.experience || [])
+      .slice(0, 4)
+      .map((e) => `${e.position} at ${e.company}: ${(e.description || "").slice(0, 200)}`)
+      .join("\n");
+    const projectSnippet = (resume.project || [])
+      .slice(0, 3)
+      .map((p) => `${p.name}: ${(p.description || "").slice(0, 150)}`)
+      .join("\n");
+    const education = (resume.education || [])
+      .slice(0, 2)
+      .map((e) => `${e.degree} in ${e.field || "?"} from ${e.institution}`)
+      .join(", ");
+
+    const roleContext = targetRole?.trim()
+      ? `Target Role: ${targetRole.trim()}`
+      : profession
+        ? `Current/Target Profession: ${profession}`
+        : "";
+
+    const jdContext =
+      jobDescription?.trim()
+        ? `\nJob Description Snippet:\n${jobDescription.trim().slice(0, 500)}`
+        : "";
+
+    const systemPrompt = `You are an expert technical interviewer and career coach.
+Generate exactly 10 interview questions with suggested answers tailored to the candidate's resume.
+Respond with ONLY valid JSON — no markdown, no explanation outside the JSON.`;
+
+    const userPrompt = `Generate 10 interview questions with suggested answers for:
+
+Candidate: ${fullName}
+${roleContext}${jdContext}
+
+Resume snapshot:
+- Professional Summary: ${summary || "N/A"}
+- Skills: ${skills || "N/A"}
+- Experience:
+${experienceSnippet || "N/A"}
+- Projects:
+${projectSnippet || "N/A"}
+- Education: ${education || "N/A"}
+
+Instructions:
+1. Mix the 10 questions across 4 categories: "Behavioural", "Technical", "Situational", "Role-Specific"
+2. Each suggested answer must reference specific details from the candidate's resume (company names, skills, projects, etc.)
+3. Keep each suggested answer to 3-5 sentences — concise but substantive
+4. Return ONLY this JSON structure:
+{
+  "questions": [
+    {
+      "category": "Behavioural" | "Technical" | "Situational" | "Role-Specific",
+      "question": "...",
+      "suggestedAnswer": "..."
+    }
+  ]
+}`;
+
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL || "llama3-70b-8192",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    if (!response?.choices?.[0]) {
+      throw new Error("Invalid AI response");
+    }
+
+    const raw = response.choices[0].message.content
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (parseError) {
+      throw new Error("Failed to parse AI response as JSON: " + parseError.message);
+    }
+
+    const questions = Array.isArray(parsed.questions)
+      ? parsed.questions.slice(0, 10).map((q) => ({
+          category: q.category || "General",
+          question: q.question || "",
+          suggestedAnswer: q.suggestedAnswer || "",
+        }))
+      : [];
+
+    return res.status(200).json({ questions });
+  } catch (error) {
+    return handleAIError(error, res);
+  }
+};
+
 // POST /api/ai/tailor-resume
 export const tailorResume = async (req, res) => {
   try {

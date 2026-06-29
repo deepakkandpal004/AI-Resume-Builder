@@ -16,6 +16,7 @@ import {
   FolderIcon,
   GraduationCap,
   Mail,
+  MessageSquare,
   Palette,
   Settings2,
   Share2Icon,
@@ -24,9 +25,11 @@ import {
 } from "lucide-react";
 import { resetAts } from "../app/features/atsSlice";
 import { resetCoverLetter } from "../app/features/coverLetterSlice";
+import { resetInterview } from "../app/features/interviewSlice";
 import JD_Input_Panel from "../components/ats/JD_Input_Panel";
 import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
 import CoverLetterPanel from "../components/coverLetter/CoverLetterPanel";
+import InterviewPrepPanel from "../components/interviewPrep/InterviewPrepPanel";
 
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
@@ -163,6 +166,7 @@ const ResumeBuilder = () => {
     { id: "styles", name: "Styles", icon: Palette },
     { id: "ats", name: "ATS Score", icon: BarChart2 },
     { id: "cover-letter", name: "Cover Letter", icon: Mail },
+    { id: "interview", name: "Interview Prep", icon: MessageSquare },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -170,6 +174,9 @@ const ResumeBuilder = () => {
   useEffect(() => {
     if (token) {
       loadExistingResume();
+      dispatch(resetAts());
+      dispatch(resetCoverLetter());
+      dispatch(resetInterview());
     }
   }, [resumeId, token]);
 
@@ -420,6 +427,10 @@ const ResumeBuilder = () => {
 
                 {activeSection.id === "cover-letter" && (
                   <CoverLetterPanel resumeId={resumeId} resumeData={resumeData} />
+                )}
+
+                {activeSection.id === "interview" && (
+                  <InterviewPrepPanel resumeId={resumeId} />
                 )}
               </div>
               <button
