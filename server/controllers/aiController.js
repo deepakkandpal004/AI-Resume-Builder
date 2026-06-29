@@ -2,12 +2,15 @@ import mongoose from "mongoose";
 import getAI from "../config/ai.js";
 import Resume from "../models/resume.js";
 import CoverLetter from "../models/CoverLetter.js";
+import InterviewQuestion from "../models/InterviewQuestion.js";
 import User from "../models/User.js";
 
 // Free-tier daily cover-letter quota (kept in sync with coverLetterRateLimiter).
 const COVER_LETTER_DAILY_LIMIT = 3;
 // Max cover letters retained per resume; oldest is pruned beyond this.
 const COVER_LETTER_PER_RESUME_CAP = 10;
+// Max interview question sets retained per resume
+const INTERVIEW_PER_RESUME_CAP = 5;
 
 // Translate raw API errors into clean user-facing messages
 const handleAIError = (error, res) => {
@@ -513,10 +516,54 @@ Instructions:
         }))
       : [];
 
+    // Persist — prune oldest set if at cap
+    try {
+      const existingCount = await InterviewQuestion.countDocuments({ resumeId });
+      if (existingCount >= INTERVIEW_PER_RESUME_CAP) {
+        const oldest = await InterviewQuestion.findOne({ resumeId }).sort({ createdAt: 1 });
+        if (oldest) await InterviewQuestion.deleteOne({ _id: oldest._id });
+      }
+      await InterviewQuestion.create({
+        userId,
+        resumeId,
+        targetRole: targetRole?.trim() || "",
+        jobDescription: jobDescription?.trim().slice(0, 500) || "",
+        questions,
+      });
+    } catch {
+      // Non-fatal — still return questions even if save fails
+    }
+
     return res.status(200).json({ questions });
   } catch (error) {
     return handleAIError(error, res);
   }
+};
+
+// GET /api/ai/interview-questions/:resumeId
+export const getInterviewHistory = async (req, res) => {
+  const { resumeId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+    return res.status(400).json({ message: "Invalid resume ID." });
+  }
+
+  const resume = await Resume.findById(resumeId);
+  if (!resume) return res.status(404).json({ message: "Resume not found." });
+  if (resume.userId.toString() !== req.userId) return res.status(403).json({ message: "Access denied." });
+
+  const sets = await InterviewQuestion.find({ resumeId })
+    .sort({ createdAt: -1 })
+    .limit(INTERVIEW_PER_RESUME_CAP);
+
+  return res.status(200).json({
+    sets: sets.map((s) => ({
+      setId: s._id,
+      targetRole: s.targetRole,
+      questions: s.questions,
+      createdAt: s.createdAt,
+    })),
+  });
 };
 
 // POST /api/ai/tailor-resume

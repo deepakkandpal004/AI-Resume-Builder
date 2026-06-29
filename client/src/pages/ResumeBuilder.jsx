@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
@@ -42,6 +42,7 @@ import ProjectForm from "../components/ProjectForm";
 import SkillsForm from "../components/SkillsForm";
 import SectionManager from "../components/SectionManager";
 import StylesPanel from "../components/StylesPanel";
+import { getCompleteness, getCompletenessColor } from "../utils/completeness";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
@@ -71,6 +72,7 @@ const ResumeBuilder = () => {
       headingItalic: false,
       contentBold: false,
       contentItalic: false,
+      photoEffect: "none",
     },
   });
 
@@ -99,6 +101,7 @@ const ResumeBuilder = () => {
             headingItalic: false,
             contentBold: false,
             contentItalic: false,
+            photoEffect: "none",
             ...data.resume.style_options,
           },
         };
@@ -109,12 +112,15 @@ const ResumeBuilder = () => {
       toast.error(error?.response?.data?.message || error.message);
     } finally {
       setIsLoading(false);
+      isFirstLoad.current = false;
     }
   };
 
-  const saveResume = async () => {
+  const performSave = async (isAutoSave = false) => {
     try {
-      setIsLoading(true);
+      if (!isAutoSave) setIsLoading(true);
+      else setAutoSaveStatus("saving");
+
       const formData = new FormData();
       formData.append("resumeId", resumeId);
 
@@ -122,38 +128,88 @@ const ResumeBuilder = () => {
       if (resumeDataToSend.personal_info) {
         resumeDataToSend = {
           ...resumeDataToSend,
-          personal_info: { ...resumeDataToSend.personal_info }
+          personal_info: { ...resumeDataToSend.personal_info },
         };
 
-        if (typeof resumeDataToSend.personal_info.image === 'object' && resumeDataToSend.personal_info.image !== null) {
-          formData.append("image", resumeDataToSend.personal_info.image);
+        const img = resumeDataToSend.personal_info.image;
+
+        if (img instanceof File) {
+          formData.append("image", img);
+          formData.append("removeBackground", removeBackground);
           resumeDataToSend.personal_info.image = "";
+        } else if (typeof img === "string" && img.includes("imagekit.io")) {
+          let cleanUrl = img
+            .replace(/[,&?]e-bgremove/g, "")
+            .replace(/tr=,/g, "tr=")
+            .replace(/[?&]tr=$/g, "");
+
+          if (removeBackground) {
+            if (cleanUrl.includes("tr=")) {
+              cleanUrl = cleanUrl.replace(/tr=([^&]*)/, "tr=$1,e-bgremove");
+            } else {
+              cleanUrl = cleanUrl.includes("?")
+                ? `${cleanUrl}&tr=e-bgremove`
+                : `${cleanUrl}?tr=e-bgremove`;
+            }
+          }
+          resumeDataToSend.personal_info.image = cleanUrl;
         }
       }
 
       resumeDataToSend.custom_sections = resumeDataToSend.custom_sections.filter(
-        s => s.heading.trim() !== "" || s.content.trim() !== ""
+        (s) => s.heading.trim() !== "" || s.content.trim() !== ""
       );
 
       formData.append("resumeData", JSON.stringify(resumeDataToSend));
-      formData.append("removeBackground", removeBackground);
-      
-      await api.put("/api/resumes/update", formData, {
-        headers: { 
+
+      const { data } = await api.put("/api/resumes/update", formData, {
+        headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data" 
+          "Content-Type": "multipart/form-data",
         },
       });
-      toast.success("Resume saved successfully");
+
+      if (data.resume?.personal_info?.image) {
+        setResumeData((prev) => ({
+          ...prev,
+          personal_info: {
+            ...prev.personal_info,
+            image: data.resume.personal_info.image,
+          },
+        }));
+      }
+
+      if (!isAutoSave) toast.success("Resume saved successfully");
+      else setAutoSaveStatus("saved");
     } catch (error) {
-      toast.error(error?.response?.data?.message || error.message);
+      if (!isAutoSave) toast.error(error?.response?.data?.message || error.message);
+      else setAutoSaveStatus("idle");
     } finally {
-      setIsLoading(false);
+      if (!isAutoSave) setIsLoading(false);
     }
   };
 
+  const saveResume = () => performSave(false);
+
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [removeBackground, setRemoveBackground] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // "idle" | "saving" | "saved"
+  const autoSaveTimerRef = useRef(null);
+  const isFirstLoad = useRef(true);
+
+  // Auto-save: fires 2.5s after the last change, skips the initial load
+  useEffect(() => {
+    if (isFirstLoad.current) return;
+    if (!resumeData._id) return;
+
+    setAutoSaveStatus("idle");
+    clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      performSave(true);
+    }, 2500);
+
+    return () => clearTimeout(autoSaveTimerRef.current);
+  }, [resumeData]);
 
   const sections = [
     { id: "personal", name: "Personal Info", icon: User },
@@ -213,9 +269,30 @@ const ResumeBuilder = () => {
     }
   }
 
-  const downloadResume = () => {
-    window.print();
-  }
+  const downloadResume = async () => {
+    const element = document.getElementById("resume-preview");
+    if (!element) { window.print(); return; }
+
+    try {
+      // Dynamically import to keep initial bundle size small
+      const html2pdf = (await import("html2pdf.js")).default;
+      const filename = (resumeData.title || "resume").replace(/\s+/g, "_").toLowerCase() + ".pdf";
+
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+        })
+        .from(element)
+        .save();
+    } catch {
+      // Fallback to print if html2pdf fails
+      window.print();
+    }
+  };
   return (
     <div>
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -328,6 +405,7 @@ const ResumeBuilder = () => {
                     }}
                     removeBackground={removeBackground}
                     setRemoveBackground={setRemoveBackground}
+                    resumeId={resumeId}
                   />
                 )}
                 {activeSection.id === "summary" && (
@@ -433,13 +511,45 @@ const ResumeBuilder = () => {
                   <InterviewPrepPanel resumeId={resumeId} />
                 )}
               </div>
+              {/* ── Completeness score ────────────────────────────── */}
+              {(() => {
+                const { score, missing } = getCompleteness(resumeData);
+                const { bar, text } = getCompletenessColor(score);
+                return (
+                  <div className="mt-6 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-body">Resume completeness</span>
+                      <span className={`font-semibold tabular-nums ${text}`}>{score}%</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-line overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${bar}`}
+                        style={{ width: `${score}%` }}
+                      />
+                    </div>
+                    {missing.length > 0 && score < 100 && (
+                      <p className="text-[11px] text-muted">
+                        Add: {missing.slice(0, 3).join(", ")}{missing.length > 3 ? ` +${missing.length - 3} more` : ""}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+
               <button
                 onClick={saveResume}
                 disabled={isLoading}
-                className="btn-brand mt-6 px-6 py-2 text-sm disabled:opacity-60"
+                className="btn-brand mt-4 px-6 py-2 text-sm disabled:opacity-60"
               >
                 {isLoading ? "Saving..." : "Save Changes"}
               </button>
+              {/* Auto-save status indicator */}
+              {autoSaveStatus === "saving" && (
+                <p className="mt-2 text-xs text-muted animate-pulse">Auto-saving…</p>
+              )}
+              {autoSaveStatus === "saved" && (
+                <p className="mt-2 text-xs text-teal-600 dark:text-teal-400">✓ Auto-saved</p>
+              )}
             </div>
           </div>
 

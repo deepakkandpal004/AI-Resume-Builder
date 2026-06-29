@@ -54,7 +54,25 @@ const Preview = () => {
             <Logo className="h-8 w-auto text-ink" />
           </Link>
           <button
-            onClick={() => window.print()}
+            onClick={async () => {
+              const element = document.getElementById("resume-preview");
+              if (!element) { window.print(); return; }
+              try {
+                const html2pdf = (await import("html2pdf.js")).default;
+                const filename = (resumeData?.personal_info?.full_name || "resume")
+                  .replace(/\s+/g, "_").toLowerCase() + "_resume.pdf";
+                await html2pdf()
+                  .set({
+                    margin: 0,
+                    filename,
+                    image: { type: "jpeg", quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                    jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+                  })
+                  .from(element)
+                  .save();
+              } catch { window.print(); }
+            }}
             className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-700"
           >
             <DownloadIcon className="size-4" /> Download PDF

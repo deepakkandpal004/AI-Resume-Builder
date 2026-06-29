@@ -1,4 +1,5 @@
 import { Mail, Phone, MapPin } from "lucide-react";
+import { getCircleAvatarUrl, applyPhotoEffect } from "../../utils/imagekit";
 
 const MinimalImageTemplate = ({ data, accentColor }) => {
     const formatDate = (dateStr) => {
@@ -10,22 +11,37 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
         });
     };
 
+    // Build the profile photo src:
+    //  - CDN string → apply face-crop + optional photo effect via URL transforms
+    //  - local File object (pre-upload preview) → use object URL
+    const photoEffect = data.style_options?.photoEffect;
+    const getPhotoSrc = () => {
+        const img = data.personal_info?.image;
+        if (!img) return null;
+        if (typeof img === "string") {
+            const cropped = getCircleAvatarUrl(img, 280);
+            return photoEffect ? applyPhotoEffect(cropped, photoEffect) : cropped;
+        }
+        if (img instanceof File) return URL.createObjectURL(img);
+        return null;
+    };
+    const photoSrc = getPhotoSrc();
+
     return (
         <div className="max-w-5xl mx-auto bg-white text-zinc-800">
             <div className="grid grid-cols-3">
 
                 <div className="col-span-1  py-10">
-                    {/* Image */}
-                    {data.personal_info?.image && typeof data.personal_info.image === 'string' ? (
+                    {/* Profile photo — CDN URL uses ImageKit face-crop transform */}
+                    {photoSrc && (
                         <div className="mb-6">
-                            <img src={data.personal_info.image} alt="Profile" className="w-32 h-32 object-cover rounded-full mx-auto" style={{ background: accentColor+'70' }} />
+                            <img
+                                src={photoSrc}
+                                alt="Profile"
+                                className="w-32 h-32 object-cover rounded-full mx-auto"
+                                style={{ background: accentColor + "70" }}
+                            />
                         </div>
-                    ) : (
-                        data.personal_info?.image && typeof data.personal_info.image === 'object' ? (
-                            <div className="mb-6">
-                                <img src={URL.createObjectURL(data.personal_info.image)} alt="Profile" className="w-32 h-32 object-cover rounded-full mx-auto" />
-                            </div>
-                        ) : null
                     )}
                 </div>
 

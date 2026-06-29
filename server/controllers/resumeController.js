@@ -1,4 +1,3 @@
-import { stringify } from "querystring";
 import getImageKit from "../config/imageKit.js";
 import mongoose from "mongoose";
 import Resume from "../models/resume.js";
@@ -106,56 +105,46 @@ export const updateResume = async (req, res) => {
       let data = payload;
       for (let i = 0; i < 2; i++) {
         if (typeof data === "string") {
-          try {
-            data = JSON.parse(data);
-          } catch {
-            break;
-          }
+          try { data = JSON.parse(data); } catch { break; }
         }
       }
-      if (!data || typeof data !== "object") {
-        throw new Error("Invalid resumeData payload");
-      }
+      if (!data || typeof data !== "object") throw new Error("Invalid resumeData payload");
       return data;
     };
 
     let resumeDataCopy = parsePayload(resumeData);
-    if (!resumeDataCopy.personal_info) {
-      resumeDataCopy.personal_info = {};
-    }
-    // Preserve existing image if client sends empty/missing image
+    if (!resumeDataCopy.personal_info) resumeDataCopy.personal_info = {};
+
+    // Preserve existing image if client sends empty/missing image field
     if (!resumeDataCopy.personal_info.image || resumeDataCopy.personal_info.image === "") {
       resumeDataCopy.personal_info.image = existingResume?.personal_info?.image || "";
     }
 
-    if (image) {
-      const imageBufferData = fs.createReadStream(image.path);
-      const isRemoveBackground = removeBackground === "true" || removeBackground === true;
+    const isRemoveBackground = removeBackground === "true" || removeBackground === true;
 
+    // ── New file uploaded (fallback path when direct upload failed) ──
+    // bg-removal for CDN images is now handled client-side via the
+    // e-bgremove URL transform — no re-upload needed.
+    if (image) {
       const uploadOptions = {
-        file: imageBufferData,
-        fileName: "resume.png",
+        file: fs.createReadStream(image.path),
+        fileName: `${userId}_${resumeId}.jpg`,
         folder: "user-resumes",
       };
       if (isRemoveBackground) {
-        uploadOptions.extensions = [
-          { name: "remove-bg", options: { add_shadow: false } }
-        ];
+        uploadOptions.extensions = [{ name: "remove-bg", options: { add_shadow: false } }];
       }
-      let uploadFailed = false;
       try {
         const response = await getImageKit().files.upload(uploadOptions);
         const endpoint = process.env.IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/deepakkandpal";
-        const basePath = response?.filePath
-          ? `${endpoint}/${response.filePath}`
-          : response?.url || `${endpoint}/${response?.filePath || ""}`;
-        const tr = `tr=c-maintain_ratio,fo-face,w-300,h-300${isRemoveBackground ? ",e-bgremove" : ""}`;
-        const imageUrl = basePath.includes("?") ? `${basePath}&${tr}` : `${basePath}?${tr}`;
-        resumeDataCopy.personal_info.image = imageUrl;
-      } catch (e) {
-        uploadFailed = true;
-        // Keep existing image on failure
+        const filePath = response?.filePath || "";
+        const baseUrl = filePath ? `${endpoint}/${filePath}` : response?.url || "";
+        const tr = "tr=c-maintain_ratio,fo-face,w-300,h-300";
+        resumeDataCopy.personal_info.image = baseUrl.includes("?") ? `${baseUrl}&${tr}` : `${baseUrl}?${tr}`;
+      } catch {
         resumeDataCopy.personal_info.image = existingResume?.personal_info?.image || resumeDataCopy.personal_info.image || "";
+      } finally {
+        fs.unlink(image.path, () => {});
       }
     }
 
