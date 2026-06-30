@@ -23,15 +23,18 @@ import {
   Settings2,
   Share2Icon,
   Sparkles,
+  Target,
   User,
 } from "lucide-react";
 import { resetAts } from "../app/features/atsSlice";
 import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import { resetInterview } from "../app/features/interviewSlice";
+import { resetTailor } from "../app/features/tailorSlice";
 import JD_Input_Panel from "../components/ats/JD_Input_Panel";
 import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
 import CoverLetterPanel from "../components/coverLetter/CoverLetterPanel";
 import InterviewPrepPanel from "../components/interviewPrep/InterviewPrepPanel";
+import TailorPanel from "../components/tailor/TailorPanel";
 
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
@@ -231,6 +234,7 @@ const ResumeBuilder = () => {
     { id: "sections",      name: "Sections",         icon: Settings2    },
     { id: "styles",        name: "Styles",           icon: Palette      },
     { id: "ats",           name: "ATS Score",        icon: BarChart2    },
+    { id: "tailor",        name: "Tailor to JD",     icon: Target       },
     { id: "cover-letter",  name: "Cover Letter",     icon: Mail         },
     { id: "interview",     name: "Interview Prep",   icon: MessageSquare},
   ];
@@ -243,6 +247,7 @@ const ResumeBuilder = () => {
       dispatch(resetAts());
       dispatch(resetCoverLetter());
       dispatch(resetInterview());
+      dispatch(resetTailor());
     }
   }, [resumeId, token]);
 
@@ -537,6 +542,48 @@ const ResumeBuilder = () => {
 
                 {activeSection.id === "cover-letter" && (
                   <CoverLetterPanel resumeId={resumeId} resumeData={resumeData} />
+                )}
+
+                {activeSection.id === "tailor" && (
+                  <TailorPanel
+                    resumeId={resumeId}
+                    onApplyTailored={(patch) => {
+                      setResumeData((prev) => {
+                        const updated = { ...prev };
+
+                        if (patch.professional_summary) {
+                          updated.professional_summary = patch.professional_summary;
+                        }
+                        if (patch.skills) {
+                          updated.skills = patch.skills;
+                        }
+
+                        // Merge tailored experience descriptions into existing entries
+                        if (patch.experience_descriptions && updated.experience) {
+                          updated.experience = updated.experience.map((exp, i) => {
+                            const tailored = patch.experience_descriptions[i];
+                            if (tailored?.description) {
+                              return { ...exp, description: tailored.description };
+                            }
+                            return exp;
+                          });
+                        }
+
+                        // Merge tailored project descriptions
+                        if (patch.project_descriptions && updated.project) {
+                          updated.project = updated.project.map((proj, i) => {
+                            const tailored = patch.project_descriptions[i];
+                            if (tailored?.description) {
+                              return { ...proj, description: tailored.description };
+                            }
+                            return proj;
+                          });
+                        }
+
+                        return updated;
+                      });
+                    }}
+                  />
                 )}
 
                 {activeSection.id === "interview" && (
