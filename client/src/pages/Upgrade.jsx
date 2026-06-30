@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Check, X, Zap, Sparkles, Lock, Tag,
-  BarChart2, Mail, MessageSquare, FileText, Infinity,
+  ArrowLeft, Check, X, Zap, Sparkles, Lock,
+  BarChart2, Mail, MessageSquare, FileText,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../configs/api";
-import { setPremium } from "../app/features/authSlice";
+import { login } from "../app/features/authSlice";
 
 // ── Plan data ─────────────────────────────────────────────────────────────
 
@@ -41,8 +40,8 @@ const PLANS = [
     id: "premium",
     name: "Premium",
     price: "₹299",
-    period: "per month",
-    description: "No limits. Full power of the AI.",
+    period: "one-time",
+    description: "Lifetime access. Full power of the AI.",
     cta: "Upgrade now",
     ctaDisabled: false,
     highlight: true,
@@ -71,51 +70,131 @@ const COMPARISON = [
 
 // ─────────────────────────────────────────────────────────────────────────
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const Upgrade = () => {
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
   const { user, token } = useSelector((state) => state.auth);
   const isPremium  = user?.subscriptionTier === "premium";
 
-  const [promoCode, setPromoCode]   = useState("");
-  const [showPromo, setShowPromo]   = useState(false);
   const [loading, setLoading]       = useState(false);
 
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      const { data } = await api.post(
-        "/api/users/upgrade",
-        { promoCode: promoCode.trim() || undefined },
+      // Step 1: Load Razorpay standard script overlay
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        toast.error("Failed to load payment gateway. Please check your internet connection.");
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Request order ID creation from the backend
+      const { data: orderData } = await api.post(
+        "/api/payments/create-order",
+        {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      dispatch(setPremium());
-      toast.success(data.message);
-      navigate("/app");
+
+      // Step 3: Open Razorpay Standard Checkout overlay modal
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Resume Builder SaaS",
+        description: "Premium Plan Lifetime Access",
+        order_id: orderData.orderId,
+        prefill: {
+          name: orderData.user.name,
+          email: orderData.user.email,
+        },
+        theme: {
+          color: "#4F46E5", // Brand Indigo Color
+        },
+        handler: async function (response) {
+          // Step 4: Verify payment server-side
+          setLoading(true);
+          try {
+            const { data: verifyData } = await api.post(
+              "/api/payments/verify-payment",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (verifyData.success) {
+              toast.success(verifyData.message || "Upgrade successful!");
+              // Update user state in auth reducer
+              dispatch(
+                login({
+                  user: { ...user, subscriptionTier: "premium" },
+                  token,
+                })
+              );
+              navigate("/app");
+            } else {
+              toast.error(verifyData.message || "Payment verification failed.");
+            }
+          } catch (err) {
+            toast.error(err?.response?.data?.message || "Failed to verify transaction.");
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast.error("Payment checkout was closed.");
+            setLoading(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Upgrade failed. Please try again.");
-    } finally {
+      toast.error(error?.response?.data?.message || "Failed to initiate payment gateway.");
       setLoading(false);
     }
   };
 
-  // Already premium — show a thank-you state
+  // Already premium — show nice status and links back to builder/dashboard
   if (isPremium) {
     return (
-      <div className="mx-auto max-w-md px-4 py-20 text-center">
-        <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 mb-6">
+      <div className="mx-auto max-w-md px-4 py-20 text-center space-y-6">
+        <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 mb-2 shadow-lg shadow-brand-500/20">
           <Sparkles className="size-8 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-ink">You're on Premium</h1>
-        <p className="mt-2 text-sm text-muted">
-          You have unlimited access to all AI features. Enjoy!
+        <h1 className="text-2xl font-bold text-ink">You are on Premium</h1>
+        <p className="text-sm text-muted leading-relaxed">
+          Thank you for your upgrade! You have active **Lifetime Access** with unlimited AI tools, resume downloads, templates, and resume analyzers.
         </p>
-        <Link
-          to="/app"
-          className="btn-brand mt-8 inline-flex items-center gap-2"
-        >
-          <ArrowLeft className="size-4" /> Back to dashboard
-        </Link>
+        
+        <div className="flex flex-col gap-3 pt-4">
+          <Link
+            to="/app"
+            className="btn-brand flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold shadow-md cursor-pointer"
+          >
+            Go to Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
@@ -158,7 +237,7 @@ const Upgrade = () => {
                 {/* Gradient background for premium card */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-brand-50 to-accent-50 dark:from-brand-950/40 dark:to-accent-950/40 -z-10" />
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-600 to-accent-600 px-4 py-1 text-xs font-bold text-white shadow-sm">
-                  Most popular
+                  Lifetime Value
                 </span>
               </>
             )}
@@ -185,53 +264,31 @@ const Upgrade = () => {
 
             {plan.highlight ? (
               <div className="space-y-3">
-                {/* Promo code toggle */}
-                <button
-                  type="button"
-                  onClick={() => setShowPromo((p) => !p)}
-                  className="flex items-center gap-2 text-xs text-brand-600 hover:underline"
-                >
-                  <Tag className="size-3.5" />
-                  {showPromo ? "Hide promo code" : "Have a promo code?"}
-                </button>
-
-                {showPromo && (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                      placeholder="Enter code (e.g. LAUNCH2024)"
-                      className="flex-1 rounded-lg border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 uppercase tracking-wider"
-                    />
-                  </div>
-                )}
-
                 <button
                   onClick={handleUpgrade}
                   disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 py-3 text-sm font-semibold text-white shadow-md transition-all hover:from-brand-500 hover:to-accent-500 active:scale-[0.98] disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:from-brand-500 hover:to-accent-500 active:scale-[0.98] disabled:opacity-60 cursor-pointer"
                 >
                   {loading ? (
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 justify-center">
                       <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Processing…
+                      Contacting Razorpay…
                     </span>
                   ) : (
                     <>
-                      <Zap className="size-4" />
+                      <Zap className="size-4 animate-bounce" />
                       {plan.cta}
                     </>
                   )}
                 </button>
                 <p className="text-center text-[11px] text-muted flex items-center justify-center gap-1">
-                  <Lock className="size-3" /> Secure upgrade · Cancel anytime
+                  <Lock className="size-3" /> Secure upgrade · Instant lifetime unlock
                 </p>
               </div>
             ) : (
               <button
                 disabled
-                className="w-full rounded-xl border border-line py-3 text-sm font-medium text-muted cursor-default"
+                className="w-full rounded-xl border border-line py-3.5 text-sm font-medium text-muted cursor-default"
               >
                 {plan.cta}
               </button>
@@ -275,8 +332,7 @@ const Upgrade = () => {
 
       {/* Footer note */}
       <p className="mt-8 text-center text-xs text-muted">
-        Prices shown in INR. Premium is a manual activation — payment integration coming soon.
-        Use a promo code if you have one.
+        Prices shown in INR. Payments are secured and processed via Razorpay. Support is available for all local payment methods including UPI.
       </p>
     </div>
   );

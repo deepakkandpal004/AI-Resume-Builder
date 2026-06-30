@@ -6,6 +6,7 @@ import userRouter from "./routes/userRoute.js";
 import resumeRouter from "./routes/resumeRoute.js";
 import aiRouter from "./routes/aiRoutes.js";
 import imagekitRouter from "./routes/imagekitRoute.js";
+import paymentRouter from "./routes/paymentRoute.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ app.use("/api/users", userRouter);
 app.use('/api/resumes', resumeRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/imagekit', imagekitRouter);
+app.use('/api/payments', paymentRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
