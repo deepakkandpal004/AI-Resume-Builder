@@ -70,13 +70,6 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [loadingResumes, setLoadingResumes] = useState(true);
-  const [allResumes, setAllResumes]         = useState([]);
-  const [showCreateResume, setShowCreate]   = useState(false);
-  const [showUploadResume, setShowUpload]   = useState(false);
-  const [title, setTitle]                   = useState("");
-  const [resume, setResume]                 = useState(null);
-  const [editResumeId, setEditResumeId]     = useState("");
-  const [isLoading, setIsLoading]           = useState(false);
   const navigate = useNavigate();
 
   // ── API calls ─────────────────────────────────────────────────────────────
