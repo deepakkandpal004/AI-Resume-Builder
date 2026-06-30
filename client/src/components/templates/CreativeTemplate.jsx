@@ -27,7 +27,7 @@ const CreativeTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
   // Split sections: skills & education go to sidebar; rest go to main column
   const sidebarBuiltIn = new Set(["skills", "education"]);
-  const mainBuiltIn = new Set(["summary", "experience", "projects"]);
+  const mainBuiltIn = new Set(["summary", "experience", "projects", "certifications", "languages"]);
   const customSectionIds = (data.custom_sections || []).map((s) => s.id);
 
   const hStyle = getHeadingStyle(styleOptions);
@@ -208,6 +208,57 @@ const CreativeTemplate = ({ data, accentColor, styleOptions = {} }) => {
       </section>
     ) : null;
 
+  const renderCertifications = () =>
+    data.certifications?.length > 0 ? (
+      <section style={mainSectionStyle}>
+        <h2 style={mainHeadingStyle}>{heading("certifications")}</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.9em" }}>
+          {data.certifications.map((cert, i) => (
+            <div key={i}>
+              <div style={{ fontWeight: 600, color: "#111827" }}>{cert.name}</div>
+              {cert.issuer && (
+                <div style={{ color: accent, fontWeight: 500, fontSize: "0.9em" }}>{cert.issuer}</div>
+              )}
+              <div style={{ display: "flex", gap: "1em", fontSize: "0.78em", color: "#9ca3af", marginTop: "0.1em" }}>
+                {(cert.issue_date || cert.expiry_date) && (
+                  <span>{cert.issue_date}{cert.expiry_date ? ` – ${cert.expiry_date}` : ""}</span>
+                )}
+                {cert.credential_url && (
+                  <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ color: accent }}>
+                    View credential
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderLanguages = () =>
+    data.languages?.length > 0 ? (
+      <section style={mainSectionStyle}>
+        <h2 style={mainHeadingStyle}>{heading("languages")}</h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5em" }}>
+          {data.languages.map((lang, i) => (
+            <span
+              key={i}
+              style={{
+                padding: "0.2em 0.7em",
+                fontSize: "0.85em",
+                color: "#374151",
+                borderRadius: "0.2em",
+                backgroundColor: "#f3f4f6",
+                ...cStyle,
+              }}
+            >
+              {lang.name}{lang.proficiency ? ` · ${lang.proficiency}` : ""}
+            </span>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   const renderCustomSection = (id) => {
     const section = (data.custom_sections || []).find((s) => s.id === id);
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
@@ -230,6 +281,8 @@ const CreativeTemplate = ({ data, accentColor, styleOptions = {} }) => {
     summary: renderSummary,
     experience: renderExperience,
     projects: renderProjects,
+    certifications: renderCertifications,
+    languages: renderLanguages,
   };
 
   return (

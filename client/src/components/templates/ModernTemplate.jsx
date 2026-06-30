@@ -22,7 +22,7 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const hasSkills = (data.skills?.length ?? 0) > 0;
 
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
-  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
+  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills", "certifications", "languages"]);
 
   const hStyle = getHeadingStyle(styleOptions);
   const cStyle = getContentStyle(styleOptions);
@@ -181,6 +181,55 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
     );
   };
 
+  const renderCertifications = () =>
+    data.certifications?.length > 0 ? (
+      <section key="certifications" style={sectionStyle}>
+        <h2 style={sectionHeadingStyle}>{heading("certifications")}</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75em" }}>
+          {data.certifications.map((cert, i) => (
+            <div key={i} style={{ paddingLeft: "1em", borderLeft: `2px solid #e5e7eb` }}>
+              <div style={{ fontWeight: 500, color: "#111827" }}>{cert.name}</div>
+              {cert.issuer && <div style={{ color: accent, fontSize: "0.9em" }}>{cert.issuer}</div>}
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85em", color: "#6b7280" }}>
+                {(cert.issue_date || cert.expiry_date) && (
+                  <span>{cert.issue_date}{cert.expiry_date ? ` – ${cert.expiry_date}` : ""}</span>
+                )}
+                {cert.credential_url && (
+                  <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ color: accent }}>
+                    View
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderLanguages = () =>
+    data.languages?.length > 0 ? (
+      <section key="languages" style={sectionStyle}>
+        <h2 style={sectionHeadingStyle}>{heading("languages")}</h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4em" }}>
+          {data.languages.map((lang, i) => (
+            <span
+              key={i}
+              style={{
+                padding: "0.2em 0.75em",
+                fontSize: "0.85em",
+                color: "#374151",
+                borderRadius: "9999px",
+                backgroundColor: "#f3f4f6",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              {lang.name}{lang.proficiency ? ` · ${lang.proficiency}` : ""}
+            </span>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   const renderCustomSection = (id) => {
     const section = (data.custom_sections || []).find((s) => s.id === id);
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
@@ -273,6 +322,10 @@ const ModernTemplate = ({ data, accentColor, styleOptions = {} }) => {
             content = renderExperience();
           } else if (key === "projects") {
             content = renderProjects();
+          } else if (key === "certifications") {
+            content = renderCertifications();
+          } else if (key === "languages") {
+            content = renderLanguages();
           }
           return content ? <React.Fragment key={key}>{content}</React.Fragment> : null;
         })}

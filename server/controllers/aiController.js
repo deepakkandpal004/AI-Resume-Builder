@@ -120,6 +120,12 @@ Use this exact structure:
   ],
   "education": [
     { "institution": "name", "degree": "degree", "field": "field", "graduation_date": "YYYY-MM", "gpa": "gpa" }
+  ],
+  "certifications": [
+    { "name": "cert name", "issuer": "issuer name", "issue_date": "YYYY-MM", "expiry_date": "YYYY-MM", "credential_url": "url or empty string" }
+  ],
+  "languages": [
+    { "name": "language name", "proficiency": "Elementary|Conversational|Professional|Fluent|Native / Bilingual" }
   ]
 }`;
 
@@ -190,6 +196,8 @@ Use this exact structure:
       education: sanitizeArray(parseData.education, [
         "institution", "degree", "field", "graduation_date", "gpa",
       ]),
+      certifications: sanitizeArray(parseData.certifications, ["name", "issuer", "issue_date", "expiry_date", "credential_url"]),
+      languages: Array.isArray(parseData.languages) ? parseData.languages.map(l => ({ name: l.name || "", proficiency: l.proficiency || "Conversational" })) : [],
     };
 
     const newResume = await Resume.create(resumeData);

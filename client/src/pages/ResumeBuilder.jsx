@@ -191,7 +191,7 @@ const ResumeBuilder = () => {
       else setAutoSaveStatus("saved");
     } catch (error) {
       if (!isAutoSave) toast.error(error?.response?.data?.message || error.message);
-      else setAutoSaveStatus("idle");
+      else setAutoSaveStatus("error");
     } finally {
       if (!isAutoSave) setIsLoading(false);
     }
@@ -201,7 +201,7 @@ const ResumeBuilder = () => {
 
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [removeBackground, setRemoveBackground] = useState(false);
-  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // "idle" | "saving" | "saved"
+  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // "idle" | "saving" | "saved" | "error"
   const autoSaveTimerRef = useRef(null);
   const isFirstLoad = useRef(true);
 
@@ -272,10 +272,14 @@ const ResumeBuilder = () => {
     const frontendUrl = window.location.href.split("/app")[0];
     const resumeUrl = frontendUrl + "/view/" + resumeId;
 
-    if(navigator.share){
-      navigator.share({url: resumeUrl, text: "Check out my resume!"});
+    if (navigator.share) {
+      navigator.share({ url: resumeUrl, text: "Check out my resume!" });
     } else {
-      alert('share not supported on this browser');
+      navigator.clipboard.writeText(resumeUrl).then(() => {
+        toast.success("Resume link copied to clipboard!");
+      }).catch(() => {
+        toast.error("Could not copy link. Please copy manually: " + resumeUrl);
+      });
     }
   }
 
@@ -577,6 +581,9 @@ const ResumeBuilder = () => {
               )}
               {autoSaveStatus === "saved" && (
                 <p className="mt-2 text-xs text-teal-600 dark:text-teal-400">✓ Auto-saved</p>
+              )}
+              {autoSaveStatus === "error" && (
+                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">⚠ Auto-save failed — click Save to retry</p>
               )}
             </div>
           </div>
