@@ -43,8 +43,15 @@ const authSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+
+    setPremium: (state) => {
+      if (state.user) {
+        state.user = { ...state.user, subscriptionTier: "premium" };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
+    },
   },
 });
 
-export const { login, logout, setLoading } = authSlice.actions;
+export const { login, logout, setLoading, setPremium } = authSlice.actions;
 export default authSlice.reducer;

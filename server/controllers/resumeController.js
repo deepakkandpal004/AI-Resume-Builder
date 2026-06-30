@@ -93,7 +93,28 @@ export const getPublicResumeById = async (req, res) => {
 // controller for updating a resume
 // PUT: api/resumes/update
 
-export const updateResume = async (req, res) => {
+// POST: api/resumes/duplicate/:resumeId
+export const duplicateResume = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { resumeId } = req.params;
+
+    const original = await Resume.findOne({ userId, _id: resumeId }).lean();
+    if (!original) return res.status(404).json({ message: "Resume not found" });
+
+    // Strip DB-managed fields and create a fresh copy
+    const { _id, createdAt, updatedAt, __v, ...rest } = original;
+    const copy = await Resume.create({
+      ...rest,
+      title: `${original.title} (Copy)`,
+      public: false, // copies are private by default
+    });
+
+    return res.status(201).json({ message: "Resume duplicated", resume: copy });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};export const updateResume = async (req, res) => {
   try {
     const userId = req.userId;
     const { resumeId, resumeData, removeBackground } = req.body;
