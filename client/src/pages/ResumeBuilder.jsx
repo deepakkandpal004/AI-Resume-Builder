@@ -79,6 +79,7 @@ const ResumeBuilder = () => {
       contentBold: false,
       contentItalic: false,
       photoEffect: "none",
+      pageSize: "letter",
     },
   });
 
@@ -110,6 +111,7 @@ const ResumeBuilder = () => {
             contentBold: false,
             contentItalic: false,
             photoEffect: "none",
+            pageSize: "letter",
             ...data.resume.style_options,
           },
         };
@@ -287,6 +289,21 @@ const ResumeBuilder = () => {
     const element = document.getElementById("resume-preview");
     if (!element) { window.print(); return; }
 
+    const isA4 = resumeData.style_options?.pageSize === "a4";
+    const targetWidth = isA4 ? "794px" : "816px";
+
+    // Save original inline styles to restore afterwards
+    const originalWidth = element.style.width;
+    const originalMaxWidth = element.style.maxWidth;
+    const originalBoxShadow = element.style.boxShadow;
+    const originalBorder = element.style.border;
+
+    // Apply print-optimized sizing for pixel-perfect PDF rendering
+    element.style.width = targetWidth;
+    element.style.maxWidth = "none";
+    element.style.boxShadow = "none";
+    element.style.border = "none";
+
     try {
       // Dynamically import to keep initial bundle size small
       const html2pdf = (await import("html2pdf.js")).default;
@@ -297,14 +314,31 @@ const ResumeBuilder = () => {
           margin: 0,
           filename,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true,
+            logging: false 
+          },
+          jsPDF: { 
+            unit: "in", 
+            format: isA4 ? "a4" : "letter", 
+            orientation: "portrait" 
+          },
+          pagebreak: { mode: ["css", "legacy"] }
         })
         .from(element)
         .save();
-    } catch {
+    } catch (err) {
+      console.error("PDF download failed:", err);
       // Fallback to print if html2pdf fails
       window.print();
+    } finally {
+      // Restore original container layout
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+      element.style.boxShadow = originalBoxShadow;
+      element.style.border = originalBorder;
     }
   };
   return (

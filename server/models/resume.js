@@ -154,6 +154,7 @@ const ResumeSchema = new mongoose.Schema({
         contentBold:   { type: Boolean, default: false },
         contentItalic: { type: Boolean, default: false },
         photoEffect:   { type: String, default: "none" },
+        pageSize:      { type: String, default: "letter" },
     },
 }, {timestamps: true, minimize: false})
 

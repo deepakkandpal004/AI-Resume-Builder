@@ -179,6 +179,7 @@ const StylesPanel = ({ styleOptions, onChange, resumeData }) => {
   const contentBold   = styleOptions?.contentBold   ?? false;
   const contentItalic = styleOptions?.contentItalic ?? false;
   const photoEffect   = styleOptions?.photoEffect   ?? "none";
+  const pageSize      = styleOptions?.pageSize      ?? "letter";
 
   // Group fonts by category for the selector
   const categories = [...new Set(FONT_FAMILY_OPTIONS.map((f) => f.category))];
@@ -255,6 +256,30 @@ const StylesPanel = ({ styleOptions, onChange, resumeData }) => {
               onClick={() => update("lineSpacing", opt.value)}
               className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
                 lineSpacing === opt.value
+                  ? "border-brand-500 bg-brand-600 text-white"
+                  : "border-line bg-surface text-ink hover:bg-canvas"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Page Format ────────────────────────────────────────────── */}
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Page Format</h4>
+        <p className="text-xs text-muted">Optimize paper size for export & printing.</p>
+        <div className="flex gap-2">
+          {[
+            { value: "letter", label: "Letter (US)" },
+            { value: "a4", label: "A4 (International)" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => update("pageSize", opt.value)}
+              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                pageSize === opt.value
                   ? "border-brand-500 bg-brand-600 text-white"
                   : "border-line bg-surface text-ink hover:bg-canvas"
               }`}
