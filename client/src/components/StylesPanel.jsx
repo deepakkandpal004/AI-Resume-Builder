@@ -58,23 +58,27 @@ const PHOTO_EFFECT_OPTIONS = [
 // ---------------------------------------------------------------------------
 const hasContent = (resumeData, key) => {
   switch (key) {
-    case "summary":    return !!resumeData.professional_summary?.trim();
-    case "experience": return resumeData.experience?.length > 0;
-    case "education":  return resumeData.education?.length > 0;
-    case "projects":   return resumeData.project?.length > 0;
-    case "skills":     return resumeData.skills?.length > 0;
-    default:           return false;
+    case "summary":        return !!resumeData.professional_summary?.trim();
+    case "experience":     return resumeData.experience?.length > 0;
+    case "education":      return resumeData.education?.length > 0;
+    case "projects":       return resumeData.project?.length > 0;
+    case "skills":         return resumeData.skills?.length > 0;
+    case "certifications": return resumeData.certifications?.length > 0;
+    case "languages":      return resumeData.languages?.length > 0;
+    default:               return false;
   }
 };
 
 const getActiveSections = (resumeData) => {
   const sh = resumeData.section_headings || {};
   const builtIn = [
-    { key: "summary",    label: sh.summary?.trim()    || DEFAULT_SECTION_HEADINGS.summary },
-    { key: "experience", label: sh.experience?.trim() || DEFAULT_SECTION_HEADINGS.experience },
-    { key: "education",  label: sh.education?.trim()  || DEFAULT_SECTION_HEADINGS.education },
-    { key: "projects",   label: sh.projects?.trim()   || DEFAULT_SECTION_HEADINGS.projects },
-    { key: "skills",     label: sh.skills?.trim()     || DEFAULT_SECTION_HEADINGS.skills },
+    { key: "summary",        label: sh.summary?.trim()        || DEFAULT_SECTION_HEADINGS.summary },
+    { key: "experience",     label: sh.experience?.trim()     || DEFAULT_SECTION_HEADINGS.experience },
+    { key: "education",      label: sh.education?.trim()      || DEFAULT_SECTION_HEADINGS.education },
+    { key: "projects",       label: sh.projects?.trim()       || DEFAULT_SECTION_HEADINGS.projects },
+    { key: "skills",         label: sh.skills?.trim()         || DEFAULT_SECTION_HEADINGS.skills },
+    { key: "certifications", label: sh.certifications?.trim() || DEFAULT_SECTION_HEADINGS.certifications },
+    { key: "languages",      label: sh.languages?.trim()      || DEFAULT_SECTION_HEADINGS.languages },
   ].filter((s) => hasContent(resumeData, s.key));
 
   const custom = (resumeData.custom_sections || []).map((s) => ({

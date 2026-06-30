@@ -133,7 +133,7 @@ const SectionManager = ({
             <Settings2 className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-slate-600" />
             <p>No custom sections yet.</p>
             <p className="text-sm">
-              Add sections like Certifications, Volunteering, or Awards.
+              Add sections like Volunteering, Awards, or Publications.
             </p>
           </div>
         ) : (
@@ -170,7 +170,7 @@ const SectionManager = ({
                       updateSection(section.id, "heading", e.target.value)
                     }
                     className="w-full px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface text-ink"
-                    placeholder="e.g. Certifications, Volunteering, Awards"
+                    placeholder="e.g. Volunteering, Awards, Publications"
                   />
                 </div>
 
@@ -206,7 +206,7 @@ const SectionManager = ({
         <p>
           <strong>Tip:</strong> Rename built-in headings to match your industry
           (e.g., "Experience" → "Work History"). Add custom sections for
-          Certifications, Awards, or Volunteering.
+          Awards, Volunteering, or Publications.
         </p>
       </div>
     </div>

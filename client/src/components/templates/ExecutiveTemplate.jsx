@@ -41,7 +41,7 @@ const ExecutiveTemplate = ({ data, accentColor, styleOptions = {} }) => {
     data.section_headings?.[key]?.trim() || DEFAULT_SECTION_HEADINGS[key];
 
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
-  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills"]);
+  const builtInKeys = new Set(["summary", "experience", "education", "projects", "skills", "certifications", "languages"]);
   const customSectionIds = new Set((data.custom_sections || []).map((s) => s.id));
 
   const hStyle = getHeadingStyle(styleOptions);
@@ -198,6 +198,58 @@ const ExecutiveTemplate = ({ data, accentColor, styleOptions = {} }) => {
       </section>
     ) : null;
 
+  const renderCertifications = () =>
+    data.certifications?.length > 0 ? (
+      <section style={sectionStyle}>
+        <h2 style={sectionHeadingStyle}>{heading("certifications")}</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.85em" }}>
+          {data.certifications.map((cert, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div>
+                <div style={{ fontWeight: 600, color: "#111827" }}>{cert.name}</div>
+                {cert.issuer && <div style={{ color: "#6b7280", fontSize: "0.9em" }}>{cert.issuer}</div>}
+                {cert.credential_url && (
+                  <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ color: accent, fontSize: "0.82em" }}>
+                    View credential
+                  </a>
+                )}
+              </div>
+              {(cert.issue_date || cert.expiry_date) && (
+                <div style={{ fontSize: "0.82em", color: "#9ca3af", flexShrink: 0, marginLeft: "1em" }}>
+                  {cert.issue_date}{cert.expiry_date ? ` – ${cert.expiry_date}` : ""}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderLanguages = () =>
+    data.languages?.length > 0 ? (
+      <section style={sectionStyle}>
+        <h2 style={sectionHeadingStyle}>{heading("languages")}</h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4em 0.75em" }}>
+          {data.languages.map((lang, i) => (
+            <span
+              key={i}
+              style={{
+                padding: "0.25em 0.85em",
+                fontSize: "0.83em",
+                color: accent,
+                border: `1px solid ${accent}`,
+                borderRadius: "0.25em",
+                backgroundColor: `${accent}0d`,
+                ...cStyle,
+              }}
+            >
+              {lang.name}{lang.proficiency ? ` · ${lang.proficiency}` : ""}
+            </span>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   const renderCustomSection = (id) => {
     const section = (data.custom_sections || []).find((s) => s.id === id);
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
@@ -217,6 +269,8 @@ const ExecutiveTemplate = ({ data, accentColor, styleOptions = {} }) => {
     education: renderEducation,
     projects: renderProjects,
     skills: renderSkills,
+    certifications: renderCertifications,
+    languages: renderLanguages,
   };
 
   return (

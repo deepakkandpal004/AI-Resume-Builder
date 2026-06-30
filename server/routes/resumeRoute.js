@@ -6,6 +6,7 @@ import upload from "../config/multer.js";
 const resumeRouter = express.Router();
 
 resumeRouter.post('/create', protect, createResume)
+resumeRouter.put('/update', protect, upload.single('image'), updateResume)
 resumeRouter.post('/duplicate/:resumeId', protect, duplicateResume)
 resumeRouter.put('/update', upload.single('image'), protect, updateResume)
 resumeRouter.delete('/delete/:resumeId', protect, deleteResume)

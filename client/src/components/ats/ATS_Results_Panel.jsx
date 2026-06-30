@@ -36,12 +36,14 @@ function getRelativeTime(dateString) {
 // Helper: map suggestion.section → ResumeBuilder tab index
 // ---------------------------------------------------------------------------
 const SECTION_TO_TAB = {
-  summary: 0,
-  professional_summary: 0,
-  experience: 1,
-  education: 2,
-  projects: 3,
-  skills: 4,
+  summary: 1,
+  professional_summary: 1,
+  experience: 2,
+  education: 3,
+  projects: 4,
+  skills: 5,
+  certifications: 6,
+  languages: 7,
 };
 
 // ---------------------------------------------------------------------------

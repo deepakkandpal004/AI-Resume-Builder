@@ -20,6 +20,10 @@ const CHECKS = [
   { label: "Skills",          weight: 10, test: (r) => r.skills?.length >= 3 },
   // Projects — 5 pts (bonus)
   { label: "Projects",        weight: 5,  test: (r) => r.project?.length > 0 },
+  // Certifications — 5 pts (bonus)
+  { label: "Certifications",  weight: 5,  test: (r) => r.certifications?.length > 0 },
+  // Languages — 3 pts (bonus)
+  { label: "Languages",       weight: 3,  test: (r) => r.languages?.length > 0 },
 ];
 
 /**

@@ -49,7 +49,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
 
   // Split sections into sidebar keys and main keys, preserving sectionOrder
   const sidebarKeys = ["education", "skills"];
-  const mainKeys = ["summary", "experience", "projects"];
+  const mainKeys = ["summary", "experience", "projects", "certifications", "languages"];
   const customIds = (data.custom_sections || []).map((s) => s.id);
 
   // Ordered sidebar sections (education, skills in sectionOrder sequence)
@@ -178,6 +178,45 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
       </section>
     ) : null;
 
+  const renderCertifications = () =>
+    data.certifications?.length > 0 ? (
+      <section style={sectionStyle}>
+        <span style={mainHeadingStyle}>{heading("certifications").toUpperCase()}</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1em" }}>
+          {data.certifications.map((cert, i) => (
+            <div key={i}>
+              <div style={{ fontWeight: 500, color: "#18181b" }}>{cert.name}</div>
+              {cert.issuer && (
+                <div style={{ fontSize: "0.85em", color: accent }}>{cert.issuer}</div>
+              )}
+              <div style={{ fontSize: "0.8em", color: "#71717a" }}>
+                {cert.issue_date}{cert.expiry_date ? ` – ${cert.expiry_date}` : ""}
+              </div>
+              {cert.credential_url && (
+                <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8em", color: accent }}>
+                  View credential
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  const renderLanguages = () =>
+    data.languages?.length > 0 ? (
+      <section style={sectionStyle}>
+        <span style={mainHeadingStyle}>{heading("languages").toUpperCase()}</span>
+        <ul style={{ display: "flex", flexDirection: "column", gap: "0.35em", fontSize: "0.88em", listStyle: "none", padding: 0, margin: 0 }}>
+          {data.languages.map((lang, i) => (
+            <li key={i}>
+              {lang.name}{lang.proficiency ? <span style={{ color: "#71717a" }}> · {lang.proficiency}</span> : null}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : null;
+
   const renderCustomSection = (id) => {
     const section = (data.custom_sections || []).find((s) => s.id === id);
     if (!section || (!section.heading?.trim() && !section.content?.trim())) return null;
@@ -197,6 +236,8 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
     summary: renderSummary,
     experience: renderExperience,
     projects: renderProjects,
+    certifications: renderCertifications,
+    languages: renderLanguages,
   };
 
   return (

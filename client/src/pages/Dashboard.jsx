@@ -61,6 +61,15 @@ const Dashboard = () => {
   const { user, token } = useSelector((state) => state.auth);
   const accents = ["#4F46E5", "#0D9488", "#7C3AED", "#2563EB", "#E11D48", "#D97706"];
 
+  const [allResumes, setAllResumes] = useState([]);
+  const [showCreateResume, setShowCreateResume] = useState(false);
+  const [showUploadResume, setShowUploadResume] = useState(false);
+  const [title, setTitle] = useState("");
+  const [resume, setResume] = useState(null);
+  const [editResumeId, setEditResumeId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [loadingResumes, setLoadingResumes] = useState(true);
   const [allResumes, setAllResumes]         = useState([]);
   const [showCreateResume, setShowCreate]   = useState(false);
   const [showUploadResume, setShowUpload]   = useState(false);
@@ -81,6 +90,8 @@ const Dashboard = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
       setAllResumes([]);
+    } finally {
+      setLoadingResumes(false);
     }
   };
 
@@ -143,7 +154,6 @@ const Dashboard = () => {
   };
 
   const deleteResume = async (resumeId) => {
-    if (!window.confirm("Are you sure you want to delete this resume?")) return;
     try {
       await api.delete(`/api/resumes/delete/${resumeId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -152,6 +162,8 @@ const Dashboard = () => {
       toast.success("Resume deleted");
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setDeleteConfirmId(null);
     }
   };
 
@@ -224,7 +236,23 @@ const Dashboard = () => {
       </div>
 
       {/* Resume grid */}
-      {allResumes.length === 0 ? (
+      {loadingResumes ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="animate-pulse relative flex h-52 flex-col justify-between overflow-hidden rounded-2xl border border-line bg-surface p-4"
+            >
+              <span className="absolute inset-x-0 top-0 h-1.5 rounded-t-2xl bg-gray-200 dark:bg-gray-700" />
+              <div className="h-11 w-11 rounded-xl bg-gray-200 dark:bg-gray-700" />
+              <div className="space-y-2">
+                <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+                <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : allResumes.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line bg-surface py-16 text-center">
           <FileTextIcon className="mx-auto mb-3 size-10 text-muted/60" />
           <p className="text-sm text-muted">No resumes yet. Create or upload one to get started.</p>
@@ -305,7 +333,7 @@ const Dashboard = () => {
 
                   {/* Delete */}
                   <button
-                    onClick={() => deleteResume(r._id)}
+                    onClick={() => setDeleteConfirmId(r._id)}
                     className="rounded-lg bg-surface/90 p-1.5 text-muted shadow-sm transition hover:text-rose-600"
                     aria-label="Delete resume"
                     title="Delete"
@@ -384,6 +412,32 @@ const Dashboard = () => {
               {isLoading ? "Saving..." : "Update"}
             </button>
           </form>
+        </Modal>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteConfirmId && (
+        <Modal
+          title="Delete Resume"
+          onClose={() => setDeleteConfirmId(null)}
+        >
+          <p className="mb-6 text-sm text-muted">
+            Are you sure you want to delete this resume? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteConfirmId(null)}
+              className="flex-1 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:bg-canvas"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteResume(deleteConfirmId)}
+              className="flex-1 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
+            >
+              Delete
+            </button>
+          </div>
         </Modal>
       )}
     </div>

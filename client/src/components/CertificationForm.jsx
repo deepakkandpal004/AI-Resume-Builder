@@ -1,8 +1,6 @@
 import { Award, ExternalLink, Plus, Trash2 } from "lucide-react";
 import React from "react";
 
-const PROFICIENCY_LEVELS = ["", "Basic", "Conversational", "Professional", "Fluent", "Native"];
-
 const CertificationForm = ({ data, onChange }) => {
   const add = () => {
     onChange([
