@@ -24,7 +24,8 @@
     "multer": "^2.0.2",
     "nodemailer": "^6.9.14",
     "openai": "^6.9.1",
-    "openapi": "^1.0.0"
+    "openapi": "^1.0.0",
+    "razorpay": "^2.9.6"
   },
   "devDependencies": {
     "fast-check": "^3.22.0",

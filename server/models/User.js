@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema({
     },
     resetPasswordToken:   { type: String,  default: undefined },
     resetPasswordExpires: { type: Date,    default: undefined },
+    razorpayOrderId:      { type: String,  default: null },
+    razorpayPaymentId:    { type: String,  default: null },
 }, { timestamps: true });
 
 userSchema.methods.comparePassword = async function(password) {
