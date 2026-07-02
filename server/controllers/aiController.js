@@ -675,3 +675,86 @@ Current Resume Data:
     return handleAIError(error, res);
   }
 };
+
+// POST /api/ai/score-resume
+export const scoreResume = async (req, res) => {
+  try {
+    const { resumeId } = req.body;
+    if (!resumeId) {
+      return res.status(400).json({ message: "resumeId is required." });
+    }
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume ID." });
+    }
+
+    const resume = await Resume.findOne({ _id: resumeId, userId: req.userId });
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found." });
+    }
+
+    const systemPrompt = `You are an expert resume reviewer and career coach. Analyze the resume data and score it on these dimensions (each 0-100):
+
+1. **overall** — Overall resume quality and effectiveness
+2. **contentQuality** — Quality of experience descriptions: action verbs, quantifiable achievements, impact
+3. **completeness** — How well each section is filled out; missing sections reduce the score
+4. **skillsPresentation** — How skills are listed, organized, and their relevance
+5. **formatting** — Structure, readability, consistency of formatting
+
+Also provide 3-5 specific, actionable suggestions to improve the resume.
+
+Respond with ONLY valid JSON using this structure:
+{
+  "scores": { "overall": 0, "contentQuality": 0, "completeness": 0, "skillsPresentation": 0, "formatting": 0 },
+  "suggestions": [
+    { "section": "experience|skills|summary|education|formatting", "text": "specific suggestion" }
+  ]
+}`;
+
+    const userPrompt = `Score this resume data:\n${JSON.stringify({
+      professional_summary: resume.professional_summary,
+      skills: resume.skills,
+      experience: resume.experience?.map(e => ({ company: e.company, position: e.position, description: e.description, start_date: e.start_date, end_date: e.end_date })),
+      education: resume.education?.map(e => ({ institution: e.institution, degree: e.degree, field: e.field, gpa: e.gpa })),
+      projects: resume.project?.map(p => ({ name: p.name, description: p.description })),
+      certifications: resume.certifications?.map(c => ({ name: c.name, issuer: c.issuer })),
+      languages: resume.languages,
+    }, null, 2)}`;
+
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    });
+
+    if (!response?.choices?.[0]) {
+      throw new Error("Invalid AI response");
+    }
+
+    const cleanedData = response.choices[0].message.content
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+
+    let parseData;
+    try {
+      parseData = JSON.parse(cleanedData);
+    } catch (parseError) {
+      throw new Error("Failed to parse AI response: " + parseError.message);
+    }
+
+    return res.status(200).json({
+      scores: {
+        overall: Math.min(100, Math.max(0, parseData.scores?.overall ?? 0)),
+        contentQuality: Math.min(100, Math.max(0, parseData.scores?.contentQuality ?? 0)),
+        completeness: Math.min(100, Math.max(0, parseData.scores?.completeness ?? 0)),
+        skillsPresentation: Math.min(100, Math.max(0, parseData.scores?.skillsPresentation ?? 0)),
+        formatting: Math.min(100, Math.max(0, parseData.scores?.formatting ?? 0)),
+      },
+      suggestions: Array.isArray(parseData.suggestions) ? parseData.suggestions.slice(0, 5) : [],
+    });
+  } catch (error) {
+    return handleAIError(error, res);
+  }
+};

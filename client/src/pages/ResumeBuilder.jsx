@@ -24,6 +24,7 @@ import {
   Share2Icon,
   Sparkles,
   Target,
+  TrendingUp,
   User,
 } from "lucide-react";
 import { resetAts } from "../app/features/atsSlice";
@@ -31,6 +32,7 @@ import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import { resetInterview } from "../app/features/interviewSlice";
 import { resetTailor } from "../app/features/tailorSlice";
 import JD_Input_Panel from "../components/ats/JD_Input_Panel";
+import ResumeScorePanel from "../components/resumeScore/ResumeScorePanel";
 import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
 import CoverLetterPanel from "../components/coverLetter/CoverLetterPanel";
 import InterviewPrepPanel from "../components/interviewPrep/InterviewPrepPanel";
@@ -235,6 +237,7 @@ const ResumeBuilder = () => {
     { id: "languages",     name: "Languages",        icon: Languages    },
     { id: "sections",      name: "Sections",         icon: Settings2    },
     { id: "styles",        name: "Styles",           icon: Palette      },
+    { id: "score",         name: "Resume Score",     icon: TrendingUp   },
     { id: "ats",           name: "ATS Score",        icon: BarChart2    },
     { id: "tailor",        name: "Tailor to JD",     icon: Target       },
     { id: "cover-letter",  name: "Cover Letter",     icon: Mail         },
@@ -560,6 +563,10 @@ const ResumeBuilder = () => {
                     }
                     resumeData={resumeData}
                   />
+                )}
+
+                {activeSection.id === "score" && (
+                  <ResumeScorePanel resumeId={resumeId} />
                 )}
 
                 {activeSection.id === "ats" && (

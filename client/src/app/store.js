@@ -4,6 +4,7 @@ import atsReducer from './features/atsSlice'
 import coverLetterReducer from './features/coverLetterSlice'
 import interviewReducer from './features/interviewSlice'
 import tailorReducer from './features/tailorSlice'
+import resumeScoreReducer from './features/resumeScoreSlice'
 
 export const store = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
         coverLetter: coverLetterReducer,
         interview: interviewReducer,
         tailor: tailorReducer,
+        resumeScore: resumeScoreReducer,
     },
 })
 
