@@ -26,7 +26,6 @@ const CreativeTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const sectionOrder = buildSectionOrder(styleOptions, data.custom_sections);
 
   // Split sections: skills & education go to sidebar; rest go to main column
-  const sidebarBuiltIn = new Set(["skills", "education"]);
   const mainBuiltIn = new Set(["summary", "experience", "projects", "certifications", "languages"]);
   const customSectionIds = (data.custom_sections || []).map((s) => s.id);
 

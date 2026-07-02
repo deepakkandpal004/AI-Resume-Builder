@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Clipboard, Search, Loader2 } from 'lucide-react';
 import { runScan } from '../../app/features/atsSlice';

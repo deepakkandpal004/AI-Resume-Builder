@@ -4,7 +4,7 @@
  * Validates: Requirements 1.5
  */
 
-import { describe, test, expect, beforeEach } from 'vitest';
+import { describe, test, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
 fc.configureGlobal({ numRuns: 100, verbose: true });

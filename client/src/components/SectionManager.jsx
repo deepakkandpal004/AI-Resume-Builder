@@ -1,6 +1,7 @@
 import { Plus, Settings2, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_SECTION_HEADINGS = {
   summary: "Professional Summary",
   experience: "Professional Experience",

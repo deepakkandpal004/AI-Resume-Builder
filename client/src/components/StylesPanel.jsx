@@ -22,6 +22,7 @@ import { applyPhotoEffect } from "../utils/imagekit";
 // ---------------------------------------------------------------------------
 // Font options — resume-appropriate typefaces
 // ---------------------------------------------------------------------------
+// eslint-disable-next-line react-refresh/only-export-components
 export const FONT_FAMILY_OPTIONS = [
   // Sans-serif
   { value: "inter",        label: "Inter",          css: "Inter, sans-serif",               category: "Sans-serif" },
@@ -123,6 +124,7 @@ const SortableItem = ({ id, label }) => {
 // ---------------------------------------------------------------------------
 // ToggleButton — reusable bold / italic toggle
 // ---------------------------------------------------------------------------
+// eslint-disable-next-line no-unused-vars
 const ToggleButton = ({ active, onClick, icon: Icon, label }) => (
   <button
     onClick={onClick}

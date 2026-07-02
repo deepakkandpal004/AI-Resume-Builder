@@ -38,7 +38,7 @@ const App = () => {
 
   useEffect(() => {
     getUserData();
-  },[]);
+  }, []);
   return (
     <>
       <Toaster

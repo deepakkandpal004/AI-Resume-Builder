@@ -89,7 +89,7 @@ const CoverLetterPanel = ({ resumeId }) => {
     try {
       await navigator.clipboard.writeText(editableContent);
       toast.success("Copied to clipboard");
-    } catch (err) {
+    } catch {
       toast.error("Clipboard access denied. Please copy manually.");
     }
   };

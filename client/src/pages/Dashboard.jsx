@@ -62,8 +62,8 @@ const Dashboard = () => {
   const accents = ["#4F46E5", "#0D9488", "#7C3AED", "#2563EB", "#E11D48", "#D97706"];
 
   const [allResumes, setAllResumes] = useState([]);
-  const [showCreateResume, setShowCreateResume] = useState(false);
-  const [showUploadResume, setShowUploadResume] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState(null);
   const [editResumeId, setEditResumeId] = useState("");
@@ -342,7 +342,7 @@ const Dashboard = () => {
 
       {/* ── Modals ── */}
 
-      {showCreateResume && (
+      {showCreate && (
         <Modal title="Create a Resume" onClose={() => { setShowCreate(false); setTitle(""); }}>
           <form onSubmit={createResume}>
             <input
@@ -358,7 +358,7 @@ const Dashboard = () => {
         </Modal>
       )}
 
-      {showUploadResume && (
+      {showUpload && (
         <Modal title="Upload Resume" onClose={() => { setShowUpload(false); setTitle(""); setResume(null); }}>
           <form onSubmit={uploadResume}>
             <input
