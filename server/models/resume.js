@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from "mongoose"
+import mongoose from "mongoose"
 
 const ResumeSchema = new mongoose.Schema({
     userId: {

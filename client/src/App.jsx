@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import api from "./configs/api";
 import { login, setLoading } from "./app/features/authSlice";
 import { Toaster } from "react-hot-toast";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -57,7 +58,8 @@ const App = () => {
           },
         }}
       />
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="app" element={<Layout />}>
           <Route index element={<Dashboard />} />
@@ -66,7 +68,8 @@ const App = () => {
         </Route>
         <Route path="view/:resumeId" element={<Preview />} />
         <Route path="reset-password" element={<ResetPassword />} />
-      </Routes>
+        </Routes>
+      </ErrorBoundary>
     </>
   );
 };

@@ -60,7 +60,7 @@ export const getResumeById = async (req, res) => {
     resume.createdAt = undefined;
     resume.updatedAt = undefined;
 
-    return res.status(201).json({ resume });
+    return res.status(200).json({ resume });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
