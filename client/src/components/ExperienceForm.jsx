@@ -31,13 +31,16 @@ const ExperienceForm = ({ data, onChange }) => {
     onChange(updated);
   };
 
-  const generateDescription = async (index) => {
+  const rewriteBullets = async (index) => {
     setGeneratingIndex(index);
     const experience = data[index];
-    const prompt = `enhance this job description ${experience.description} for the position ${experience.position} at ${experience.company}`
     try {
-      const { data: result } = await api.post(`/api/ai/enhance-job-desc`, {userContent: prompt}, {headers: { Authorization: `Bearer ${token}` },});
-      updatedExperience(index, "description", result.enhancedContent || experience.description);
+      const { data: result } = await api.post(`/api/ai/rewrite-bullets`, {
+        text: experience.description,
+        position: experience.position,
+        company: experience.company,
+      }, {headers: { Authorization: `Bearer ${token}` }});
+      updatedExperience(index, "description", result.rewrittenText || experience.description);
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
     } finally {
@@ -150,9 +153,9 @@ const ExperienceForm = ({ data, onChange }) => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-body">Job Description</label>
-                  <button onClick={() => generateDescription(index)} disabled={generatingIndex === index || !experience.position || !experience.company} className="flex items-center gap-1 rounded bg-gradient-to-r from-brand-600 to-accent-600 px-2.5 py-1 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50">
+                  <button onClick={() => rewriteBullets(index)} disabled={generatingIndex === index || !experience.description?.trim()} className="flex items-center gap-1 rounded bg-gradient-to-r from-brand-600 to-accent-600 px-2.5 py-1 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50">
                     {generatingIndex === index ? (<Loader2 className="w-3 h-3 animate-spin" />) : (<Sparkles className="w-3 h-3" />)}
-                    Enhance with AI
+                    Rewrite Bullets
                   </button>
                 </div>
                 <textarea

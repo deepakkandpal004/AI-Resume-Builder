@@ -1,6 +1,7 @@
 import getImageKit from "../config/imageKit.js";
 import mongoose from "mongoose";
 import Resume from "../models/resume.js";
+import ResumeVersion from "../models/ResumeVersion.js";
 import fs from "fs";
 
 // controller for new resume
@@ -169,6 +170,22 @@ export const duplicateResume = async (req, res) => {
       }
     }
 
+    // Save a version snapshot before updating (skip for auto-saves)
+    if (existingResume) {
+      await ResumeVersion.create({
+        userId,
+        resumeId,
+        label: "",
+        snapshot: existingResume.toObject(),
+      });
+      // Keep only the latest 20 versions per resume
+      const versions = await ResumeVersion.find({ resumeId }).sort({ createdAt: -1 }).lean();
+      if (versions.length > 20) {
+        const toDelete = versions.slice(20).map(v => v._id);
+        await ResumeVersion.deleteMany({ _id: { $in: toDelete } });
+      }
+    }
+
     const resume = await Resume.findOneAndUpdate(
       { userId, _id: resumeId },
       resumeDataCopy,
@@ -176,6 +193,52 @@ export const duplicateResume = async (req, res) => {
     );
 
     return res.status(200).json({ message: "Saved successfully", resume });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// GET /api/resumes/versions/:resumeId
+export const listVersions = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { resumeId } = req.params;
+
+    const resume = await Resume.findOne({ userId, _id: resumeId });
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
+
+    const versions = await ResumeVersion.find({ resumeId })
+      .select("createdAt label _id")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({ versions });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// POST /api/resumes/restore/:resumeId/:versionId
+export const restoreVersion = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { resumeId, versionId } = req.params;
+
+    const resume = await Resume.findOne({ userId, _id: resumeId });
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
+
+    const version = await ResumeVersion.findOne({ _id: versionId, resumeId });
+    if (!version) return res.status(404).json({ message: "Version not found" });
+
+    const { _id, __v, userId: vUserId, resumeId: vResumeId, createdAt, updatedAt, ...snapshot } = version.snapshot;
+
+    const restored = await Resume.findOneAndUpdate(
+      { userId, _id: resumeId },
+      snapshot,
+      { new: true }
+    );
+
+    return res.status(200).json({ message: "Restored successfully", resume: restored });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

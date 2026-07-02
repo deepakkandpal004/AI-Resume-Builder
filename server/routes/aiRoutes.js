@@ -1,5 +1,5 @@
 import express from "express"
-import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume, tailorResume, generateCoverLetter, getCoverLetterHistory, deleteCoverLetter, generateInterviewQuestions, getInterviewHistory, scoreResume } from "../controllers/aiController.js";
+import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume, tailorResume, generateCoverLetter, getCoverLetterHistory, deleteCoverLetter, generateInterviewQuestions, getInterviewHistory, scoreResume, rewriteBullets } from "../controllers/aiController.js";
 import { runAtsScan, getScanHistory } from "../controllers/atsController.js";
 import protect from "../middlewares/authMiddleware.js";
 import atsRateLimiter from "../middlewares/atsRateLimiter.js";
@@ -31,5 +31,8 @@ aiRouter.get('/interview-questions/:resumeId', protect, getInterviewHistory);
 
 // Resume Score route — general resume quality score without a JD
 aiRouter.post('/score-resume', protect, resumeScoreRateLimiter, scoreResume);
+
+// AI Bullet Rewriter — rewrite experience bullet points
+aiRouter.post('/rewrite-bullets', protect, enhanceRateLimiter, rewriteBullets);
 
 export default aiRouter;

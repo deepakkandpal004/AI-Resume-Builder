@@ -81,6 +81,41 @@ export const enhanceJobDescription = async (req, res) => {
   }
 };
 
+// POST /api/ai/rewrite-bullets
+export const rewriteBullets = async (req, res) => {
+  try {
+    const { text, position, company } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Missing description text to rewrite" });
+    }
+
+    const context = [position, company].filter(Boolean).join(" at ") || "this role";
+
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert resume writer. Rewrite the following bullet points for a resume position. " +
+            "For each bullet: use strong action verbs, include quantifiable results where possible, " +
+            "keep each bullet concise (1 line), and make it ATS-friendly. " +
+            "Return ONLY the rewritten bullet points, one per line, with no numbering, no dashes, no extra text."
+        },
+        {
+          role: "user",
+          content: `Position: ${context}\n\nCurrent bullet points:\n${text}`
+        },
+      ],
+    });
+
+    const rewrittenText = response.choices[0].message.content;
+    return res.status(200).json({ rewrittenText });
+  } catch (error) {
+    return handleAIError(error, res);
+  }
+};
+
 // POST /api/ai/upload-resume
 export const uploadResume = async (req, res) => {
   try {
