@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
@@ -16,6 +16,7 @@ import {
   FileText,
   FolderIcon,
   GraduationCap,
+  History,
   Languages,
   Mail,
   MessageSquare,
@@ -51,6 +52,7 @@ import SectionManager from "../components/SectionManager";
 import StylesPanel from "../components/StylesPanel";
 import CertificationForm from "../components/CertificationForm";
 import LanguageForm from "../components/LanguageForm";
+import VersionHistoryPanel from "../components/VersionHistoryPanel";
 import { getCompleteness, getCompletenessColor } from "../utils/completeness";
 
 const ResumeBuilder = () => {
@@ -89,8 +91,9 @@ const ResumeBuilder = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
 
-  const loadExistingResume = async () => {
+  const loadExistingResume = useCallback(async () => {
     try {
       setIsLoading(true);
       const { data } = await api.get(`/api/resumes/get/${resumeId}`, {
@@ -129,9 +132,9 @@ const ResumeBuilder = () => {
       setIsLoading(false);
       isFirstLoad.current = false;
     }
-  };
+  }, [resumeId, token]);
 
-  const performSave = async (isAutoSave = false) => {
+  const performSave = useCallback(async (isAutoSave = false) => {
     try {
       if (!isAutoSave) setIsLoading(true);
       else setAutoSaveStatus("saving");
@@ -202,9 +205,14 @@ const ResumeBuilder = () => {
     } finally {
       if (!isAutoSave) setIsLoading(false);
     }
-  };
+  }, [resumeId, token, resumeData, removeBackground]);
 
   const saveResume = () => performSave(false);
+
+  const handleRestore = (resume) => {
+    setResumeData(resume);
+    setShowVersionHistory(false);
+  };
 
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [removeBackground, setRemoveBackground] = useState(false);
@@ -224,7 +232,7 @@ const ResumeBuilder = () => {
     }, 2500);
 
     return () => clearTimeout(autoSaveTimerRef.current);
-  }, [resumeData]);
+  }, [resumeData, performSave]);
 
   const sections = [
     { id: "personal",      name: "Personal Info",   icon: User         },
@@ -254,14 +262,14 @@ const ResumeBuilder = () => {
       dispatch(resetInterview());
       dispatch(resetTailor());
     }
-  }, [resumeId, token]);
+  }, [resumeId, token, loadExistingResume, dispatch, resetAts, resetCoverLetter, resetInterview, resetTailor]);
 
   useEffect(() => {
     return () => {
       dispatch(resetAts());
       dispatch(resetCoverLetter());
     };
-  }, [resumeId, dispatch]);
+  }, [resumeId, dispatch, resetAts, resetCoverLetter]);
 
   const changeResumeVisibility = async() => {
     try {
@@ -663,6 +671,13 @@ const ResumeBuilder = () => {
               >
                 {isLoading ? "Saving..." : "Save Changes"}
               </button>
+              <button
+                onClick={() => setShowVersionHistory(true)}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-line px-4 py-2 text-sm text-muted hover:bg-canvas transition-colors"
+              >
+                <History className="size-4" />
+                Version History
+              </button>
               {/* Auto-save status indicator */}
               {autoSaveStatus === "saving" && (
                 <p className="mt-2 text-xs text-muted animate-pulse">Auto-saving…</p>
@@ -703,6 +718,14 @@ const ResumeBuilder = () => {
           </div>
         </div>
       </div>
+
+      {showVersionHistory && (
+        <VersionHistoryPanel
+          resumeId={resumeId}
+          onRestore={handleRestore}
+          onClose={() => setShowVersionHistory(false)}
+        />
+      )}
     </div>
   );
 };

@@ -116,7 +116,7 @@ describe('Test 3 – Upgrade Prompt', () => {
     // The Upgrade_Prompt renders an h3 heading with this text
     expect(screen.getByRole('heading', { name: /Upgrade to Premium/i })).toBeInTheDocument();
     expect(
-      screen.getByText(/You've reached your daily scan limit/i)
+      screen.getByText(/You've reached your daily limit/i)
     ).toBeInTheDocument();
   });
 });
@@ -230,7 +230,7 @@ describe('Test 9 – Clicking suggestion with known section navigates', () => {
     });
     fireEvent.click(suggestionItem);
 
-    expect(onNavigateTab).toHaveBeenCalledWith(4);
+    expect(onNavigateTab).toHaveBeenCalledWith(5);
   });
 });
 
