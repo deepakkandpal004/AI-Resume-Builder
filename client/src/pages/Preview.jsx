@@ -67,7 +67,7 @@ const Preview = () => {
                     filename,
                     image: { type: "jpeg", quality: 0.98 },
                     html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                    jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+                    jsPDF: { unit: "in", format: resumeData?.style_options?.pageSize || "letter", orientation: "portrait" },
                   })
                   .from(element)
                   .save();

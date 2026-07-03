@@ -28,13 +28,16 @@ const ResumePreview = ({ data, template, accentColor, styleOptions = {}, classes
   };
   const pageSize = styleOptions?.pageSize || "letter";
 
+  const previewWidth = pageSize === "a4" ? "794px" : "816px";
+
   return (
-    <div className="w-full bg-canvas">
+    <div className="w-full bg-canvas flex justify-center">
       <div
         id="resume-preview"
         className={
           "border border-line print:shadow-none print:border-none " + classes
         }
+        style={{ width: previewWidth, maxWidth: "100%" }}
       >
         {renderTemplate()}
       </div>
