@@ -38,7 +38,7 @@ const InterviewPrepPanel = ({ resumeId }) => {
   // Load persisted history when panel first mounts
   useEffect(() => {
     if (resumeId) dispatch(loadInterviewHistory({ resumeId }));
-  }, [resumeId, dispatch, loadInterviewHistory]);
+  }, [resumeId, dispatch]);
 
   const handleGenerate = () => {
     dispatch(generateInterviewQuestions({ resumeId, targetRole, jobDescription }))

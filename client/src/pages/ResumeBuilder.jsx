@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
@@ -93,7 +93,7 @@ const ResumeBuilder = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
 
-  const loadExistingResume = useCallback(async () => {
+  const loadExistingResume = async () => {
     try {
       setIsLoading(true);
       const { data } = await api.get(`/api/resumes/get/${resumeId}`, {
@@ -132,9 +132,9 @@ const ResumeBuilder = () => {
       setIsLoading(false);
       isFirstLoad.current = false;
     }
-  }, [resumeId, token]);
+  };
 
-  const performSave = useCallback(async (isAutoSave = false) => {
+  const performSave = async (isAutoSave = false) => {
     try {
       if (!isAutoSave) setIsLoading(true);
       else setAutoSaveStatus("saving");
@@ -205,7 +205,7 @@ const ResumeBuilder = () => {
     } finally {
       if (!isAutoSave) setIsLoading(false);
     }
-  }, [resumeId, token, resumeData, removeBackground]);
+  };
 
   const saveResume = () => performSave(false);
 
@@ -232,7 +232,7 @@ const ResumeBuilder = () => {
     }, 2500);
 
     return () => clearTimeout(autoSaveTimerRef.current);
-  }, [resumeData, performSave]);
+  }, [resumeData]);
 
   const sections = [
     { id: "personal",      name: "Personal Info",   icon: User         },
@@ -262,14 +262,14 @@ const ResumeBuilder = () => {
       dispatch(resetInterview());
       dispatch(resetTailor());
     }
-  }, [resumeId, token, loadExistingResume, dispatch, resetAts, resetCoverLetter, resetInterview, resetTailor]);
+  }, [resumeId, token]);
 
   useEffect(() => {
     return () => {
       dispatch(resetAts());
       dispatch(resetCoverLetter());
     };
-  }, [resumeId, dispatch, resetAts, resetCoverLetter]);
+  }, [resumeId, dispatch]);
 
   const changeResumeVisibility = async() => {
     try {

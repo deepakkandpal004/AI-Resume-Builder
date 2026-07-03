@@ -46,7 +46,7 @@ const CoverLetterPanel = ({ resumeId }) => {
     if (resumeId) {
       dispatch(fetchCoverLetters(resumeId));
     }
-  }, [resumeId, dispatch, fetchCoverLetters]);
+  }, [resumeId, dispatch]);
 
   // Keep the editable textarea in sync with the selected/generated letter.
   useEffect(() => {
