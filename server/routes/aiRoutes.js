@@ -1,5 +1,5 @@
 import express from "express"
-import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume, tailorResume, generateCoverLetter, getCoverLetterHistory, deleteCoverLetter, generateInterviewQuestions, getInterviewHistory, scoreResume, rewriteBullets } from "../controllers/aiController.js";
+import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume, tailorResume, generateCoverLetter, getCoverLetterHistory, deleteCoverLetter, generateInterviewQuestions, getInterviewHistory, scoreResume, rewriteBullets, suggestSkills } from "../controllers/aiController.js";
 import { runAtsScan, getScanHistory } from "../controllers/atsController.js";
 import protect from "../middlewares/authMiddleware.js";
 import atsRateLimiter from "../middlewares/atsRateLimiter.js";
@@ -7,6 +7,7 @@ import coverLetterRateLimiter from "../middlewares/coverLetterRateLimiter.js";
 import interviewRateLimiter from "../middlewares/interviewRateLimiter.js";
 import { enhanceRateLimiter, tailorRateLimiter } from "../middlewares/aiEnhanceRateLimiter.js";
 import resumeScoreRateLimiter from "../middlewares/resumeScoreRateLimiter.js";
+import skillRateLimiter from "../middlewares/skillRateLimiter.js";
 
 const aiRouter = express.Router();
 
@@ -34,5 +35,8 @@ aiRouter.post('/score-resume', protect, resumeScoreRateLimiter, scoreResume);
 
 // AI Bullet Rewriter — rewrite experience bullet points
 aiRouter.post('/rewrite-bullets', protect, enhanceRateLimiter, rewriteBullets);
+
+// AI Skill Suggestions — suggest relevant skills for a target role
+aiRouter.post('/suggest-skills', protect, skillRateLimiter, suggestSkills);
 
 export default aiRouter;

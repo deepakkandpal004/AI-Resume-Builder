@@ -253,6 +253,75 @@ Use this exact structure:
   }
 };
 
+// POST /api/ai/suggest-skills
+export const suggestSkills = async (req, res) => {
+  try {
+    const { targetRole, currentSkills } = req.body;
+    if (!targetRole || !targetRole.trim()) {
+      return res.status(400).json({ message: "Target role is required." });
+    }
+
+    const skillsContext = Array.isArray(currentSkills) && currentSkills.length > 0
+      ? `\nCurrent skills on resume: ${currentSkills.join(", ")}`
+      : "";
+
+    const response = await getAI().chat.completions.create({
+      model: process.env.GROQ_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert career coach and skills advisor. Given a target role and optionally the user's current skills, suggest relevant skills they should add to their resume. " +
+            "Respond with ONLY valid JSON, no markdown formatting.",
+        },
+        {
+          role: "user",
+          content:
+            `Target Role: ${targetRole.trim()}${skillsContext}\n\n` +
+            `Suggest 12-15 relevant skills for this role, grouped into three categories: ` +
+            `"technical" (hard skills, programming languages, frameworks), ` +
+            `"soft" (interpersonal skills), and ` +
+            `"tools" (software, platforms, technologies). ` +
+            `Avoid duplicating skills the user already has. ` +
+            `Return ONLY this JSON structure:\n` +
+            `{\n` +
+            `  "technical": ["skill1", "skill2", ...],\n` +
+            `  "soft": ["skill1", "skill2", ...],\n` +
+            `  "tools": ["skill1", "skill2", ...]\n` +
+            `}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    if (!response?.choices?.[0]) {
+      throw new Error("Invalid AI response");
+    }
+
+    const raw = response.choices[0].message.content
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (parseError) {
+      throw new Error("Failed to parse AI response as JSON: " + parseError.message);
+    }
+
+    return res.status(200).json({
+      suggestedSkills: {
+        technical: Array.isArray(parsed.technical) ? parsed.technical.map(String) : [],
+        soft: Array.isArray(parsed.soft) ? parsed.soft.map(String) : [],
+        tools: Array.isArray(parsed.tools) ? parsed.tools.map(String) : [],
+      },
+    });
+  } catch (error) {
+    return handleAIError(error, res);
+  }
+};
+
 // POST /api/ai/generate-cover-letter
 export const generateCoverLetter = async (req, res) => {
   try {
