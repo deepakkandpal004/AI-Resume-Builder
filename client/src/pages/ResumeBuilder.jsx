@@ -523,6 +523,8 @@ const ResumeBuilder = () => {
                 {activeSection.id === "skills" && (
                   <SkillsForm
                     data={resumeData.skills}
+                    profession={resumeData.personal_info?.profession || ""}
+                    token={token}
                     onChange={(data) => {
                       setResumeData((prev) => ({
                         ...prev,
