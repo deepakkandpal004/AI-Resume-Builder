@@ -4,7 +4,7 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 
 const illustrations = {
   writing: (
-    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "100%" }}>
+    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "auto", display: "block" }}>
       <rect x="10" y="18" width="116" height="64" rx="8" fill="white" stroke="#c7d2fe" strokeWidth="1.5" />
       <rect x="24" y="30" width="50" height="5" rx="2.5" fill="#818cf8" opacity="0.7" />
       <rect x="24" y="40" width="68" height="4" rx="2" fill="#a5b4fc" opacity="0.55" />
@@ -16,7 +16,7 @@ const illustrations = {
     </svg>
   ),
   templates: (
-    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "100%" }}>
+    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "auto", display: "block" }}>
       <rect x="12" y="14" width="50" height="72" rx="6" fill="white" stroke="#c7d2fe" strokeWidth="1.5" />
       <rect x="20" y="24" width="34" height="4" rx="2" fill="#818cf8" opacity="0.7" />
       <rect x="20" y="32" width="22" height="3" rx="1.5" fill="#a5b4fc" opacity="0.5" />
@@ -30,7 +30,7 @@ const illustrations = {
     </svg>
   ),
   colors: (
-    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "100%" }}>
+    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "auto", display: "block" }}>
       <rect x="10" y="20" width="116" height="60" rx="10" fill="white" stroke="#c7d2fe" strokeWidth="1.5" />
       <circle cx="38" cy="50" r="14" fill="#6366f1" />
       <circle cx="68" cy="50" r="14" fill="#14b8a6" />
@@ -39,7 +39,7 @@ const illustrations = {
     </svg>
   ),
   import: (
-    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "100%" }}>
+    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "auto", display: "block" }}>
       <rect x="22" y="22" width="64" height="56" rx="6" fill="white" stroke="#c7d2fe" strokeWidth="1.5" />
       <rect x="32" y="34" width="44" height="4" rx="2" fill="#a5b4fc" opacity="0.55" />
       <rect x="32" y="42" width="30" height="3" rx="1.5" fill="#a5b4fc" opacity="0.45" />
@@ -50,7 +50,7 @@ const illustrations = {
     </svg>
   ),
   download: (
-    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "100%" }}>
+    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "auto", display: "block" }}>
       <rect x="10" y="16" width="116" height="68" rx="8" fill="white" stroke="#c7d2fe" strokeWidth="1.5" />
       <rect x="22" y="28" width="92" height="4" rx="2" fill="#a5b4fc" opacity="0.55" />
       <rect x="22" y="37" width="66" height="3" rx="1.5" fill="#a5b4fc" opacity="0.45" />
@@ -61,7 +61,7 @@ const illustrations = {
     </svg>
   ),
   ats: (
-    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "100%" }}>
+    <svg viewBox="0 0 136 100" fill="none" style={{ width: "100%", height: "auto", display: "block" }}>
       <rect x="10" y="18" width="116" height="64" rx="8" fill="white" stroke="#c7d2fe" strokeWidth="1.5" />
       <circle cx="68" cy="50" r="20" fill="#eef2ff" />
       <circle cx="68" cy="50" r="17" fill="#e0e7ff" opacity="0.5" />
@@ -147,7 +147,7 @@ const Features = () => {
           >
             {/* Illustration */}
             <div className="mb-4 w-full overflow-hidden rounded-xl bg-gradient-to-br from-brand-50/80 to-accent-50/80 dark:from-brand-500/5 dark:to-accent-500/5">
-              <div className="flex aspect-[3/2] w-full items-center justify-center p-2">
+              <div className="w-full p-2" style={{ aspectRatio: "3/2" }}>
                 {illustrations[f.illustration]}
               </div>
             </div>
