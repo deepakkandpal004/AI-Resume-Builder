@@ -59,7 +59,7 @@ const Preview = () => {
       <header className="sticky top-0 z-40 border-b border-line bg-surface/80 backdrop-blur-md print:hidden">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <Link to="/">
-            <Logo className="h-8 w-auto text-ink" />
+            <Logo className="h-11 w-auto text-ink" />
           </Link>
           <button
             onClick={async () => {

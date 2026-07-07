@@ -43,7 +43,7 @@ const Footer = () => (
     <div className="relative mx-auto flex max-w-7xl flex-col justify-between gap-12 px-6 py-16 md:flex-row md:px-10">
       <div className="max-w-xs">
         <Link to="/">
-          <Logo className="h-10 w-auto text-ink" />
+            <Logo className="h-11 w-auto text-ink" />
         </Link>
         <p className="mt-4 text-sm leading-relaxed text-body">
           Create professional, AI-powered resumes that help you land your

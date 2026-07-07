@@ -26,7 +26,7 @@ const HomeNavbar = () => {
     <nav className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 md:px-10">
       <div className="mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-line/50 bg-surface/70 px-5 py-3 shadow-lg backdrop-blur-xl dark:border-white/5 dark:bg-[#0d1117]/80">
         <Link to="/" className="relative z-10 shrink-0">
-          <Logo className="h-9 w-auto text-ink" />
+          <Logo className="h-12 w-auto text-ink" />
         </Link>
 
         {/* Desktop nav */}

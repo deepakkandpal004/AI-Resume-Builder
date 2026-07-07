@@ -1,4 +1,4 @@
-const Logo = ({ className = "h-9 w-auto" }) => (
+const Logo = ({ className = "h-12 w-auto" }) => (
   <img
     src="/logo.png"
     alt="Resume AI"
