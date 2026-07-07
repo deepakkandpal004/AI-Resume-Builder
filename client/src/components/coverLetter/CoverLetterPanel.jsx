@@ -112,6 +112,10 @@ const CoverLetterPanel = ({ resumeId }) => {
     dispatch(selectLetter(letter));
   };
 
+  const handleBack = () => {
+    dispatch(selectLetter(null));
+  };
+
   const handleDelete = (letterId, e) => {
     e.stopPropagation();
     dispatch(deleteCoverLetter(letterId))
@@ -143,109 +147,113 @@ const CoverLetterPanel = ({ resumeId }) => {
         </p>
       </div>
 
-      {/* Inputs */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-ink">Company</label>
-          <input
-            type="text"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="e.g. Acme Corp"
-            className="w-full rounded-lg border border-line p-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-ink">Position</label>
-          <input
-            type="text"
-            value={positionTitle}
-            onChange={(e) => setPositionTitle(e.target.value)}
-            placeholder="e.g. Senior Engineer"
-            className="w-full rounded-lg border border-line p-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
-      </div>
+      {/* Inputs — hidden when viewing a saved letter */}
+      {!current && (
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-ink">Company</label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Acme Corp"
+                className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-ink">Position</label>
+              <input
+                type="text"
+                value={positionTitle}
+                onChange={(e) => setPositionTitle(e.target.value)}
+                placeholder="e.g. Senior Engineer"
+                className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+          </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-ink">Tone</label>
-        <select
-          value={tone}
-          onChange={(e) => setTone(e.target.value)}
-          className="w-full rounded-lg border border-line p-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
-        >
-          {TONES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-ink">Job Description</label>
-        <textarea
-          value={jobDescription}
-          onChange={(e) => {
-            setJobDescription(e.target.value);
-            setValidationError("");
-          }}
-          maxLength={MAX_JD_LENGTH}
-          rows={8}
-          placeholder="Paste the job description here..."
-          className={`w-full resize-none rounded-lg border p-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
-            validationError ? "border-red-400 focus:ring-red-400" : "border-line"
-          }`}
-        />
-        <p className="mt-1 text-right text-xs text-muted">
-          {jobDescription.length.toLocaleString()} / {MAX_JD_LENGTH.toLocaleString()}
-        </p>
-      </div>
-
-      {/* Validation error */}
-      {validationError && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
-          {validationError}
-        </p>
-      )}
-
-      {/* Quota notice */}
-      {quotaExhausted ? (
-        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
           <div>
-            <p className="font-medium">Daily cover letter limit reached.</p>
-            <p className="text-amber-700">
-              Free plan includes a limited number of generations per day. Upgrade to premium for unlimited cover letters.
+            <label className="mb-1 block text-sm font-medium text-ink">Tone</label>
+            <select
+              value={tone}
+              onChange={(e) => setTone(e.target.value)}
+              className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+              {TONES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-ink">Job Description</label>
+            <textarea
+              value={jobDescription}
+              onChange={(e) => {
+                setJobDescription(e.target.value);
+                setValidationError("");
+              }}
+              maxLength={MAX_JD_LENGTH}
+              rows={8}
+              placeholder="Paste the job description here..."
+              className={`w-full resize-none rounded-lg border bg-surface p-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                validationError ? "border-red-400 focus:ring-red-400" : "border-line"
+              }`}
+            />
+            <p className="mt-1 text-right text-xs text-muted">
+              {jobDescription.length.toLocaleString()} / {MAX_JD_LENGTH.toLocaleString()}
             </p>
           </div>
-        </div>
-      ) : (
-        lettersRemainingToday !== null && (
-          <p className="text-xs text-muted">
-            {lettersRemainingToday} cover letter{lettersRemainingToday === 1 ? "" : "s"} remaining today.
-          </p>
-        )
+
+          {/* Validation error */}
+          {validationError && (
+            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
+              {validationError}
+            </p>
+          )}
+
+          {/* Quota notice */}
+          {quotaExhausted ? (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <div>
+                <p className="font-medium">Daily cover letter limit reached.</p>
+                <p className="text-amber-700">
+                  Free plan includes a limited number of generations per day. Upgrade to premium for unlimited cover letters.
+                </p>
+              </div>
+            </div>
+          ) : (
+            lettersRemainingToday !== null && (
+              <p className="text-xs text-muted">
+                {lettersRemainingToday} cover letter{lettersRemainingToday === 1 ? "" : "s"} remaining today.
+              </p>
+            )
+          )}
+
+          {/* Generate button */}
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isLoading || quotaExhausted}
+            className="flex items-center gap-2 rounded-lg bg-linear-to-r from-brand-600 to-accent-600 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+            {isLoading ? "Generating..." : "Generate Cover Letter"}
+          </button>
+
+          {error && genStatus === "failed" && !quotaExhausted && (
+            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+        </>
       )}
 
-      {/* Generate button */}
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={isLoading || quotaExhausted}
-        className="flex items-center gap-2 rounded-lg bg-linear-to-r from-brand-600 to-accent-600 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-        {isLoading ? "Generating..." : "Generate Cover Letter"}
-      </button>
-
-      {error && genStatus === "failed" && !quotaExhausted && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      {/* Result */}
+      {/* Result — shown when viewing a saved or fresh generated letter */}
       {current && (
         <div className="space-y-3 rounded-lg border border-line p-4">
           <div className="flex items-center justify-between">
@@ -253,12 +261,19 @@ const CoverLetterPanel = ({ resumeId }) => {
               <Mail className="size-4 text-brand-600" />
               {current.companyName} — {current.positionTitle}
             </h4>
+            <button
+              type="button"
+              onClick={handleBack}
+              className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink hover:bg-canvas transition-colors"
+            >
+              Back to Editor
+            </button>
           </div>
           <textarea
             value={editableContent}
             onChange={(e) => setEditableContent(e.target.value)}
             rows={14}
-            className="w-full resize-none rounded-lg border border-line p-4 text-sm leading-relaxed transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full resize-none rounded-lg border border-line bg-surface p-4 text-sm leading-relaxed transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
             aria-label="Generated cover letter (editable)"
           />
           <div className="flex items-center gap-3">
@@ -313,7 +328,7 @@ const CoverLetterPanel = ({ resumeId }) => {
                 <button
                   type="button"
                   onClick={(e) => handleDelete(letter.letterId, e)}
-                  className="ml-2 shrink-0 rounded-md p-1.5 text-muted transition-colors hover:bg-red-50 hover:text-red-600"
+                  className="ml-2 shrink-0 rounded-md p-1.5 text-muted transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
                   aria-label="Delete cover letter"
                 >
                   <Trash2 className="size-4" />

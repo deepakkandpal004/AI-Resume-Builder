@@ -3,12 +3,16 @@ import toast from "react-hot-toast";
 import ResumePreview from "../components/ResumePreview";
 import Loader from "../components/Loader";
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import api from "../configs/api";
 import Logo from "../components/Logo";
 
 const Preview = () => {
   const { resumeId } = useParams();
+  const [searchParams] = useSearchParams();
+  const { token } = useSelector((state) => state.auth);
+  const isBuilderPreview = searchParams.get("builder") === "true";
   const cleanId = (resumeId || "").match(/[a-fA-F0-9]{24}/)?.[0] || resumeId;
 
   const [isLoading, setIsLoading] = React.useState(true);
@@ -16,8 +20,12 @@ const Preview = () => {
 
   const loadResume = async () => {
     try {
-      const response = await api.get(`/api/resumes/public/${cleanId}`);
-      const resume = response.data;
+      const endpoint = isBuilderPreview && token
+        ? `/api/resumes/get/${cleanId}`
+        : `/api/resumes/public/${cleanId}`;
+      const headers = isBuilderPreview && token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await api.get(endpoint, { headers });
+      const resume = isBuilderPreview ? response.data.resume : response.data;
       const styleOptions = {
         fontFamily: "inter",
         fontSize: 14,
@@ -86,7 +94,7 @@ const Preview = () => {
           template={resumeData.template}
           accentColor={resumeData.accent_color}
           styleOptions={resumeData.style_options}
-          classes="py-4 bg-white"
+          classes="py-4"
         />
       </div>
     </div>

@@ -57,9 +57,9 @@ function getScoreColor(score) {
 
 const SkeletonCard = () => (
   <div className="animate-pulse rounded-xl border border-line bg-surface p-4 space-y-3">
-    <div className="h-5 w-1/3 rounded bg-gray-200 dark:bg-gray-700" />
-    <div className="h-4 w-2/3 rounded bg-gray-200 dark:bg-gray-700" />
-    <div className="h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+    <div className="h-5 w-1/3 rounded bg-line" />
+    <div className="h-4 w-2/3 rounded bg-line" />
+    <div className="h-4 w-1/2 rounded bg-line" />
   </div>
 );
 
@@ -106,7 +106,7 @@ const ResumeScorePanel = ({ resumeId }) => {
       </div>
 
       {status === "loading" && (
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {[1, 2, 3, 4, 5].map((i) => <SkeletonCard key={i} />)}
         </div>
       )}
@@ -119,7 +119,7 @@ const ResumeScorePanel = ({ resumeId }) => {
 
       {scores && (
         <>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {Object.entries(SCORE_LABELS).map(([key, label]) => {
               const value = scores[key] ?? 0;
               const color = getScoreColor(value);

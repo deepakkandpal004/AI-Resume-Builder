@@ -1,4 +1,4 @@
-import { Check, Palette } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import React, { useState } from "react";
 
 const ColorPicker = ({ selectedColor, onChange }) => {
@@ -16,41 +16,36 @@ const ColorPicker = ({ selectedColor, onChange }) => {
   ];
 
   const [isOpen, setIsOpen] = useState(false);
+  const active = colors.find((c) => c.value === selectedColor) || colors[0];
 
   return (
     <div className="relative">
       <button
-        className="flex items-center gap-1.5 text-sm text-brand-700 bg-brand-50 border border-brand-100 hover:bg-brand-100 transition-all px-3 py-2 rounded-lg cursor-pointer dark:bg-brand-500/10 dark:text-brand-300 dark:border-brand-500/20 dark:hover:bg-brand-500/20"
         onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-sm text-ink transition hover:bg-canvas"
       >
-        <Palette size={16} /> <span className="max-sm:hidden">Accent</span>
+        <span className="size-3 rounded-full" style={{ backgroundColor: active.value }} />
+        <span className="max-sm:hidden">{active.name}</span>
+        <ChevronDown className={`size-3.5 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full w-60 p-3 mt-2 grid grid-cols-4 gap-3 z-10 bg-surface rounded-md border border-line shadow-sm">
-          {colors.map((color) => (
-            <div
-              key={color.value}
-              className="flex flex-col items-center gap-1 cursor-pointer"
-              onClick={() => {
-                onChange(color.value);
-                setIsOpen(false);
-              }}
-            >
-              <div
-                className="w-8 h-8 rounded-full relative border-2 border-surface hover:border-line shadow-sm"
-                style={{ backgroundColor: color.value }}
-              >
-                {selectedColor === color.value && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Check className="text-white size-4" />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted">{color.name}</p>
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+          <div className="absolute left-0 top-full z-40 mt-1 overflow-hidden rounded-xl border border-line bg-surface shadow-lg p-1.5">
+            <div className="grid grid-cols-5 gap-1">
+              {colors.map((color) => (
+                <button
+                  key={color.value}
+                  onClick={() => { onChange(color.value); setIsOpen(false); }}
+                  className={`size-7 rounded-full transition-all ${selectedColor === color.value ? "ring-2 ring-emerald-500 ring-offset-2 ring-offset-surface" : "hover:scale-110"}`}
+                  style={{ backgroundColor: color.value }}
+                  title={color.name}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

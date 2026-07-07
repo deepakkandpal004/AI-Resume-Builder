@@ -7,7 +7,6 @@ import {
   Check,
   ArrowRight,
   RotateCcw,
-  Target,
   ChevronDown,
   ChevronUp,
   AlertTriangle,
@@ -235,8 +234,7 @@ const TailorPanel = ({ resumeId, onApplyTailored }) => {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
-          <Target className="size-5 text-brand-600" />
+        <h3 className="text-lg font-semibold text-ink">
           Tailor to Job Description
         </h3>
         <p className="mt-0.5 text-sm text-muted">
@@ -262,7 +260,7 @@ const TailorPanel = ({ resumeId, onApplyTailored }) => {
               maxLength={MAX_JD_LENGTH}
               rows={10}
               placeholder="Paste the full job description here…"
-              className={`w-full resize-none rounded-lg border p-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+              className={`w-full resize-none rounded-lg border bg-surface p-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                 validationError
                   ? "border-red-400 focus:ring-red-400"
                   : "border-line"

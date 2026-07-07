@@ -9,6 +9,7 @@ import {
   RefreshCw,
   AlertCircle,
   Info,
+  Trash2,
 } from "lucide-react";
 import React, { useRef } from "react";
 import { useSelector } from "react-redux";
@@ -29,34 +30,33 @@ const PersonalInfoForm = ({
     onChange({ ...data, [field]: value });
   };
 
-  // Upload happens immediately on file select — compressed before sending.
-  // removeBg is NOT applied here; it's deferred to save time (applied on Save).
   const handleImageSelect = async (file) => {
     if (!file) return;
-
-    // Show local preview instantly
     onChange({ ...data, image: file });
-
     try {
       const cdnUrl = await upload(file, {
         userId: user?._id || "user",
         resumeId: resumeId || "resume",
-        removeBg: false, // never apply bg-removal on initial upload — defer to save
+        removeBg: false,
       });
       onChange({ ...data, image: cdnUrl });
-    } catch {
-      // Keep local File object — server fallback handles it on save
-    }
+    } catch {}
   };
 
+  const handleRemoveImage = () => {
+    onChange({ ...data, image: null });
+  };
+
+  const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
+
   const fields = [
-    { key: "full_name",  label: "Full Name",        icon: User,             type: "text",  required: true  },
-    { key: "email",      label: "Email Address",     icon: Mail,             type: "email", required: true  },
-    { key: "phone",      label: "Phone Number",      icon: Phone,            type: "text",  required: false },
-    { key: "location",   label: "Location",          icon: MapPin,           type: "text",  required: false },
-    { key: "profession", label: "Profession",        icon: BriefcaseBusiness,type: "text",  required: false },
-    { key: "linkedin",   label: "LinkedIn Profile",  icon: Linkedin,         type: "url",   required: false },
-    { key: "website",    label: "Personal Website",  icon: Globe,            type: "url",   required: false },
+    { key: "full_name",  label: "Full Name",    icon: User,             type: "text",  required: true, col: 1 },
+    { key: "profession", label: "Profession",   icon: BriefcaseBusiness,type: "text",  required: false, col: 1 },
+    { key: "email",      label: "Email Address", icon: Mail,            type: "email", required: true, col: 1 },
+    { key: "phone",      label: "Phone Number",  icon: Phone,           type: "text",  required: false, col: 1 },
+    { key: "location",   label: "Location",      icon: MapPin,          type: "text",  required: false, col: 1 },
+    { key: "linkedin",   label: "LinkedIn",      icon: Linkedin,        type: "url",   required: false, col: 1 },
+    { key: "website",    label: "Website",       icon: Globe,           type: "url",   required: false, col: 2 },
   ];
 
   const imagePreviewSrc =
@@ -68,11 +68,8 @@ const PersonalInfoForm = ({
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-ink">Personal Information</h3>
-      <p className="text-sm text-muted">Get started with your personal information</p>
-
       {/* ── Photo uploader ───────────────────────────────────────── */}
-      <div className="flex items-center gap-4 mt-5">
+      <div className="flex items-start gap-5 pb-6 mb-6 border-b border-line">
 
         {/* Avatar / click-to-upload trigger */}
         <label className="relative cursor-pointer group shrink-0">
@@ -80,10 +77,9 @@ const PersonalInfoForm = ({
             <div className="relative w-16 h-16">
               <img
                 src={imagePreviewSrc}
-                alt="profile"
-                className="w-16 h-16 rounded-full object-cover ring ring-slate-300 group-hover:opacity-70 transition-opacity"
+                alt=""
+                className="w-16 h-16 rounded-full object-cover ring-2 ring-line group-hover:opacity-70 transition-opacity"
               />
-              {/* Circular progress overlay while uploading */}
               {uploading && (
                 <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55">
                   <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
@@ -98,11 +94,10 @@ const PersonalInfoForm = ({
               )}
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-700">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full border-2 border-dashed border-line bg-canvas text-muted hover:border-brand-400 hover:text-brand-600 transition-colors">
               {uploading
-                ? <RefreshCw className="size-10 p-2.5 border rounded-full animate-spin" />
-                : <User className="size-10 p-2.5 border rounded-full" />}
-              <span className="text-sm">{uploading ? `Uploading… ${progress}%` : "Upload Photo"}</span>
+                ? <RefreshCw className="size-5 animate-spin" />
+                : <User className="size-5" />}
             </div>
           )}
           <input
@@ -114,83 +109,99 @@ const PersonalInfoForm = ({
           />
         </label>
 
-        {/* Controls shown once we have any image */}
-        {data.image && (
-          <div className="flex flex-col gap-2 pl-1">
-
-            {/* Remove Background toggle — deferred, applied on Save */}
-            <div className="flex flex-col gap-1">
-              <p className="text-xs font-medium text-body">Remove Background</p>
-              <label className="relative inline-flex items-center cursor-pointer gap-3">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={removeBackground}
-                  disabled={uploading}
-                  onChange={() => setRemoveBackground((prev) => !prev)}
-                />
-                <div className="w-9 h-5 bg-slate-300 rounded-full peer-checked:bg-brand-600 transition-colors duration-200" />
-                <span className="dot absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 peer-checked:translate-x-4" />
-                <span className="text-xs text-muted ml-1">
-                  {removeBackground ? "On" : "Off"}
-                </span>
-              </label>
-              {/* Hint — so user knows it applies on save, not instantly */}
-              {removeBackground && (
-                <p className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
-                  <Info className="size-3 shrink-0" />
-                  Applied when you save the resume
-                </p>
-              )}
-            </div>
-
-            {/* Replace photo */}
+        {/* Photo controls */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {!imagePreviewSrc && (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="text-xs text-brand-600 hover:text-brand-700 underline underline-offset-2 disabled:opacity-50 text-left w-fit"
+              className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-canvas transition-colors disabled:opacity-50"
             >
-              Replace photo
+              {uploading ? `Uploading… ${progress}%` : "Upload Photo"}
             </button>
-          </div>
-        )}
+          )}
+          {imagePreviewSrc && (
+            <>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-canvas transition-colors disabled:opacity-50"
+              >
+                Replace
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </>
+          )}
+
+          {/* Remove Background toggle */}
+          {data.image && (
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <span className="text-xs text-muted">Remove BG</span>
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={removeBackground}
+                disabled={uploading}
+                onChange={() => setRemoveBackground((prev) => !prev)}
+              />
+              <div className="w-8 h-4 bg-slate-300 rounded-full peer-checked:bg-brand-600 transition-colors duration-200 relative">
+                <div className="absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform duration-200 peer-checked:translate-x-4" />
+              </div>
+            </label>
+          )}
+
+          {removeBackground && (
+            <p className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 w-full">
+              <Info className="size-3 shrink-0" />
+              Applied when you save
+            </p>
+          )}
+
+          {uploading && (
+            <p className="text-[11px] text-muted animate-pulse">{progress}% uploaded</p>
+          )}
+        </div>
       </div>
 
       {/* Upload error */}
       {uploadError && (
-        <div className="mt-2 flex items-start gap-2 text-xs text-rose-600">
+        <div className="mb-4 flex items-start gap-2 text-xs text-rose-600">
           <AlertCircle className="size-3.5 shrink-0 mt-0.5" />
           <span>Upload failed: {uploadError}. Photo will be saved on next resume save.</span>
         </div>
       )}
 
-      {/* Upload progress text (shown when no avatar preview yet) */}
-      {uploading && !imagePreviewSrc && (
-        <p className="mt-1 text-xs text-muted animate-pulse">Uploading… {progress}%</p>
-      )}
-
-      {/* ── Personal info fields ─────────────────────────────────── */}
-      {fields.map((field) => {
-        const Icon = field.icon;
-        return (
-          <div key={field.key} className="space-y-1 mt-5">
-            <label className="flex items-center gap-2 text-sm font-medium text-body">
-              <Icon className="size-4" />
-              {field.label}
-              {field.required && <span className="text-rose-500">*</span>}
-            </label>
-            <input
-              type={field.type}
-              value={data[field.key] || ""}
-              required={field.required}
-              onChange={(e) => handleChange(field.key, e.target.value)}
-              className="mt-1 w-full px-3 py-2 text-sm"
-              placeholder={`Enter your ${field.label.toLowerCase()}`}
-            />
-          </div>
-        );
-      })}
+      {/* ── Fields grid ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+        {fields.map((field) => {
+          const Icon = field.icon;
+          return (
+            <div key={field.key} className={field.col === 2 ? "md:col-span-2" : ""}>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-body mb-1.5">
+                <Icon className="size-3.5 text-muted" />
+                {field.label}
+                {field.required && <span className="text-rose-500">*</span>}
+              </label>
+              <input
+                type={field.type}
+                value={data[field.key] || ""}
+                required={field.required}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={inp}
+                placeholder={`Enter ${field.label.toLowerCase()}`}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

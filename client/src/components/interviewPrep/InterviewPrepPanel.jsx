@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import {
   Sparkles, Loader2, ChevronDown, ChevronUp, Copy,
-  AlertTriangle, MessageSquare, RefreshCw, ClipboardList, History,
+  AlertTriangle, RefreshCw, ClipboardList, History, Lightbulb,
 } from "lucide-react";
 import {
   generateInterviewQuestions,
@@ -117,7 +117,7 @@ const InterviewPrepPanel = ({ resumeId }) => {
               <div className="border-t border-line bg-canvas px-4 pb-4 pt-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">💡 Suggested Answer</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted"><Lightbulb className="size-3.5" /> Suggested Answer</p>
                     <p className="text-sm text-body leading-relaxed">{q.suggestedAnswer}</p>
                   </div>
                   <button
@@ -141,8 +141,8 @@ const InterviewPrepPanel = ({ resumeId }) => {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
-          <MessageSquare className="size-5 text-brand-600" /> Interview Prep
+        <h3 className="text-lg font-semibold text-ink">
+          Interview Prep
         </h3>
         <p className="mt-0.5 text-sm text-muted">
           Generate 10 tailored interview questions with suggested answers based on your resume.
@@ -184,7 +184,7 @@ const InterviewPrepPanel = ({ resumeId }) => {
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
                 placeholder="e.g. Senior Frontend Engineer, Product Manager"
-                className="w-full rounded-lg border border-line p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
@@ -196,7 +196,7 @@ const InterviewPrepPanel = ({ resumeId }) => {
                 onChange={(e) => setJobDescription(e.target.value.slice(0, 500))}
                 rows={4}
                 placeholder="Paste key lines from the job description…"
-                className="w-full resize-none rounded-lg border border-line p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full resize-none rounded-lg border border-line bg-surface p-3 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <p className="mt-1 text-right text-xs text-muted">{jobDescription.length} / 500</p>
             </div>

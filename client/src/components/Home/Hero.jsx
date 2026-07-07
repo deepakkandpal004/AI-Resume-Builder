@@ -1,91 +1,224 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { ArrowRight, FileText, Sparkles, Check } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
+import { motion } from "framer-motion";
 import ModernTemplate from "../templates/ModernTemplate";
 import { dummyResumeData } from "../../assets/assets";
-import { useScrollReveal } from "../../hooks/useScrollReveal";
 
 const Hero = () => {
   const { user } = useSelector((state) => state.auth);
-  const headingRef = useScrollReveal();
-  const mockupRef = useScrollReveal();
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Animated background glow */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[600px] w-[800px] -translate-x-1/2 animate-gradient rounded-full bg-gradient-to-r from-brand-400/30 via-accent-400/20 to-brand-600/30 blur-[140px]" />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 -z-10 h-[400px] w-[400px] animate-float-delayed rounded-full bg-accent-400/20 blur-[100px]" />
+    <section className="relative min-h-screen flex items-center overflow-hidden pt-24">
+      <div className="pointer-events-none absolute inset-0 gradient-glow" />
+      <div className="pointer-events-none absolute inset-0 gradient-glow-right" />
+      <div className="pointer-events-none absolute inset-0 dot-grid" />
 
-      <div className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-16 pt-16 md:flex-row md:pb-28 md:pt-24 md:px-10">
-        {/* Left — Text */}
-        <div ref={headingRef} className="flex-1 text-center md:text-left reveal">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-4 py-1.5 text-sm text-brand-700 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300">
-            <Sparkles className="size-4" />
-            <span>AI-powered resume building</span>
-          </div>
+      <motion.div
+        className="pointer-events-none absolute -top-48 left-1/2 -z-10 -translate-x-1/2 rounded-full bg-emerald-500/10"
+        style={{ width: "600px", height: "600px", filter: "blur(130px)" }}
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="pointer-events-none absolute -bottom-40 -right-24 -z-10 rounded-full bg-teal-400/10"
+        style={{ width: "400px", height: "400px", filter: "blur(100px)" }}
+        animate={{ scale: [1, 1.15, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-          <h1 className="max-w-2xl text-5xl font-bold leading-[1.1] tracking-tight text-ink md:text-6xl">
-            Build a resume that{" "}
-            <span className="bg-gradient-to-r from-brand-600 to-accent-600 bg-clip-text text-transparent">
-              gets you hired
-            </span>
-          </h1>
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center px-6 py-16 md:flex-row md:py-20 md:px-10">
+        <div className="flex-1 text-center md:text-left">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-brand-400 md:mx-0">
+              Build faster. Apply smarter.
+            </div>
+          </motion.div>
 
-          <p className="mt-6 max-w-lg text-lg text-muted">
-            Create, customize and download a polished, professional resume in
-            minutes — with smart AI assistance every step of the way.
-          </p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="max-w-3xl text-5xl font-black leading-[1.02] text-ink md:text-6xl xl:text-7xl"
+            style={{ letterSpacing: "-0.04em" }}
+          >
+            Create a resume that gets
+            <span className="text-gradient"> interviews</span>
+          </motion.h1>
 
-          <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row md:justify-start">
-            <Link to="/app" className="btn-brand h-12 px-8 text-base">
-              {user ? "Go to dashboard" : "Get started free"}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-body md:mx-0"
+          >
+            Build ATS-friendly resumes, improve every bullet with AI, and
+            share a polished version in minutes.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-10 flex flex-col items-center gap-4 sm:flex-row md:justify-start"
+          >
+            <Link
+              to="/app"
+              className="btn-primary px-10 text-base shadow-xl shadow-emerald-500/20"
+              style={{ minHeight: "3.25rem" }}
+            >
+              {user ? "Go to Dashboard" : "Start Building Free"}
               <ArrowRight className="size-4" />
             </Link>
-            <a href="#features" className="btn-outline h-12 px-7 text-base">
-              <FileText className="size-4" />
-              See how it works
+            <a
+              href="#product-showcase"
+              className="btn-outline px-8 text-base"
+              style={{ minHeight: "3.25rem" }}
+            >
+              <Play className="size-4" />
+              Watch Demo
             </a>
-          </div>
+          </motion.div>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted md:justify-start">
-            <span className="inline-flex items-center gap-2">
-              <Check className="size-4 text-accent-600" /> 100% free to use
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Check className="size-4 text-accent-600" /> ATS-friendly templates
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Check className="size-4 text-accent-600" /> No watermark
-            </span>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-5 text-sm text-muted"
+          >
+            No credit card required &middot; Free forever
+          </motion.p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+            {[
+              "6 ATS-ready templates",
+              "AI suggestions on demand",
+              "One-click share links",
+            ].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-line bg-surface/50 px-4 py-2 text-xs font-semibold tracking-wide text-muted"
+              >
+                {item}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* Right — Resume mockup */}
-        <div ref={mockupRef} className="mt-14 flex-1 md:mt-0 reveal reveal-delay-2">
-          <div className="animate-float" style={{ perspective: "1000px" }}>
-            <div className="mx-auto max-w-[460px] overflow-hidden rounded-2xl border border-line bg-white shadow-2xl shadow-brand-500/15 transition-all hover:shadow-brand-500/25 dark:shadow-black/30">
-              {/* Mockup toolbar */}
-              <div className="flex items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-4 py-3">
-                <span className="size-3 rounded-full bg-rose-400" />
-                <span className="size-3 rounded-full bg-amber-400" />
-                <span className="size-3 rounded-full bg-emerald-400" />
-                <span className="ml-3 rounded-md bg-white px-3 py-1 text-[10px] text-gray-400 shadow-sm">
-                  alex-smith-resume.pdf
-                </span>
-              </div>
-              {/* Scaled-down resume preview */}
-              <div className="overflow-hidden" style={{ maxHeight: "420px" }}>
-                <div className="origin-top" style={{ transform: "scale(0.6)", width: "calc(100% / 0.6)", transformOrigin: "top left" }}>
-                  <ModernTemplate
-                    data={dummyResumeData[0]}
-                    accentColor="#4F46E5"
-                    styleOptions={{}}
-                  />
+        <div className="mt-16 flex-1 md:mt-0 md:pl-16">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="relative"
+          >
+            <div className="animate-float" style={{ perspective: "1200px" }}>
+              <div className="relative overflow-hidden rounded-2xl border border-line bg-surface/30 backdrop-blur-sm shadow-2xl shadow-emerald-500/10 transition-all duration-500 hover:shadow-emerald-500/20 hover:-translate-y-2 group">
+                <div className="flex items-center gap-1.5 border-b border-line px-4 py-3">
+                  <span className="size-2.5 rounded-full bg-red-400/60" />
+                  <span className="size-2.5 rounded-full bg-yellow-400/60" />
+                  <span className="size-2.5 rounded-full bg-emerald-400/60" />
+                  <span className="ml-3 rounded-md bg-surface/50 px-3 py-1 text-[10px] text-muted">
+                      Live resume preview
+                  </span>
                 </div>
+                <div className="p-4 bg-canvas/80">
+                  <div className="grid grid-cols-5 gap-4">
+                    <div className="col-span-2 space-y-3 rounded-lg border border-line bg-surface/30 p-3 text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-emerald-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Resume Editor</span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div>
+                          <div className="text-[9px] text-muted font-medium mb-1">Full Name</div>
+                          <div className="rounded border border-line bg-surface/30 px-2 py-1 text-[10px] text-ink/80 font-medium font-sans">
+                            Alex Smith
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-muted font-medium mb-1">Job Title</div>
+                          <div className="rounded border border-line bg-surface/30 px-2 py-1 text-[10px] text-emerald-400 font-medium font-sans">
+                            Full Stack Developer
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-muted font-medium mb-1">Skills</div>
+                          <div className="flex flex-wrap gap-1">
+                            {["React", "Node.js", "AI"].map((tag) => (
+                              <span key={tag} className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[8px] font-semibold text-emerald-400">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded border border-emerald-500/10 bg-emerald-500/5 p-2 text-left">
+                        <div className="flex items-center gap-1 text-[8px] font-bold text-emerald-300">
+                          <span className="size-1 rounded-full bg-emerald-400 animate-pulse-soft" />
+                          AI Suggestion
+                        </div>
+                        <p className="mt-0.5 text-[7.5px] leading-normal text-muted">
+                          Strong experience section. Add metrics to impact statement.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="col-span-3 flex flex-col rounded-lg border border-line bg-surface/30 p-3">
+                      <div className="mb-2 flex items-center gap-1.5 text-left">
+                        <span className="size-1.5 rounded-full bg-teal-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Live Preview</span>
+                      </div>
+
+                      <div className="relative flex-1 overflow-hidden rounded-md bg-white shadow-inner" style={{ minHeight: "260px" }}>
+                        <div 
+                          className="absolute left-0 top-0 origin-top-left" 
+                          style={{ 
+                            transform: "scale(0.42)", 
+                            width: "238%", 
+                            height: "238%" 
+                          }}
+                        >
+                          <ModernTemplate
+                            data={dummyResumeData[0]}
+                            accentColor="#10b981"
+                            styleOptions={{}}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-left">
+                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
+                    <span className="text-[10px] text-emerald-300/80">
+                      AI suggests adding more action verbs to your experience section
+                    </span>
+                  </div>
+                </div>
+                <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-t from-emerald-500/5 to-transparent" />
               </div>
             </div>
-          </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1 }}
+              className="absolute -bottom-4 -left-4 rounded-xl border border-line bg-surface/80 backdrop-blur-md px-4 py-2 shadow-lg"
+            >
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-emerald-400 font-bold">ATS Score: 92</span>
+                <span className="text-muted">|</span>
+                <span className="text-body">Top 5%</span>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

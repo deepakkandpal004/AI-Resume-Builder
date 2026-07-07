@@ -1,80 +1,54 @@
-import { Check, Layout } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import React, { useState } from 'react'
 
-const TemplateSelector = ({ selectedTemplate, onChange }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const templates = [
+  { id: 'classic', name: 'Classic', color: '#6366f1' },
+  { id: 'modern', name: 'Modern', color: '#10b981' },
+  { id: 'minimal-image', name: 'Minimal Image', color: '#2dd4bf' },
+  { id: 'minimal', name: 'Minimal', color: '#2dd4bf' },
+  { id: 'executive', name: 'Executive', color: '#2563EB' },
+  { id: 'creative', name: 'Creative', color: '#E11D48' },
+  { id: 'compact', name: 'Compact', color: '#D97706' },
+];
 
-    const templates = [
-        {
-            id: 'classic',
-            name: 'Classic',
-            preview: "A clean, traditional resume format with clear sections and professional typography"
-        },
-        {
-            id: 'modern',
-            name: 'Modern',
-            preview: "Sleek design with stragetic use of color and modern font choices"
-        },
-        {
-            id: 'minimal-image',
-            name: 'Minimal Image',
-            preview: "Minimal design with a single image and clean typography"
-        },
-        {
-            id: 'minimal',
-            name: 'Minimal',
-            preview: "Ultra-clean design that puts your content front and center"
-        },
-        {
-            id: 'executive',
-            name: 'Executive',
-            preview: "Bold gradient header banner with authoritative section styling for senior professionals"
-        },
-        {
-            id: 'creative',
-            name: 'Creative',
-            preview: "Two-column layout with a vibrant sidebar — perfect for designers and marketers"
-        },
-        {
-            id: 'compact',
-            name: 'Compact',
-            preview: "Dense, space-efficient single-column layout — fits more content on one page"
-        },
-    ]
+const TemplateSelector = ({ selectedTemplate, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const active = templates.find((t) => t.id === selectedTemplate) || templates[0];
+
   return (
     <div className='relative'>
-        <button className='flex items-center gap-1.5 text-sm text-brand-700 bg-brand-50 border border-brand-100 hover:bg-brand-100 transition-all px-3 py-2 rounded-lg cursor-pointer dark:bg-brand-500/10 dark:text-brand-300 dark:border-brand-500/20 dark:hover:bg-brand-500/20' onClick={() => setIsOpen(!isOpen)}>
-            <Layout className='max-sm:hidden' size={14} />
-                <span>Template</span>
-        </button>
-        {isOpen && (
-            <div className='absolute top-full w-xs p-3 mt-2 space-y-3 z-10 bg-surface rounded-md border border-line shadow-sm'>
-                {templates.map((template) => (
-                    <div 
-                        key={template.id} 
-                        className={`relative p-3 border rounded-md cursor-pointer transition-all ${selectedTemplate === template.id ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-line hover:border-brand-300 hover:bg-canvas'}`}
-                        onClick={() => {
-                            onChange(template.id);
-                            setIsOpen(false);
-                        }}
-                    >
-                        {selectedTemplate === template.id && (
-                            <div className='absolute top-2 right-2'>
-                                <div className='size-5 bg-brand-600 rounded-full flex items-center justify-center'>
-                                    <Check className='text-white w-3 h-3' />
-                                </div>
-                            </div>
-                        )}
-                        <div className='space-y-1'>
-                            <h4 className='font-medium text-ink'>{template.name}</h4>
-                            <div className='mt-2 p-2 bg-canvas rounded text-xs text-muted italic'>{template.preview}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        )}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className='flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-sm text-ink transition hover:bg-canvas'
+      >
+        <span className="size-3 rounded-full" style={{ backgroundColor: active.color }} />
+        <span>{active.name}</span>
+        <ChevronDown className={`size-3.5 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+          <div className='absolute left-0 top-full z-40 mt-1 w-36 overflow-hidden rounded-xl border border-line bg-surface shadow-lg'>
+            {templates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => { onChange(template.id); setIsOpen(false); }}
+                className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition hover:bg-line/20 ${
+                  selectedTemplate === template.id ? "font-medium text-ink" : "text-muted"
+                }`}
+              >
+                <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: template.color }} />
+                <span className="flex-1 text-left">{template.name}</span>
+                {selectedTemplate === template.id && (
+                  <Check className="size-3.5 text-emerald-500" />
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default TemplateSelector
+export default TemplateSelector;

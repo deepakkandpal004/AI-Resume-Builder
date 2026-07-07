@@ -124,7 +124,7 @@ const Upgrade = () => {
           email: orderData.user.email,
         },
         theme: {
-          color: "#4F46E5", // Brand Indigo Color
+          color: "#7c3aed", // Brand Violet Color
         },
         handler: async function (response) {
           // Step 4: Verify payment server-side
@@ -255,7 +255,7 @@ const Upgrade = () => {
               {plan.features.map((f) => (
                 <li key={f.label} className="flex items-center gap-3 text-sm">
                   {f.included
-                    ? <Check className="size-4 shrink-0 text-teal-500" />
+                    ? <Check className="size-4 shrink-0 text-accent-600" />
                     : <X className="size-4 shrink-0 text-muted" />}
                   <span className={f.included ? "text-ink" : "text-muted line-through"}>{f.label}</span>
                 </li>

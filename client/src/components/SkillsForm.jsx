@@ -1,7 +1,9 @@
-import { Loader2, Plus, Sparkles, X } from "lucide-react";
+import { Loader2, Plus, Sparkles, X, Lightbulb } from "lucide-react";
 import React from "react";
 import toast from "react-hot-toast";
 import api from "../configs/api";
+
+const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
 
 const SkillsForm = ({ data, onChange, profession, token }) => {
   const [newSkill, setNewSkill] = React.useState("");
@@ -9,8 +11,9 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
   const [loading, setLoading] = React.useState(false);
 
   const addSkill = () => {
-    if (newSkill.trim() && !data.includes(newSkill.trim())) {
-      onChange([...data, newSkill.trim()]);
+    const skill = newSkill.trim();
+    if (skill && !data.includes(skill)) {
+      onChange([...data, skill]);
       setNewSkill("");
     }
   };
@@ -62,72 +65,82 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
      suggestions.tools?.length > 0);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">Skills</h3>
-        <p className="text-sm text-muted">Add your technical and soft skills</p>
+        <h3 className="text-lg font-semibold text-ink">Skills</h3>
+        <p className="text-sm text-muted mt-0.5">
+          {data.length > 0
+            ? `${data.length} skill${data.length > 1 ? "s" : ""} added`
+            : "Add your technical and soft skills"}
+        </p>
       </div>
 
+      {/* Add skill input */}
       <div className="flex gap-2">
-        <input
-          type="text"
-          value={newSkill}
-          onChange={(e) => setNewSkill(e.target.value)}
-          onKeyDown={handleKeyPress}
-          className="flex-1 px-3 py-2 text-sm"
-          placeholder="Enter a skill and press Enter"
-        />
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            onKeyDown={handleKeyPress}
+            className={inp}
+            placeholder="Type a skill and press Enter"
+          />
+        </div>
         <button
           onClick={addSkill}
           disabled={!newSkill.trim()}
-          className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Plus className="size-4" /> Add Skill
+          <Plus className="size-4" /> Add
         </button>
       </div>
 
+      {/* Skill tags */}
       {data.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {data.map((skill, index) => (
             <span
               key={index}
-              className="flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+              className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-500/10 pl-3 pr-2 py-1 text-sm text-brand-700 dark:text-brand-300"
             >
               {skill}
               <button
                 onClick={() => removeSkill(index)}
-                className="ml-1 rounded-full p-0.5 transition-colors hover:bg-brand-100 dark:hover:bg-brand-500/20"
+                className="rounded-full p-0.5 transition-colors hover:bg-brand-200 dark:hover:bg-brand-500/30"
               >
-                <X className="h-3 w-3" />
+                <X className="size-3" />
               </button>
             </span>
           ))}
         </div>
       ) : (
-        <div className="py-8 text-center text-muted">
-          <Sparkles className="mx-auto mb-2 h-10 w-10 text-gray-300" />
-          <p>No skills added yet.</p>
-          <p className="text-sm">Add your technical and soft skills</p>
+        <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed border-line rounded-xl">
+          <Lightbulb className="size-10 text-muted mb-3" />
+          <p className="text-sm text-muted">No skills added yet</p>
+          <p className="text-xs text-muted mt-1">Type a skill above and press Enter or click Add</p>
         </div>
       )}
 
+      {/* AI Suggestions trigger */}
       <div className="flex items-center gap-3">
         <button
           onClick={suggestSkills}
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 px-3.5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
           ) : (
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="size-4" />
           )}
           {loading ? "Suggesting..." : "Suggest with AI"}
         </button>
         {hasSuggestions && (
           <button
             onClick={() => setSuggestions(null)}
-            className="text-sm text-muted underline transition-colors hover:text-body"
+            className="text-xs text-muted underline transition-colors hover:text-body"
           >
             Clear suggestions
           </button>
@@ -135,21 +148,22 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
       </div>
 
       {!profession && (
-        <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+        <div className="rounded-lg bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
           Set your profession in <strong>Personal Info</strong> to get AI skill suggestions.
         </div>
       )}
 
+      {/* AI Suggestions panel */}
       {hasSuggestions && (
-        <div className="space-y-3 rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/20 dark:bg-purple-500/5">
+        <div className="space-y-3 rounded-xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-500/20 dark:bg-purple-500/5">
           <p className="flex items-center gap-2 text-sm font-semibold text-purple-800 dark:text-purple-300">
-            <Sparkles className="h-4 w-4" />
-            AI Suggested Skills for "{profession}"
+            <Sparkles className="size-4" />
+            Suggested Skills for &ldquo;{profession}&rdquo;
           </p>
 
           {suggestions.technical?.length > 0 && (
             <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">Technical</p>
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Technical</p>
               <div className="flex flex-wrap gap-1.5">
                 {suggestions.technical.map((skill, i) => (
                   <button
@@ -168,7 +182,7 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
 
           {suggestions.soft?.length > 0 && (
             <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">Soft Skills</p>
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Soft Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {suggestions.soft.map((skill, i) => (
                   <button
@@ -187,7 +201,7 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
 
           {suggestions.tools?.length > 0 && (
             <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">Tools & Technologies</p>
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Tools &amp; Technologies</p>
               <div className="flex flex-wrap gap-1.5">
                 {suggestions.tools.map((skill, i) => (
                   <button
@@ -206,11 +220,8 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
         </div>
       )}
 
-      <div className="rounded-lg bg-brand-50 p-3 text-sm text-body dark:bg-brand-500/10">
-        <p>
-          <strong>Tip:</strong> Add 8-12 relevant skills. Include both technical skills
-          (programming languages, tools) and soft skills (leadership, communication).
-        </p>
+      <div className="rounded-lg bg-brand-50 px-3 py-2.5 text-xs text-body dark:bg-brand-500/10">
+        <strong>Tip:</strong> Add 8–12 relevant skills including both technical and soft skills.
       </div>
     </div>
   );

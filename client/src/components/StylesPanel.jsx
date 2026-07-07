@@ -15,28 +15,23 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Bold, GripVertical, Italic, Palette, ImageIcon } from "lucide-react";
+import { Bold, GripVertical, Italic, ImageIcon } from "lucide-react";
 import { DEFAULT_SECTION_HEADINGS } from "./SectionManager";
 import { applyPhotoEffect } from "../utils/imagekit";
 
-// ---------------------------------------------------------------------------
-// Font options — resume-appropriate typefaces
-// ---------------------------------------------------------------------------
 // eslint-disable-next-line react-refresh/only-export-components
 export const FONT_FAMILY_OPTIONS = [
-  // Sans-serif
-  { value: "inter",        label: "Inter",          css: "Inter, sans-serif",               category: "Sans-serif" },
-  { value: "lato",         label: "Lato",            css: "Lato, sans-serif",                category: "Sans-serif" },
-  { value: "raleway",      label: "Raleway",         css: "Raleway, sans-serif",             category: "Sans-serif" },
-  { value: "nunitosans",   label: "Nunito Sans",     css: "'Nunito Sans', sans-serif",       category: "Sans-serif" },
-  // Serif
+  { value: "inter",        label: "Inter",            css: "Inter, sans-serif",                 category: "Sans-serif" },
+  { value: "spacegrotesk", label: "Space Grotesk",    css: "'Space Grotesk', sans-serif",       category: "Sans-serif" },
+  { value: "lato",         label: "Lato",             css: "Lato, sans-serif",                  category: "Sans-serif" },
+  { value: "raleway",      label: "Raleway",          css: "Raleway, sans-serif",               category: "Sans-serif" },
+  { value: "nunitosans",   label: "Nunito Sans",      css: "'Nunito Sans', sans-serif",         category: "Sans-serif" },
   { value: "georgia",      label: "Georgia",         css: "Georgia, serif",                  category: "Serif" },
   { value: "merriweather", label: "Merriweather",    css: "Merriweather, serif",             category: "Serif" },
   { value: "playfair",     label: "Playfair Display",css: "'Playfair Display', serif",       category: "Serif" },
   { value: "sourceserif",  label: "Source Serif 4",  css: "'Source Serif 4', serif",         category: "Serif" },
   { value: "garamond",     label: "EB Garamond",     css: "'EB Garamond', serif",            category: "Serif" },
   { value: "ibmplexserif", label: "IBM Plex Serif",  css: "'IBM Plex Serif', serif",         category: "Serif" },
-  // Monospace
   { value: "courier",      label: "Courier New",     css: "'Courier New', monospace",        category: "Mono" },
 ];
 
@@ -46,17 +41,25 @@ const LINE_SPACING_OPTIONS = [
   { value: 1.8, label: "Relaxed" },
 ];
 
-// Photo effects applied via ImageKit URL transforms — no re-upload needed
 const PHOTO_EFFECT_OPTIONS = [
   { value: "none",      label: "Original",      description: "No effect" },
-  { value: "grayscale", label: "Grayscale",      description: "Classic B&W look" },
-  { value: "contrast",  label: "High Contrast",  description: "Sharper definition" },
+  { value: "grayscale", label: "Grayscale",      description: "Classic B&W" },
+  { value: "contrast",  label: "High Contrast",  description: "Sharper look" },
   { value: "sharpen",   label: "Sharpen",        description: "Crisp details" },
 ];
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+const DATE_FORMAT_OPTIONS = [
+  { value: "MM/YYYY",   label: "06/2024" },
+  { value: "Month YYYY",label: "Jun 2024" },
+  { value: "MMMM YYYY", label: "June 2024" },
+];
+
+const SECTION_SPACING_OPTIONS = [
+  { value: "compact",  label: "Compact" },
+  { value: "normal",   label: "Normal" },
+  { value: "relaxed",  label: "Relaxed" },
+];
+
 const hasContent = (resumeData, key) => {
   switch (key) {
     case "summary":        return !!resumeData.professional_summary?.trim();
@@ -90,9 +93,6 @@ const getActiveSections = (resumeData) => {
   return [...builtIn, ...custom];
 };
 
-// ---------------------------------------------------------------------------
-// SortableItem
-// ---------------------------------------------------------------------------
 const SortableItem = ({ id, label }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
@@ -121,10 +121,6 @@ const SortableItem = ({ id, label }) => {
   );
 };
 
-// ---------------------------------------------------------------------------
-// ToggleButton — reusable bold / italic toggle
-// ---------------------------------------------------------------------------
-// eslint-disable-next-line no-unused-vars
 const ToggleButton = ({ active, onClick, icon: Icon, label }) => (
   <button
     onClick={onClick}
@@ -142,9 +138,31 @@ const ToggleButton = ({ active, onClick, icon: Icon, label }) => (
   </button>
 );
 
-// ---------------------------------------------------------------------------
-// StylesPanel
-// ---------------------------------------------------------------------------
+const SectionCard = ({ title, children }) => (
+  <div className="space-y-3">
+    <h4 className="text-sm font-semibold text-body">{title}</h4>
+    {children}
+  </div>
+);
+
+const SelectGroup = ({ options, value, onChange }) => (
+  <div className="flex gap-2">
+    {options.map((opt) => (
+      <button
+        key={opt.value}
+        onClick={() => onChange(opt.value)}
+        className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+          value === opt.value
+            ? "border-brand-500 bg-brand-600 text-white"
+            : "border-line bg-surface text-ink hover:bg-canvas"
+        }`}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+);
+
 const StylesPanel = ({ styleOptions, onChange, resumeData }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -182,244 +200,197 @@ const StylesPanel = ({ styleOptions, onChange, resumeData }) => {
   const contentItalic = styleOptions?.contentItalic ?? false;
   const photoEffect   = styleOptions?.photoEffect   ?? "none";
   const pageSize      = styleOptions?.pageSize      ?? "letter";
+  const dateFormat    = styleOptions?.dateFormat    ?? "MM/YYYY";
+  const sectionSpacing = styleOptions?.sectionSpacing ?? "normal";
 
-  // Group fonts by category for the selector
   const categories = [...new Set(FONT_FAMILY_OPTIONS.map((f) => f.category))];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
-          <Palette className="size-5" /> Styles
-        </h3>
-        <p className="text-sm text-muted">Customize font, size, spacing, and section order.</p>
+        <h3 className="text-lg font-semibold text-ink">Styles</h3>
+        <p className="text-sm text-muted mt-0.5">Customize fonts, spacing, and section layout.</p>
       </div>
 
-      {/* ── Font Family ─────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Font Family</h4>
-        {categories.map((cat) => (
-          <div key={cat}>
-            <p className="text-xs text-muted mb-1.5">{cat}</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {FONT_FAMILY_OPTIONS.filter((f) => f.category === cat).map((opt) => {
-                const isActive = fontFamily === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => update("fontFamily", opt.value)}
-                    className={`rounded-lg border px-3 py-2 text-sm text-left transition-all ${
-                      isActive
-                        ? "border-brand-500 ring-2 ring-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
-                        : "border-line bg-surface text-ink hover:border-brand-300 hover:bg-canvas"
-                    }`}
-                    style={{ fontFamily: opt.css }}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
+      {/* ── Typography ─────────────────────────────────────────────── */}
+      <div className="space-y-4 pb-5 border-b border-line">
+        <SectionCard title="Font Family">
+          {categories.map((cat) => (
+            <div key={cat}>
+              <p className="text-xs text-muted mb-1.5">{cat}</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {FONT_FAMILY_OPTIONS.filter((f) => f.category === cat).map((opt) => {
+                  const isActive = fontFamily === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => update("fontFamily", opt.value)}
+                      className={`rounded-lg border px-3 py-2 text-sm text-left transition-all ${
+                        isActive
+                          ? "border-brand-500 ring-2 ring-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+                          : "border-line bg-surface text-ink hover:border-brand-300 hover:bg-canvas"
+                      }`}
+                      style={{ fontFamily: opt.css }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Font Size ──────────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Font Size</h4>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => update("fontSize", Math.min(16, Math.max(11, fontSize - 1)))}
-            disabled={fontSize <= 11}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Decrease font size"
-          >−</button>
-          <span className="min-w-[3.5rem] text-center text-sm font-medium text-ink tabular-nums">
-            {fontSize}px
-          </span>
-          <button
-            onClick={() => update("fontSize", Math.min(16, Math.max(11, fontSize + 1)))}
-            disabled={fontSize >= 16}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Increase font size"
-          >+</button>
-          <span className="ml-auto text-xs text-muted">11 – 16px</span>
-        </div>
-      </div>
-
-      {/* ── Line Spacing ───────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Line Spacing</h4>
-        <div className="flex gap-2">
-          {LINE_SPACING_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => update("lineSpacing", opt.value)}
-              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
-                lineSpacing === opt.value
-                  ? "border-brand-500 bg-brand-600 text-white"
-                  : "border-line bg-surface text-ink hover:bg-canvas"
-              }`}
-            >
-              {opt.label}
-            </button>
           ))}
-        </div>
+        </SectionCard>
+
+        <SectionCard title="Font Size">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => update("fontSize", Math.min(16, Math.max(11, fontSize - 1)))}
+              disabled={fontSize <= 11}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Decrease font size"
+            >−</button>
+            <span className="min-w-[3.5rem] text-center text-sm font-medium text-ink tabular-nums">
+              {fontSize}px
+            </span>
+            <button
+              onClick={() => update("fontSize", Math.min(16, Math.max(11, fontSize + 1)))}
+              disabled={fontSize >= 16}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-ink hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Increase font size"
+            >+</button>
+            <span className="ml-auto text-xs text-muted">11 – 16px</span>
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Line Spacing">
+          <SelectGroup options={LINE_SPACING_OPTIONS} value={lineSpacing} onChange={(v) => update("lineSpacing", v)} />
+        </SectionCard>
       </div>
 
-      {/* ── Page Format ────────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Page Format</h4>
-        <p className="text-xs text-muted">Optimize paper size for export & printing.</p>
-        <div className="flex gap-2">
-          {[
+      {/* ── Layout ─────────────────────────────────────────────────── */}
+      <div className="space-y-4 pb-5 border-b border-line">
+        <SectionCard title="Page Format">
+          <p className="text-xs text-muted mb-2">Paper size for export & printing.</p>
+          <SelectGroup options={[
             { value: "letter", label: "Letter (US)" },
             { value: "a4", label: "A4 (International)" },
-          ].map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => update("pageSize", opt.value)}
-              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
-                pageSize === opt.value
-                  ? "border-brand-500 bg-brand-600 text-white"
-                  : "border-line bg-surface text-ink hover:bg-canvas"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+          ]} value={pageSize} onChange={(v) => update("pageSize", v)} />
+        </SectionCard>
+
+        <SectionCard title="Date Format">
+          <p className="text-xs text-muted mb-2">How dates appear on the resume.</p>
+          <SelectGroup options={DATE_FORMAT_OPTIONS} value={dateFormat} onChange={(v) => update("dateFormat", v)} />
+        </SectionCard>
+
+        <SectionCard title="Section Spacing">
+          <p className="text-xs text-muted mb-2">Vertical gap between sections.</p>
+          <SelectGroup options={SECTION_SPACING_OPTIONS} value={sectionSpacing} onChange={(v) => update("sectionSpacing", v)} />
+        </SectionCard>
       </div>
 
-      {/* ── Heading Style ──────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Heading Style</h4>
-        <p className="text-xs text-muted">Applied to all section headings in the resume.</p>
-        <div className="flex gap-2">
-          <ToggleButton
-            active={headingBold}
-            onClick={() => update("headingBold", !headingBold)}
-            icon={Bold}
-            label="Bold"
-          />
-          <ToggleButton
-            active={headingItalic}
-            onClick={() => update("headingItalic", !headingItalic)}
-            icon={Italic}
-            label="Italic"
-          />
-        </div>
-        {/* Live preview */}
-        <div
-          className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm"
-          style={{
-            fontWeight: headingBold ? 700 : 400,
-            fontStyle: headingItalic ? "italic" : "normal",
-            fontFamily: FONT_FAMILY_OPTIONS.find((f) => f.value === fontFamily)?.css ?? "inherit",
-          }}
-        >
-          Professional Experience
-        </div>
-      </div>
+      {/* ── Text Style ─────────────────────────────────────────────── */}
+      <div className="space-y-4 pb-5 border-b border-line">
+        <SectionCard title="Heading Style">
+          <p className="text-xs text-muted mb-2">Applied to all section headings.</p>
+          <div className="flex gap-2">
+            <ToggleButton active={headingBold} onClick={() => update("headingBold", !headingBold)} icon={Bold} label="Bold" />
+            <ToggleButton active={headingItalic} onClick={() => update("headingItalic", !headingItalic)} icon={Italic} label="Italic" />
+          </div>
+          <div
+            className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm"
+            style={{
+              fontWeight: headingBold ? 700 : 400,
+              fontStyle: headingItalic ? "italic" : "normal",
+              fontFamily: FONT_FAMILY_OPTIONS.find((f) => f.value === fontFamily)?.css ?? "inherit",
+            }}
+          >
+            Professional Experience
+          </div>
+        </SectionCard>
 
-      {/* ── Content Style ──────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Content Style</h4>
-        <p className="text-xs text-muted">Applied to body text (descriptions, summaries, etc.).</p>
-        <div className="flex gap-2">
-          <ToggleButton
-            active={contentBold}
-            onClick={() => update("contentBold", !contentBold)}
-            icon={Bold}
-            label="Bold"
-          />
-          <ToggleButton
-            active={contentItalic}
-            onClick={() => update("contentItalic", !contentItalic)}
-            icon={Italic}
-            label="Italic"
-          />
-        </div>
-        {/* Live preview */}
-        <div
-          className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm"
-          style={{
-            fontWeight: contentBold ? 700 : 400,
-            fontStyle: contentItalic ? "italic" : "normal",
-            fontFamily: FONT_FAMILY_OPTIONS.find((f) => f.value === fontFamily)?.css ?? "inherit",
-          }}
-        >
-          Developed and maintained full-stack web applications…
-        </div>
+        <SectionCard title="Content Style">
+          <p className="text-xs text-muted mb-2">Applied to body text (descriptions, summaries).</p>
+          <div className="flex gap-2">
+            <ToggleButton active={contentBold} onClick={() => update("contentBold", !contentBold)} icon={Bold} label="Bold" />
+            <ToggleButton active={contentItalic} onClick={() => update("contentItalic", !contentItalic)} icon={Italic} label="Italic" />
+          </div>
+          <div
+            className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm"
+            style={{
+              fontWeight: contentBold ? 700 : 400,
+              fontStyle: contentItalic ? "italic" : "normal",
+              fontFamily: FONT_FAMILY_OPTIONS.find((f) => f.value === fontFamily)?.css ?? "inherit",
+            }}
+          >
+            Developed and maintained full-stack web applications…
+          </div>
+        </SectionCard>
       </div>
 
       {/* ── Photo Style ────────────────────────────────────────────── */}
       {resumeData?.personal_info?.image && typeof resumeData.personal_info.image === "string" && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-body uppercase tracking-wide flex items-center gap-2">
-            <ImageIcon className="size-4" /> Photo Style
-          </h4>
-          <p className="text-xs text-muted">
-            Applies a visual effect to your profile photo — no re-upload needed.
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {PHOTO_EFFECT_OPTIONS.map((opt) => {
-              const isActive = photoEffect === opt.value;
-              // Build a live preview URL using the actual stored photo
-              const previewUrl = opt.value === "none"
-                ? resumeData.personal_info.image
-                : applyPhotoEffect(resumeData.personal_info.image, opt.value);
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => update("photoEffect", opt.value)}
-                  title={opt.description}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-left transition-all ${
-                    isActive
-                      ? "border-brand-500 ring-2 ring-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
-                      : "border-line bg-surface text-ink hover:border-brand-300 hover:bg-canvas"
-                  }`}
-                >
-                  <img
-                    src={previewUrl}
-                    alt={opt.label}
-                    className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-line"
-                    onError={(e) => { e.target.style.display = "none"; }}
-                  />
-                  <div>
-                    <p className="font-medium text-xs leading-tight">{opt.label}</p>
-                    <p className="text-[10px] text-muted leading-tight">{opt.description}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        <div className="pb-5 border-b border-line">
+          <SectionCard title="Photo Style">
+            <p className="text-xs text-muted mb-2">Apply a visual effect to your profile photo.</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {PHOTO_EFFECT_OPTIONS.map((opt) => {
+                const isActive = photoEffect === opt.value;
+                const previewUrl = opt.value === "none"
+                  ? resumeData.personal_info.image
+                  : applyPhotoEffect(resumeData.personal_info.image, opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => update("photoEffect", opt.value)}
+                    title={opt.description}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-left transition-all ${
+                      isActive
+                        ? "border-brand-500 ring-2 ring-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+                        : "border-line bg-surface text-ink hover:border-brand-300 hover:bg-canvas"
+                    }`}
+                  >
+                    <img
+                      src={previewUrl}
+                      alt={opt.label}
+                      className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-line"
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                    <div>
+                      <p className="font-medium text-xs leading-tight">{opt.label}</p>
+                      <p className="text-[10px] text-muted leading-tight">{opt.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </SectionCard>
         </div>
       )}
 
-      {/* ── Section Order ──────────────────────────────────────────── */}      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-body uppercase tracking-wide">Section Order</h4>
-        <p className="text-xs text-muted">Drag to reorder how sections appear in the resume.</p>
-        {activeSections.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-line py-6 text-center text-sm text-muted">
-            Add content to sections to reorder them.
-          </div>
-        ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-              <div className="space-y-1.5">
-                {activeSections.map((section) => (
-                  <SortableItem key={section.key} id={section.key} label={section.label} />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
+      {/* ── Section Order ──────────────────────────────────────────── */}
+      <div className="pb-5 border-b border-line">
+        <SectionCard title="Section Order">
+          <p className="text-xs text-muted mb-2">Drag to reorder sections in the resume.</p>
+          {activeSections.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-line py-6 text-center text-sm text-muted">
+              Add content to sections to reorder them.
+            </div>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1.5">
+                  {activeSections.map((section) => (
+                    <SortableItem key={section.key} id={section.key} label={section.label} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
+        </SectionCard>
       </div>
 
-      <div className="rounded-lg bg-brand-50 p-3 text-sm text-body dark:bg-brand-500/10">
-        <p><strong>Tip:</strong> Changes apply to the preview in real time. Save your resume to persist them.</p>
+      <div className="rounded-lg bg-brand-50 px-3 py-2.5 text-xs text-body dark:bg-brand-500/10">
+        <strong>Tip:</strong> Changes apply in real time. Save to persist.
       </div>
     </div>
   );

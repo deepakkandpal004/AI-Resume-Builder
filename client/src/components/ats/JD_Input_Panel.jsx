@@ -114,7 +114,7 @@ const JD_Input_Panel = ({ resumeId, onScanComplete }) => {
           onChange={handleChange}
           maxLength={MAX_LENGTH}
           rows={14}
-          className={`w-full resize-none rounded-lg border p-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+          className={`w-full resize-none rounded-lg border bg-surface p-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
             validationError ? 'border-red-400 focus:ring-red-400' : 'border-line'
           }`}
           placeholder="Paste your job description here..."
