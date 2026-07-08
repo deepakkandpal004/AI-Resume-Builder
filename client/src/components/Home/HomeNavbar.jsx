@@ -1,145 +1,259 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../Logo";
 import ThemeToggle from "../ThemeToggle";
 
 const NAV_LINKS = [
   { label: "How It Works", href: "#how-it-works" },
-  { label: "Features", href: "#features" },
-  { label: "Templates", href: "#templates" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Features",     href: "#features"     },
+  { label: "Templates",    href: "#templates"     },
+  { label: "Pricing",      href: "#pricing"       },
 ];
 
 const HomeNavbar = () => {
   const { user } = useSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [activeSection, setActiveSection] = useState("");
+  const rafRef = useRef(null);
 
+  /* ── Scroll detection for header shrink ───────────────────────── */
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") setMenuOpen(false); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    const onScroll = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => setScrolled(window.scrollY > 24));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
+
+  /* ── IntersectionObserver for active section tracking ─────────── */
+  useEffect(() => {
+    const sections = NAV_LINKS.map(link => document.querySelector(link.href)).filter(Boolean);
+    
+    const observerOptions = {
+      root: null,
+      rootMargin: "-25% 0px -55% 0px", // Trigger when section occupies the primary viewport space
+      threshold: 0.1,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  /* ── Escape key ── */
+  useEffect(() => {
+    const h = (e) => { if (e.key === "Escape") setMenuOpen(false); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, []);
+
+  /* ── Body scroll lock ── */
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 md:px-10">
-      <div className="mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-line/50 bg-surface/70 px-5 py-3 shadow-lg backdrop-blur-xl dark:border-white/5 dark:bg-[#0d1117]/80">
-        <Link to="/" className="relative z-10 shrink-0">
-          <Logo size="md" />
+      {/* ── Pill ──────────────────────────────────────────────────── */}
+      <div
+        className="nav-glass-app mx-auto flex max-w-7xl items-center justify-between rounded-full border px-5 py-0.5 transition-all duration-500 ease-out shadow-md"
+      >
+        {/* Logo */}
+        <Link to="/" className="relative z-10 shrink-0" aria-label="ResumeAI home">
+          <Logo size="md" variant="auto" />
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-body transition-colors hover:bg-white/5 hover:text-ink dark:hover:bg-white/5"
-            >
-              {l.label}
-            </a>
-          ))}
+        {/* Desktop nav links with dynamic active indicator & sliding hover */}
+        <div
+          className="hidden items-center gap-0 md:flex"
+          onMouseLeave={() => setHoveredIndex(null)}
+        >
+          {NAV_LINKS.map((l, index) => {
+            const isActive = l.href === `#${activeSection}`;
+            return (
+              <a
+                key={l.label}
+                href={l.href}
+                className={`nav-link-home group relative flex flex-col items-center justify-center transition-colors duration-300 ${
+                  isActive ? "text-brand-500 dark:text-brand-400 font-semibold" : ""
+                }`}
+                onMouseEnter={() => setHoveredIndex(index)}
+              >
+                {/* Sliding Hover Capsule */}
+                <AnimatePresence>
+                  {hoveredIndex === index && (
+                    <motion.span
+                      layoutId="navbar-hover-highlight"
+                      className="absolute inset-0 -z-10 rounded-full bg-brand-500/5 dark:bg-white/8 backdrop-blur-[1px] border border-brand-500/10 dark:border-white/10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+                
+                <span className="relative z-10">{l.label}</span>
+
+                {/* Sliding Active Dot Indicator */}
+                {isActive && (
+                  <motion.span
+                    layoutId="active-dot"
+                    className="absolute bottom-1 size-1 rounded-full bg-brand-500 shadow-sm shadow-emerald-500/40"
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25
+                    }}
+                  />
+                )}
+              </a>
+            );
+          })}
         </div>
 
-        {/* Desktop actions */}
-        <div className="hidden items-center gap-3 md:flex">
-          <ThemeToggle />
+        {/* Desktop CTAs & Theme Toggle */}
+        <div className="hidden items-center gap-2 md:flex">
+          {/* Theme Toggle */}
+          <ThemeToggle className="mr-1" />
+
           {user ? (
-            <Link to="/app" className="btn-primary text-sm px-5 py-2">
+            <Link to="/app" className="btn-primary text-sm px-4 py-0.5">
               Dashboard
             </Link>
           ) : (
             <>
               <Link
                 to="/app?state=login"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-body transition-colors hover:bg-white/5 hover:text-ink dark:hover:bg-white/5"
+                className="nav-cta-ghost px-4 py-0.5"
               >
                 Login
               </Link>
-              <Link to="/app?state=register" className="btn-primary text-sm px-5 py-2">
+              <Link
+                to="/app?state=register"
+                className="nav-cta-primary group px-4 py-0.5 text-sm"
+              >
                 Start Free
+                <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
             </>
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setMenuOpen((open) => !open)}
-          className="relative z-10 text-ink md:hidden"
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-        >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile menu trigger + Theme Toggle */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="relative z-10 flex size-10 items-center justify-center rounded-xl border border-line bg-surface text-body transition-all duration-200 hover:border-brand-500/30 hover:text-ink"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+          >
+            <span className={`absolute transition-all duration-200 ${menuOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"}`}>
+              <X size={19} />
+            </span>
+            <span className={`absolute transition-all duration-200 ${menuOpen ? "opacity-0 -rotate-90" : "opacity-100 rotate-0"}`}>
+              <Menu size={19} />
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* ── Mobile backdrop ───────────────────────────────────────── */}
       {menuOpen && (
         <button
           type="button"
           onClick={() => setMenuOpen(false)}
-          className="fixed inset-0 z-[90] bg-ink/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm md:hidden"
           aria-label="Close menu overlay"
         />
       )}
 
+      {/* ── Mobile drawer ─────────────────────────────────────────── */}
       <div
-        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-10 bg-canvas/95 backdrop-blur-2xl transition-all duration-500 md:hidden ${
-          menuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-canvas/98 backdrop-blur-2xl transition-all duration-300 ease-out md:hidden ${
+          menuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"
         }`}
       >
         <button
           onClick={() => setMenuOpen(false)}
-          className="absolute right-6 top-6 flex size-10 items-center justify-center rounded-xl border border-line bg-surface text-ink"
+          className="absolute right-5 top-5 flex size-10 items-center justify-center rounded-xl border border-line bg-surface text-body transition-all hover:border-brand-500/30 hover:text-ink"
           aria-label="Close menu"
         >
-          <X size={24} />
+          <X size={19} />
         </button>
 
-        <div className="flex flex-col items-center gap-2">
+        <Link to="/" onClick={() => setMenuOpen(false)} className="mb-2">
+          <Logo size="md" variant="auto" />
+        </Link>
+
+        <div className="flex w-full flex-col items-center gap-1 px-8">
           {NAV_LINKS.map((l) => (
             <a
               key={l.label}
               href={l.href}
               onClick={() => setMenuOpen(false)}
-              className="rounded-lg px-6 py-3 text-lg text-body transition hover:bg-white/5 hover:text-ink dark:hover:bg-white/5"
+              className="w-full rounded-xl px-6 py-3.5 text-center font-medium text-body transition-all duration-200 hover:bg-ink/5 hover:text-ink"
+              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", letterSpacing: "-0.01em" }}
             >
               {l.label}
             </a>
           ))}
-          <div className="mt-4">
-            <ThemeToggle />
-          </div>
         </div>
 
-        {user ? (
-          <Link
-            to="/app"
-            onClick={() => setMenuOpen(false)}
-            className="btn-primary px-10 py-3"
-          >
-            Dashboard
-          </Link>
-        ) : (
-          <div className="flex flex-col items-center gap-4">
+        <div className="flex w-full flex-col items-center gap-3 px-8 pt-2">
+          {user ? (
             <Link
-              to="/app?state=login"
+              to="/app"
               onClick={() => setMenuOpen(false)}
-              className="rounded-lg px-10 py-3 text-base font-medium text-body transition hover:bg-white/5 hover:text-ink dark:hover:bg-white/5"
+              className="nav-cta-primary w-full max-w-xs justify-center py-3.5"
             >
-              Login
+              Dashboard <ArrowRight className="size-4" />
             </Link>
-            <Link
-              to="/app?state=register"
-              onClick={() => setMenuOpen(false)}
-              className="btn-primary px-10 py-3"
-            >
-              Start Free
-            </Link>
-          </div>
-        )}
+          ) : (
+            <>
+              <Link
+                to="/app?state=register"
+                onClick={() => setMenuOpen(false)}
+                className="nav-cta-primary w-full max-w-xs justify-center py-3.5"
+              >
+                Start Free <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                to="/app?state=login"
+                onClick={() => setMenuOpen(false)}
+                className="w-full max-w-xs rounded-xl border border-line bg-surface py-3.5 text-center font-medium text-body transition-all hover:border-brand-500/20 hover:text-ink"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                Login
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

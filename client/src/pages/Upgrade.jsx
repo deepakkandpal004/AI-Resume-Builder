@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  ArrowLeft, Check, X, Zap, Sparkles, Lock,
-  BarChart2, Mail, MessageSquare, FileText,
+  ArrowLeft, Check, Zap, Sparkles, Lock,
+  BarChart2, Mail, MessageSquare, FileText, Infinity,
+  ShieldCheck, Clock, Star,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import api from "../configs/api";
 import { login } from "../app/features/authSlice";
-
-// ── Plan data ─────────────────────────────────────────────────────────────
 
 const PLANS = [
   {
@@ -56,8 +56,6 @@ const PLANS = [
   },
 ];
 
-// ── Feature comparison rows ───────────────────────────────────────────────
-
 const COMPARISON = [
   { icon: FileText,      label: "Resumes",              free: "Unlimited",   premium: "Unlimited"  },
   { icon: FileText,      label: "Templates",             free: "7",           premium: "7"          },
@@ -68,7 +66,12 @@ const COMPARISON = [
   { icon: Sparkles,      label: "New features",          free: "Standard",    premium: "Early access"},
 ];
 
-// ─────────────────────────────────────────────────────────────────────────
+const PERKS = [
+  { icon: ShieldCheck, text: "Lifetime access — pay once, use forever" },
+  { icon: Infinity,    text: "No monthly fees or hidden charges" },
+  { icon: Clock,       text: "Instant unlock after payment" },
+  { icon: Star,        text: "All future AI features included" },
+];
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -96,7 +99,6 @@ const Upgrade = () => {
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      // Step 1: Load Razorpay standard script overlay
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         toast.error("Failed to load payment gateway. Please check your internet connection.");
@@ -104,14 +106,12 @@ const Upgrade = () => {
         return;
       }
 
-      // Step 2: Request order ID creation from the backend
       const { data: orderData } = await api.post(
         "/api/payments/create-order",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Step 3: Open Razorpay Standard Checkout overlay modal
       const options = {
         key: orderData.keyId,
         amount: orderData.amount,
@@ -124,10 +124,9 @@ const Upgrade = () => {
           email: orderData.user.email,
         },
         theme: {
-          color: "#7c3aed", // Brand Violet Color
+          color: "#10b981",
         },
         handler: async function (response) {
-          // Step 4: Verify payment server-side
           setLoading(true);
           try {
             const { data: verifyData } = await api.post(
@@ -142,7 +141,6 @@ const Upgrade = () => {
 
             if (verifyData.success) {
               toast.success(verifyData.message || "Upgrade successful!");
-              // Update user state in auth reducer
               dispatch(
                 login({
                   user: { ...user, subscriptionTier: "premium" },
@@ -175,132 +173,183 @@ const Upgrade = () => {
     }
   };
 
-  // Already premium — show nice status and links back to builder/dashboard
   if (isPremium) {
     return (
-      <div className="mx-auto max-w-md px-4 py-20 text-center space-y-6">
-        <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 mb-2 shadow-lg shadow-brand-500/20">
-          <Sparkles className="size-8 text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-ink">You are on Premium</h1>
-        <p className="text-sm text-muted leading-relaxed">
-          Thank you for your upgrade! You have active **Lifetime Access** with unlimited AI tools, resume downloads, templates, and resume analyzers.
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mx-auto max-w-lg px-4 py-24 text-center"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200 }}
+          className="mx-auto mb-6 flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-2xl shadow-emerald-500/30"
+        >
+          <Sparkles className="size-10 text-white" />
+        </motion.div>
+        <h1 className="text-3xl font-bold text-ink">You're on Premium</h1>
+        <p className="mt-3 text-muted leading-relaxed max-w-sm mx-auto">
+          You have lifetime access with unlimited AI tools, resume downloads, templates, and ATS scans. Enjoy the full power!
         </p>
-        
-        <div className="flex flex-col gap-3 pt-4">
-          <Link
-            to="/app"
-            className="btn-brand flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold shadow-md cursor-pointer"
-          >
-            Go to Dashboard
-          </Link>
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          {["Unlimited ATS", "Cover Letters", "Interview Prep", "Priority AI"].map((tag) => (
+            <span key={tag} className="rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
+              {tag}
+            </span>
+          ))}
         </div>
-      </div>
+        <Link
+          to="/app"
+          className="btn-primary mt-8 inline-flex items-center gap-2 px-8 py-3 text-sm font-semibold"
+        >
+          Go to Dashboard
+        </Link>
+      </motion.div>
     );
   }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 md:px-6">
-
-      {/* Back link */}
       <Link
         to="/app"
-        className="mb-8 inline-flex items-center gap-2 text-sm text-muted transition hover:text-brand-600"
+        className="mb-8 inline-flex items-center gap-2 text-sm text-muted transition hover:text-emerald-600"
       >
         <ArrowLeft className="size-4" /> Back to dashboard
       </Link>
 
-      {/* Header */}
       <div className="mb-12 text-center">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-accent-500 px-4 py-1.5 text-sm font-semibold text-white">
-          <Sparkles className="size-4" /> Unlock full access
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg"
+        >
+          <Zap className="size-4" /> Unlock full access
+        </motion.div>
         <h1 className="text-4xl font-bold text-ink">Simple, honest pricing</h1>
         <p className="mt-3 text-muted max-w-md mx-auto">
           The free plan gets you far. Premium removes every limit.
         </p>
       </div>
 
-      {/* Pricing cards */}
       <div className="grid gap-6 md:grid-cols-2 mb-16">
-        {PLANS.map((plan) => (
-          <div
+        {PLANS.map((plan, i) => (
+          <motion.div
             key={plan.id}
-            className={`relative rounded-2xl border p-8 transition-shadow ${
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className={`relative rounded-3xl border p-8 transition-all duration-300 ${
               plan.highlight
-                ? "border-brand-400 shadow-xl shadow-brand-500/10 dark:shadow-brand-500/5"
+                ? "border-emerald-400 shadow-2xl shadow-emerald-500/15 scale-[1.02] md:scale-105"
                 : "border-line bg-surface"
             }`}
           >
             {plan.highlight && (
               <>
-                {/* Gradient background for premium card */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-brand-50 to-accent-50 dark:from-brand-950/40 dark:to-accent-950/40 -z-10" />
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-600 to-accent-600 px-4 py-1 text-xs font-bold text-white shadow-sm">
-                  Lifetime Value
+                <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30" />
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-1 text-xs font-bold text-white shadow-lg flex items-center gap-1.5">
+                  <Star className="size-3" /> Best Value
                 </span>
               </>
             )}
 
-            <div className="mb-6">
+            <div className="relative mb-6">
               <h2 className="text-xl font-bold text-ink">{plan.name}</h2>
               <p className="mt-1 text-sm text-muted">{plan.description}</p>
               <div className="mt-4 flex items-end gap-1">
-                <span className="text-4xl font-bold text-ink">{plan.price}</span>
-                <span className="mb-1 text-sm text-muted">/{plan.period}</span>
+                <span className="text-5xl font-bold text-ink">{plan.price}</span>
+                <span className="mb-1.5 text-sm text-muted">/{plan.period}</span>
               </div>
             </div>
 
-            <ul className="mb-8 space-y-3">
+            <ul className="relative mb-8 space-y-3">
               {plan.features.map((f) => (
-                <li key={f.label} className="flex items-center gap-3 text-sm">
-                  {f.included
-                    ? <Check className="size-4 shrink-0 text-accent-600" />
-                    : <X className="size-4 shrink-0 text-muted" />}
+                <motion.li
+                  key={f.label}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-3 text-sm"
+                >
+                  <span className={`flex size-5 shrink-0 items-center justify-center rounded-full ${
+                    f.included
+                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                      : "bg-line/30 text-muted"
+                  }`}>
+                    {f.included ? <Check className="size-3" /> : <span className="size-1.5 rounded-full bg-current" />}
+                  </span>
                   <span className={f.included ? "text-ink" : "text-muted line-through"}>{f.label}</span>
-                </li>
+                </motion.li>
               ))}
             </ul>
 
-            {plan.highlight ? (
-              <div className="space-y-3">
+            <div className="relative">
+              {plan.highlight ? (
+                <div className="space-y-3">
+                  <button
+                    onClick={handleUpgrade}
+                    disabled={loading}
+                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:from-emerald-500 hover:to-teal-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Processing…
+                      </span>
+                    ) : (
+                      <>
+                        <Zap className="size-4 transition-transform group-hover:scale-110" />
+                        {plan.cta}
+                      </>
+                    )}
+                  </button>
+                  <p className="text-center text-[11px] text-muted flex items-center justify-center gap-1">
+                    <Lock className="size-3" /> Secure upgrade via Razorpay
+                  </p>
+                </div>
+              ) : (
                 <button
-                  onClick={handleUpgrade}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:from-brand-500 hover:to-accent-500 active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+                  disabled
+                  className="w-full rounded-xl border border-line py-3.5 text-sm font-medium text-muted cursor-default"
                 >
-                  {loading ? (
-                    <span className="flex items-center gap-2 justify-center">
-                      <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Contacting Razorpay…
-                    </span>
-                  ) : (
-                    <>
-                      <Zap className="size-4 animate-bounce" />
-                      {plan.cta}
-                    </>
-                  )}
+                  {plan.cta}
                 </button>
-                <p className="text-center text-[11px] text-muted flex items-center justify-center gap-1">
-                  <Lock className="size-3" /> Secure upgrade · Instant lifetime unlock
-                </p>
-              </div>
-            ) : (
-              <button
-                disabled
-                className="w-full rounded-xl border border-line py-3.5 text-sm font-medium text-muted cursor-default"
-              >
-                {plan.cta}
-              </button>
-            )}
-          </div>
+              )}
+            </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Feature comparison table */}
-      <div className="rounded-2xl border border-line bg-surface overflow-hidden">
-        <div className="px-6 py-4 border-b border-line">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        {PERKS.map((perk) => {
+          const Icon = perk.icon;
+          return (
+            <div key={perk.text} className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <Icon className="size-4" />
+              </span>
+              <p className="text-xs text-body leading-relaxed">{perk.text}</p>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="rounded-2xl border border-line bg-surface overflow-hidden"
+      >
+        <div className="px-6 py-4 border-b border-line flex items-center justify-between">
           <h2 className="font-semibold text-ink">Full feature comparison</h2>
+          <span className="rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 hidden sm:inline-block">
+            Premium unlocks all limits
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -308,7 +357,7 @@ const Upgrade = () => {
               <tr>
                 <th className="px-6 py-3 text-left font-medium text-muted">Feature</th>
                 <th className="px-6 py-3 text-center font-medium text-muted">Free</th>
-                <th className="px-6 py-3 text-center font-medium text-brand-600">Premium</th>
+                <th className="px-6 py-3 text-center font-medium text-emerald-600">Premium</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -321,16 +370,15 @@ const Upgrade = () => {
                       {row.label}
                     </td>
                     <td className="px-6 py-3.5 text-center text-muted">{row.free}</td>
-                    <td className="px-6 py-3.5 text-center font-semibold text-brand-600">{row.premium}</td>
+                    <td className="px-6 py-3.5 text-center font-semibold text-emerald-600">{row.premium}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Footer note */}
       <p className="mt-8 text-center text-xs text-muted">
         Prices shown in INR. Payments are secured and processed via Razorpay. Support is available for all local payment methods including UPI.
       </p>

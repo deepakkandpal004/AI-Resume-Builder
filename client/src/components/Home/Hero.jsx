@@ -12,7 +12,6 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center overflow-hidden pt-24">
       <div className="pointer-events-none absolute inset-0 gradient-glow" />
       <div className="pointer-events-none absolute inset-0 gradient-glow-right" />
-      <div className="pointer-events-none absolute inset-0 dot-grid" />
 
       <motion.div
         className="pointer-events-none absolute -top-48 left-1/2 -z-10 -translate-x-1/2 rounded-full bg-emerald-500/10"
