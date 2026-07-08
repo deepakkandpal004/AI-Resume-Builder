@@ -23,7 +23,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-40 px-3 pt-3 sm:px-4 md:px-6">
       <nav className="mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-line/70 bg-surface/90 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.08)] backdrop-blur-xl md:px-5">
         <Link to="/app">
-          <Logo className="h-11 w-auto text-ink" />
+          <Logo size="md" />
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3 text-sm">
