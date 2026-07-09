@@ -3,3 +3,8 @@ node_modules/
 .vercel
 .env*
 .opencode
+client/.env
+ENVIRONMENT_FIX.md
+FIX_AI_FEATURES.md
+IMPLEMENTATION_REPORT.md
+TESTING_GUIDE.md
