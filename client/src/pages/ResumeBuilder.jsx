@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, memo, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useCallback, memo, useLayoutEffect, Suspense, lazy } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
@@ -41,11 +41,11 @@ import { resetAts } from "../app/features/atsSlice";
 import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import { resetTailor } from "../app/features/tailorSlice";
 import { resetInterview } from "../app/features/interviewSlice";
-import JD_Input_Panel from "../components/ats/JD_Input_Panel";
-import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
-import CoverLetterPanel from "../components/coverLetter/CoverLetterPanel";
-import TailorPanel from "../components/tailor/TailorPanel";
-import InterviewPrepPanel from "../components/interviewPrep/InterviewPrepPanel";
+const JD_Input_Panel = lazy(() => import("../components/ats/JD_Input_Panel"));
+const ATS_Results_Panel = lazy(() => import("../components/ats/ATS_Results_Panel"));
+const CoverLetterPanel = lazy(() => import("../components/coverLetter/CoverLetterPanel"));
+const TailorPanel = lazy(() => import("../components/tailor/TailorPanel"));
+const InterviewPrepPanel = lazy(() => import("../components/interviewPrep/InterviewPrepPanel"));
 
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import TemplateSelector from "../components/TemplateSelector";
@@ -154,21 +154,26 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
       case "ats":
         return (
           <div className="space-y-4">
-            <JD_Input_Panel resumeId={resumeId} />
-            <ATS_Results_Panel
+            <Suspense fallback={<div className="animate-pulse h-24 rounded-lg bg-line/30" />}>
+              <JD_Input_Panel resumeId={resumeId} />
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse h-24 rounded-lg bg-line/30" />}>
+              <ATS_Results_Panel
               resumeId={resumeId}
               resumeData={resumeData}
               onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)}
               onReloadResume={loadExistingResume}
             />
+            </Suspense>
           </div>
         );
       case "cover-letter":
-        return <CoverLetterPanel resumeId={resumeId} resumeData={resumeData} />;
+        return <Suspense fallback={<div className="animate-pulse h-16 rounded-lg bg-line/30" />}><CoverLetterPanel resumeId={resumeId} resumeData={resumeData} /></Suspense>;
       case "interview":
-        return <InterviewPrepPanel resumeId={resumeId} />;
+        return <Suspense fallback={<div className="animate-pulse h-16 rounded-lg bg-line/30" />}><InterviewPrepPanel resumeId={resumeId} /></Suspense>;
       case "tailor":
         return (
+          <Suspense fallback={<div className="animate-pulse h-24 rounded-lg bg-line/30" />}>
           <TailorPanel
             resumeId={resumeId}
             onApplyTailored={(patch) => {
@@ -192,6 +197,7 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
               });
             }}
           />
+          </Suspense>
         );
       default:
         return null;

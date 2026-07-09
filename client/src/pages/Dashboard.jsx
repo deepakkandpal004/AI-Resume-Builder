@@ -28,6 +28,7 @@ import MinimalTemplate from "../components/templates/MinimalTemplate";
 import ExecutiveTemplate from "../components/templates/ExecutiveTemplate";
 import CreativeTemplate from "../components/templates/CreativeTemplate";
 import CompactTemplate from "../components/templates/CompactTemplate";
+import MinimalImageTemplate from "../components/templates/MinimalImageTemplate";
 
 const getAtsColor = (score) => {
   if (score >= 75) return { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-300" };
@@ -43,7 +44,7 @@ const TEMPLATE_LABELS = {
 
 const TEMPLATE_MAP = {
   classic: ClassicTemplate, modern: ModernTemplate, minimal: MinimalTemplate,
-  "minimal-image": MinimalTemplate, executive: ExecutiveTemplate,
+  "minimal-image": MinimalImageTemplate, executive: ExecutiveTemplate,
   creative: CreativeTemplate, compact: CompactTemplate,
 };
 
