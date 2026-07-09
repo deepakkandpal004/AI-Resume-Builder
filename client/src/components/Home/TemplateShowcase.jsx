@@ -107,24 +107,24 @@ const TemplateShowcase = () => {
                 >
                   {t.tag}
                 </div>
-
-                <div className="relative h-72 w-full overflow-hidden bg-white">
-                  <div
-                    className="origin-top"
-                    style={{
-                      transform: "scale(0.35)",
-                      width: "calc(100% / 0.35)",
-                      transformOrigin: "top left",
-                    }}
-                  >
-                    <Template
-                      data={data}
-                      accentColor={t.accent}
-                      styleOptions={{ fontSize: 11, lineSpacing: 1.3, pageSize: "letter" }}
-                    />
+                <div className="relative h-72 w-full overflow-hidden bg-canvas/30 flex items-center justify-center p-4">
+                  <div className="resume-preview relative w-full h-full bg-white shadow-md rounded-lg overflow-hidden border border-line/10 text-slate-900">
+                    <div
+                      className="origin-top"
+                      style={{
+                        transform: "scale(0.30)",
+                        width: "calc(100% / 0.30)",
+                        transformOrigin: "top left",
+                      }}
+                    >
+                      <Template
+                        data={data}
+                        accentColor={t.accent}
+                        styleOptions={{ fontSize: 11, lineSpacing: 1.3, pageSize: "letter" }}
+                      />
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
                   </div>
-
-                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
 
                   <div
                     className="absolute inset-0 flex items-center justify-center transition-all duration-300"
@@ -140,7 +140,6 @@ const TemplateShowcase = () => {
                     </motion.div>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-between border-t border-line px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span

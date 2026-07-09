@@ -111,7 +111,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
         <span style={sidebarHeadingStyle}>{heading("skills").toUpperCase()}</span>
         <ul style={{ display: "flex", flexDirection: "column", gap: "0.35em", fontSize: "0.88em", listStyle: "none", padding: 0, margin: 0 }}>
           {data.skills.map((skill, i) => (
-            <li key={i}>{skill}</li>
+            <li key={i} style={{ ...cStyle }}>{skill}</li>
           ))}
         </ul>
       </section>
@@ -164,7 +164,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
             <div key={i}>
               <div style={{ fontWeight: 500, color: "#18181b" }}>{proj.name}</div>
               {proj.type && (
-                <div style={{ fontSize: "0.85em", color: accent }}>{proj.type}</div>
+                <div style={{ fontSize: "0.85em", color: accent, ...cStyle }}>{proj.type}</div>
               )}
               {proj.description && (
                 <ul style={{ paddingLeft: "1.2em", fontSize: "0.88em", color: "#3f3f46", ...cStyle }}>
@@ -172,6 +172,31 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
                     <li key={j} style={{ marginBottom: "0.2em" }}>{line}</li>
                   ))}
                 </ul>
+              )}
+              {(proj.techStack?.length > 0) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3em", marginTop: "0.3em" }}>
+                  {proj.techStack.map((tech, ti) => (
+                    <span key={ti} style={{ fontSize: "0.78em", padding: "0.08em 0.45em", borderRadius: "3px", background: "#f4f4f5", color: "#3f3f46", border: "1px solid #e4e4e7" }}>
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {(proj.githubUrl || proj.liveUrl) && (
+                <div style={{ display: "flex", gap: "0.75em", marginTop: "0.25em" }}>
+                  {proj.githubUrl && (
+                    <a href={proj.githubUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.3em", fontSize: "0.72em", padding: "0.15em 0.6em", borderRadius: "999px", background: `${accent}15`, color: accent, border: `1px solid ${accent}25`, textDecoration: "none", lineHeight: 1.4 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                      GitHub
+                    </a>
+                  )}
+                  {proj.liveUrl && (
+                    <a href={proj.liveUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.3em", fontSize: "0.72em", padding: "0.15em 0.6em", borderRadius: "999px", background: `${accent}15`, color: accent, border: `1px solid ${accent}25`, textDecoration: "none", lineHeight: 1.4 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      Live Demo
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           ))}
@@ -310,7 +335,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
           {/* Contact is always pinned at the top of sidebar */}
           <section style={sectionStyle}>
             <span style={sidebarHeadingStyle}>Contact</span>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5em", fontSize: "0.88em" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5em", fontSize: "0.88em", ...cStyle }}>
               {data.personal_info?.phone && (
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5em" }}>
                   <Phone size="1em" style={{ color: accent, flexShrink: 0 }} />

@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Menu, X, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Logo from "../Logo";
 import ThemeToggle from "../ThemeToggle";
+
+
 
 const NAV_LINKS = [
   { label: "How It Works", href: "#how-it-works" },
@@ -17,7 +19,6 @@ const HomeNavbar = () => {
   const { user } = useSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState(null);
   const [activeSection, setActiveSection] = useState("");
   const rafRef = useRef(null);
 
@@ -73,10 +74,10 @@ const HomeNavbar = () => {
   }, [menuOpen]);
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 md:px-10">
+    <nav className="fixed inset-x-0 top-0 z-50 px-4 pt-6 sm:px-6 md:px-10">
       {/* ── Pill ──────────────────────────────────────────────────── */}
       <div
-        className="nav-glass-app mx-auto flex max-w-7xl items-center justify-between rounded-full border px-5 py-0.5 transition-all duration-500 ease-out shadow-md"
+        className="nav-glass-app mx-auto flex max-w-7xl items-center justify-between rounded-full border px-5 py-2.5 transition-all duration-500 ease-out shadow-md"
       >
         {/* Logo */}
         <Link to="/" className="relative z-10 shrink-0" aria-label="ResumeAI home">
@@ -84,53 +85,20 @@ const HomeNavbar = () => {
         </Link>
 
         {/* Desktop nav links with dynamic active indicator & sliding hover */}
-        <div
-          className="hidden items-center gap-0 md:flex"
-          onMouseLeave={() => setHoveredIndex(null)}
-        >
+        <div className="hidden items-center gap-1 md:flex">
           {NAV_LINKS.map((l, index) => {
             const isActive = l.href === `#${activeSection}`;
             return (
               <a
                 key={l.label}
                 href={l.href}
-                className={`nav-link-home group relative flex flex-col items-center justify-center transition-colors duration-300 ${
-                  isActive ? "text-brand-500 dark:text-brand-400 font-semibold" : ""
+                className={`rounded-full px-4 py-1.5 text-sm font-medium tracking-tight transition-all duration-200 ${
+                  isActive
+                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    : "text-body hover:text-emerald-600 dark:hover:text-emerald-400"
                 }`}
-                onMouseEnter={() => setHoveredIndex(index)}
               >
-                {/* Sliding Hover Capsule */}
-                <AnimatePresence>
-                  {hoveredIndex === index && (
-                    <motion.span
-                      layoutId="navbar-hover-highlight"
-                      className="absolute inset-0 -z-10 rounded-full bg-brand-500/5 dark:bg-white/8 backdrop-blur-[1px] border border-brand-500/10 dark:border-white/10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 380,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-                
-                <span className="relative z-10">{l.label}</span>
-
-                {/* Sliding Active Dot Indicator */}
-                {isActive && (
-                  <motion.span
-                    layoutId="active-dot"
-                    className="absolute bottom-1 size-1 rounded-full bg-brand-500 shadow-sm shadow-emerald-500/40"
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25
-                    }}
-                  />
-                )}
+                {l.label}
               </a>
             );
           })}
@@ -211,19 +179,29 @@ const HomeNavbar = () => {
           <Logo size="md" variant="auto" />
         </Link>
 
-        <div className="flex w-full flex-col items-center gap-1 px-8">
+        <motion.div
+          initial="hidden"
+          animate={menuOpen ? "visible" : "hidden"}
+          variants={{ visible: { transition: { staggerChildren: 0.06 } }, hidden: {} }}
+          className="flex w-full flex-col items-center gap-1 px-8"
+        >
           {NAV_LINKS.map((l) => (
-            <a
+            <motion.a
               key={l.label}
               href={l.href}
               onClick={() => setMenuOpen(false)}
-              className="w-full rounded-xl px-6 py-3.5 text-center font-medium text-body transition-all duration-200 hover:bg-ink/5 hover:text-ink"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              className="w-full rounded-xl px-6 py-3.5 text-center font-medium text-body transition-all duration-200 hover:scale-105 hover:bg-ink/5 hover:text-ink"
               style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1.1rem", letterSpacing: "-0.01em" }}
             >
               {l.label}
-            </a>
+            </motion.a>
           ))}
-        </div>
+        </motion.div>
 
         <div className="flex w-full flex-col items-center gap-3 px-8 pt-2">
           {user ? (

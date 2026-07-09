@@ -1,10 +1,15 @@
-import { Award, ExternalLink, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Award, ExternalLink, Plus, Trash2, ChevronDown, ChevronUp, Sparkles, Loader2 } from "lucide-react";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import api from "../configs/api";
 
 const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
 
 const CertificationForm = ({ data, onChange }) => {
+  const { token } = useSelector((state) => state.auth);
   const [expanded, setExpanded] = useState({});
+  const [generatingIndex, setGeneratingIndex] = useState(-1);
 
   const add = () => {
     onChange([
@@ -19,6 +24,24 @@ const CertificationForm = ({ data, onChange }) => {
     const updated = [...data];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
+  };
+
+  const enhanceEntry = async (index) => {
+    setGeneratingIndex(index);
+    const cert = data[index];
+    try {
+      const prompt = `enhance this certification description: ${cert.name || ""} issued by ${cert.issuer || ""}`;
+      const { data: result } = await api.post(
+        "/api/ai/enhance-pro-sum",
+        { userContent: prompt },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Entry enhanced!");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setGeneratingIndex(-1);
+    }
   };
 
   const toggleExpand = (index) => {
@@ -77,6 +100,19 @@ const CertificationForm = ({ data, onChange }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); enhanceEntry(index); }}
+                      disabled={generatingIndex === index}
+                      className="p-1.5 rounded-lg text-muted hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+                      title="Enhance with AI"
+                    >
+                      {generatingIndex === index ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="size-3.5" />
+                      )}
+                    </button>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); remove(index); }}

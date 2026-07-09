@@ -69,6 +69,9 @@ const ResumeSchema = new mongoose.Schema({
             position: {
                 type: String
             },
+            location: {
+                type: String
+            },
             start_date: {
                 type: String
             },
@@ -93,6 +96,18 @@ const ResumeSchema = new mongoose.Schema({
             },
             description: {
                 type: String
+            },
+            techStack: {
+                type: [String],
+                default: [],
+            },
+            githubUrl: {
+                type: String,
+                default: "",
+            },
+            liveUrl: {
+                type: String,
+                default: "",
             },
         }
     ],

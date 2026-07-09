@@ -54,10 +54,10 @@ const Preview = () => {
   }, [resumeId]);
 
   return resumeData ? (
-    <div className="min-h-screen bg-canvas">
+    <div className="bg-white">
       {/* Public header — hidden when printing */}
-      <header className="sticky top-0 z-40 border-b border-line bg-surface/80 backdrop-blur-md print:hidden">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+      <header className="border-b border-line bg-white/80 backdrop-blur-md print:hidden">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <Link to="/">
             <Logo size="md" />
           </Link>
@@ -88,13 +88,12 @@ const Preview = () => {
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-4 py-10 print:p-0">
+      <div className="flex justify-center print:p-0">
         <ResumePreview
           data={resumeData}
           template={resumeData.template}
           accentColor={resumeData.accent_color}
           styleOptions={resumeData.style_options}
-          classes="py-4"
         />
       </div>
     </div>
@@ -109,7 +108,7 @@ const Preview = () => {
           <p className="max-w-sm text-sm text-muted">
             This resume may have been removed or set to private.
           </p>
-          <Link to="/" className="btn-brand mt-2">
+          <Link to="/" className="btn-brand">
             <ArrowLeftIcon className="size-4" /> Go to home page
           </Link>
         </div>

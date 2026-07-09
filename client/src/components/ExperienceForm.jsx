@@ -1,30 +1,43 @@
-import { Briefcase, Loader2, Plus, Sparkles, Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
+import { Briefcase, Loader2, Plus, Sparkles, Trash2, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
 
 const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
 
-const AutoTextarea = ({ value, onChange, placeholder, rows = 3 }) => {
-  const ref = useRef(null);
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.style.height = "auto";
-      ref.current.style.height = ref.current.scrollHeight + "px";
-    }
-  }, [value]);
-  return (
-    <textarea
-      ref={ref}
+const AchievementItem = ({ value, onChange, onRemove, onAdd, isLast, placeholder }) => (
+  <div className="flex items-start gap-2 group">
+    <span className="mt-2.5 size-1.5 rounded-full bg-brand-400 shrink-0" />
+    <input
+      type="text"
       value={value}
       onChange={onChange}
-      rows={rows}
-      className="w-full resize-none rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow overflow-hidden"
+      className="flex-1 min-w-0 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow"
       placeholder={placeholder}
     />
-  );
-};
+    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="p-1 rounded text-muted hover:text-rose-600 transition-colors"
+        title="Remove achievement"
+      >
+        <Trash2 className="size-3.5" />
+      </button>
+      {isLast && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="p-1 rounded text-muted hover:text-emerald-600 transition-colors"
+          title="Add achievement"
+        >
+          <Plus className="size-3.5" />
+        </button>
+      )}
+    </div>
+  </div>
+);
 
 const ExperienceForm = ({ data, onChange }) => {
   const {token} = useSelector((state) => state.auth);
@@ -53,6 +66,33 @@ const ExperienceForm = ({ data, onChange }) => {
     const updated = [...data];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
+  };
+
+  const getAchievements = (description) => {
+    if (!description) return [""];
+    const lines = description.split("\n").filter((l) => l.trim());
+    return lines.length > 0 ? lines : [""];
+  };
+
+  const updateAchievement = (expIndex, achIndex, value) => {
+    const exp = data[expIndex];
+    const achievements = getAchievements(exp.description);
+    achievements[achIndex] = value;
+    const filtered = achievements.filter((a) => a.trim());
+    updatedExperience(expIndex, "description", filtered.join("\n"));
+  };
+
+  const addAchievement = (expIndex) => {
+    const exp = data[expIndex];
+    const achievements = getAchievements(exp.description);
+    const updated = [...achievements, ""];
+    updatedExperience(expIndex, "description", updated.join("\n"));
+  };
+
+  const removeAchievement = (expIndex, achIndex) => {
+    const exp = data[expIndex];
+    const achievements = getAchievements(exp.description).filter((_, i) => i !== achIndex);
+    updatedExperience(expIndex, "description", achievements.join("\n"));
   };
 
   const rewriteBullets = async (index) => {
@@ -113,6 +153,7 @@ const ExperienceForm = ({ data, onChange }) => {
         <div className="space-y-3">
           {data.map((experience, index) => {
             const isOpen = expanded[index] !== false;
+            const achievements = getAchievements(experience.description);
             return (
               <div
                 key={index}
@@ -222,12 +263,13 @@ const ExperienceForm = ({ data, onChange }) => {
                       <span className="text-sm text-body">Currently working here</span>
                     </label>
 
+                    {/* Achievements */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-body">Description</label>
+                        <label className="text-sm font-medium text-body">Achievements</label>
                         <button
                           onClick={() => rewriteBullets(index)}
-                          disabled={generatingIndex === index || !experience.description?.trim()}
+                          disabled={generatingIndex === index || achievements.length === 0 || (achievements.length === 1 && !achievements[0].trim())}
                           className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-brand-600 to-accent-600 px-2.5 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                         >
                           {generatingIndex === index ? (
@@ -235,14 +277,22 @@ const ExperienceForm = ({ data, onChange }) => {
                           ) : (
                             <Sparkles className="size-3" />
                           )}
-                          Rewrite
+                          AI Rewrite
                         </button>
                       </div>
-                      <AutoTextarea
-                        value={experience.description || ""}
-                        onChange={(e) => updatedExperience(index, "description", e.target.value)}
-                        placeholder="Describe your key responsibilities and achievements..."
-                      />
+                      <div className="space-y-1.5">
+                        {achievements.map((ach, achIdx) => (
+                          <AchievementItem
+                            key={achIdx}
+                            value={ach}
+                            onChange={(e) => updateAchievement(index, achIdx, e.target.value)}
+                            onRemove={() => removeAchievement(index, achIdx)}
+                            onAdd={() => addAchievement(index)}
+                            isLast={achIdx === achievements.length - 1}
+                            placeholder="e.g. Led a team of 5 engineers to deliver a microservices platform"
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -251,6 +301,10 @@ const ExperienceForm = ({ data, onChange }) => {
           })}
         </div>
       )}
+
+      <div className="rounded-lg bg-brand-50 px-3 py-2.5 text-xs text-body dark:bg-brand-500/10">
+        <strong>Tip:</strong> Use specific, quantifiable achievements (e.g. "Increased revenue by 30%"). Add each achievement as a separate bullet.
+      </div>
     </div>
   );
 };
