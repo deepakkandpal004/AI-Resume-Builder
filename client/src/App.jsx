@@ -1,23 +1,26 @@
-import { useEffect } from "react";
-import ResumeBuilder from "./pages/ResumeBuilder";
-import Preview from "./pages/Preview";
-import Dashboard from "./pages/Dashboard";
-import ResetPassword from "./pages/ResetPassword";
-import Upgrade from "./pages/Upgrade";
+import { useEffect, lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import Layout from "./pages/Layout";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { Toaster } from "react-hot-toast";
 import api from "./configs/api";
 import { login, setLoading } from "./app/features/authSlice";
-import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Loader from "./components/Loader";
+
+// Lazy load route components
+const Home = lazy(() => import("./pages/Home"));
+const Layout = lazy(() => import("./pages/Layout"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ResumeBuilder = lazy(() => import("./pages/ResumeBuilder"));
+const Preview = lazy(() => import("./pages/Preview"));
+const Upgrade = lazy(() => import("./pages/Upgrade"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const App = () => {
   const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
 
   const getUserData = async () => {
-    const token = localStorage.getItem("token");
     try {
       if (token) {
         const { data } = await api.get("/api/users/data", {
@@ -38,7 +41,7 @@ const App = () => {
 
   useEffect(() => {
     getUserData();
-  }, []);
+  }, [token]);
   return (
     <>
       <Toaster
@@ -59,16 +62,18 @@ const App = () => {
         }}
       />
       <ErrorBoundary>
-        <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="app" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="builder/:resumeId" element={<ResumeBuilder />} />
-          <Route path="upgrade" element={<Upgrade />} />
-        </Route>
-        <Route path="view/:resumeId" element={<Preview />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-        </Routes>
+        <Suspense fallback={<Loader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="app" element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="builder/:resumeId" element={<ResumeBuilder />} />
+              <Route path="upgrade" element={<Upgrade />} />
+            </Route>
+            <Route path="view/:resumeId" element={<Preview />} />
+            <Route path="reset-password" element={<ResetPassword />} />
+          </Routes>
+        </Suspense>
       </ErrorBoundary>
     </>
   );

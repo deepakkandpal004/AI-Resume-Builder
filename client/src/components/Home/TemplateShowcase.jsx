@@ -108,7 +108,7 @@ const TemplateShowcase = () => {
                   {t.tag}
                 </div>
                 <div className="relative h-72 w-full overflow-hidden bg-canvas/30 flex items-center justify-center p-4">
-                  <div className="resume-preview relative w-full h-full bg-white shadow-md rounded-lg overflow-hidden border border-line/10 text-slate-900">
+                  <div className="resume-preview relative w-full h-full bg-white dark:bg-neutral-900 shadow-md rounded-lg overflow-hidden border border-line/10 text-slate-900 dark:text-neutral-100">
                     <div
                       className="origin-top"
                       style={{
@@ -123,7 +123,7 @@ const TemplateShowcase = () => {
                         styleOptions={{ fontSize: 11, lineSpacing: 1.3, pageSize: "letter" }}
                       />
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white dark:from-neutral-900 to-transparent" />
                   </div>
 
                   <div
@@ -134,7 +134,7 @@ const TemplateShowcase = () => {
                       initial={false}
                       animate={{ y: isHovered ? 0 : 10, opacity: isHovered ? 1 : 0 }}
                       transition={{ duration: 0.3 }}
-                      className="rounded-full border border-line bg-white/80 px-4 py-2 text-xs font-semibold text-ink backdrop-blur-md shadow-lg"
+                      className="rounded-full border border-line bg-white dark:bg-neutral-800 dark:border-neutral-700 px-4 py-2 text-xs font-semibold text-slate-900 dark:text-neutral-100 backdrop-blur-md shadow-lg"
                     >
                       Use this template
                     </motion.div>

@@ -7,7 +7,6 @@ import {
   Link,
   FileText,
   MessageSquare,
-  Brain,
   ArrowRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -47,22 +46,16 @@ const features = [
     gradient: ["rgba(34,211,238,0.95)", "rgba(20,184,166,0.95)"],
   },
   {
-    icon: Brain,
-    title: "Interview Prep",
-    desc: "Get role-specific questions with suggested answers across multiple categories.",
-    gradient: ["rgba(52,211,153,0.95)", "rgba(16,185,129,0.95)"],
-  },
-  {
     icon: ScanLine,
     title: "Background Removal",
     desc: "Clean up profile photos with automatic background removal and face-crop.",
-    gradient: ["rgba(34,211,238,0.95)", "rgba(20,184,166,0.95)"],
+    gradient: ["rgba(52,211,153,0.95)", "rgba(16,185,129,0.95)"],
   },
   {
     icon: Link,
     title: "Shareable Resume Links",
     desc: "Create a public resume link and send it to recruiters in one click.",
-    gradient: ["rgba(52,211,153,0.95)", "rgba(20,184,166,0.95)"],
+    gradient: ["rgba(34,211,238,0.95)", "rgba(20,184,166,0.95)"],
   },
   {
     icon: FileText,

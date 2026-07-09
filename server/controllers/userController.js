@@ -18,12 +18,22 @@ export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if required fields are present
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Check if user already exists
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    if (name.trim().length < 1 || name.length > 100) {
+      return res.status(400).json({ message: "Name must be 1-100 characters" });
+    }
     const user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: "User already exists" });
@@ -59,6 +69,10 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     // Check if user exists
     const user = await User.findOne({ email });

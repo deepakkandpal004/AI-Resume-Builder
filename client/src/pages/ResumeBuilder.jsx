@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, memo, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useCallback, memo, useLayoutEffect, Suspense, lazy } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,6 +15,7 @@ import {
   History,
   Languages,
   Mail,
+  MessageSquare,
   Palette,
   Settings2,
   Sparkles,
@@ -34,14 +35,17 @@ import {
   ZoomOut,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { resetAts } from "../app/features/atsSlice";
 import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import { resetTailor } from "../app/features/tailorSlice";
-import JD_Input_Panel from "../components/ats/JD_Input_Panel";
-import ATS_Results_Panel from "../components/ats/ATS_Results_Panel";
-import CoverLetterPanel from "../components/coverLetter/CoverLetterPanel";
-import TailorPanel from "../components/tailor/TailorPanel";
+import { resetInterview } from "../app/features/interviewSlice";
+const JD_Input_Panel = lazy(() => import("../components/ats/JD_Input_Panel"));
+const ATS_Results_Panel = lazy(() => import("../components/ats/ATS_Results_Panel"));
+const CoverLetterPanel = lazy(() => import("../components/coverLetter/CoverLetterPanel"));
+const TailorPanel = lazy(() => import("../components/tailor/TailorPanel"));
+const InterviewPrepPanel = lazy(() => import("../components/interviewPrep/InterviewPrepPanel"));
 
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import TemplateSelector from "../components/TemplateSelector";
@@ -59,6 +63,8 @@ import VersionHistoryPanel from "../components/VersionHistoryPanel";
 import ResumePreview from "../components/ResumePreview";
 import ThemeToggle from "../components/ThemeToggle";
 import { getCompleteness, getCompletenessColor } from "../utils/completeness";
+import useKeyboardShortcuts from "../hooks/useKeyboardShortcuts";
+import useUnsavedChangesWarning from "../hooks/useUnsavedChangesWarning";
 
 // Resume canvas width (Letter @ 96dpi)
 const RESUME_WIDTH = 816;
@@ -148,19 +154,26 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
       case "ats":
         return (
           <div className="space-y-4">
-            <JD_Input_Panel resumeId={resumeId} />
-            <ATS_Results_Panel
+            <Suspense fallback={<div className="animate-pulse h-24 rounded-lg bg-line/30" />}>
+              <JD_Input_Panel resumeId={resumeId} />
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse h-24 rounded-lg bg-line/30" />}>
+              <ATS_Results_Panel
               resumeId={resumeId}
               resumeData={resumeData}
               onNavigateTab={(tabIndex) => setActiveSectionIndex(tabIndex)}
               onReloadResume={loadExistingResume}
             />
+            </Suspense>
           </div>
         );
       case "cover-letter":
-        return <CoverLetterPanel resumeId={resumeId} resumeData={resumeData} />;
+        return <Suspense fallback={<div className="animate-pulse h-16 rounded-lg bg-line/30" />}><CoverLetterPanel resumeId={resumeId} resumeData={resumeData} /></Suspense>;
+      case "interview":
+        return <Suspense fallback={<div className="animate-pulse h-16 rounded-lg bg-line/30" />}><InterviewPrepPanel resumeId={resumeId} /></Suspense>;
       case "tailor":
         return (
+          <Suspense fallback={<div className="animate-pulse h-24 rounded-lg bg-line/30" />}>
           <TailorPanel
             resumeId={resumeId}
             onApplyTailored={(patch) => {
@@ -184,6 +197,7 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
               });
             }}
           />
+          </Suspense>
         );
       default:
         return null;
@@ -245,6 +259,7 @@ const ResumeBuilder = () => {
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Stable preview scaling
   const previewContainerRef = useRef(null);
@@ -355,6 +370,7 @@ const ResumeBuilder = () => {
       }
       if (!isAutoSave) toast.success("Resume saved");
       else setAutoSaveStatus("saved");
+      setHasUnsavedChanges(false); // Clear unsaved changes flag
     } catch (error) {
       if (!isAutoSave) toast.error(error?.response?.data?.message || error.message);
       else setAutoSaveStatus("error");
@@ -469,6 +485,7 @@ const ResumeBuilder = () => {
     if (isFirstLoad.current) return;
     if (!resumeData._id) return;
     setAutoSaveStatus("idle");
+    setHasUnsavedChanges(true); // Mark as having unsaved changes
     clearTimeout(autoSaveTimerRef.current);
     const currentVersion = ++autoSaveVersionRef.current;
     autoSaveTimerRef.current = setTimeout(async () => {
@@ -485,6 +502,7 @@ const ResumeBuilder = () => {
       dispatch(resetAts());
       dispatch(resetCoverLetter());
       dispatch(resetTailor());
+      dispatch(resetInterview());
     }
   }, [resumeId, token]);
 
@@ -492,6 +510,7 @@ const ResumeBuilder = () => {
     return () => {
       dispatch(resetAts());
       dispatch(resetCoverLetter());
+      dispatch(resetInterview());
     };
   }, [resumeId, dispatch]);
 
@@ -521,6 +540,36 @@ const ResumeBuilder = () => {
     return () => obs.disconnect();
   }, []);
 
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    'mod+s': (e) => {
+      saveResume();
+      toast.success('Saved with Ctrl+S', { duration: 1500 });
+    },
+    'mod+e': (e) => {
+      handleExportPDF();
+    },
+    'mod+p': (e) => {
+      setIsMobilePreview(true);
+    },
+    'escape': (e) => {
+      if (showVersionHistory) setShowVersionHistory(false);
+      if (isMobilePreview) setIsMobilePreview(false);
+      if (showQuickJump) setShowQuickJump(false);
+      if (editingTitle) {
+        setEditingTitle(false);
+        setTitleDraft(resumeData.title);
+      }
+    },
+    'mod+k': (e) => {
+      setShowQuickJump(true);
+    },
+  }, !editingTitle); // Disable when editing title to allow normal text input
+
+  // Unsaved changes warning
+  const { showWarning, confirmNavigation, cancelNavigation, checkUnsavedChanges } = 
+    useUnsavedChangesWarning(hasUnsavedChanges);
+
   const sections = [
     { id: "personal",       name: "Personal Info",  icon: User          },
     { id: "summary",        name: "Summary",         icon: FileText      },
@@ -535,6 +584,7 @@ const ResumeBuilder = () => {
     { id: "ats",            name: "ATS Score",       icon: BarChart2     },
     { id: "tailor",         name: "Tailor to JD",    icon: Target        },
     { id: "cover-letter",   name: "Cover Letter",    icon: Mail          },
+    { id: "interview",      name: "Interview Prep",  icon: MessageSquare },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -773,7 +823,7 @@ const ResumeBuilder = () => {
         </aside>
 
         {/* CENTER: FORM */}
-        <div ref={formRef} className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div ref={formRef} className="flex-1 min-w-0 overflow-y-auto pb-20 lg:pb-0" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           <div className="px-4 py-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -1057,6 +1107,92 @@ const ResumeBuilder = () => {
           onClose={() => setShowVersionHistory(false)}
         />
       )}
+
+      {/* ── MOBILE BOTTOM ACTION BAR ──────────────────────────────────── */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-line bg-surface/95 backdrop-blur-md safe-area-inset-bottom">
+        <div className="flex items-center justify-around px-2 py-2">
+          <button
+            onClick={saveResume}
+            disabled={autoSaveStatus === "saving" || isSaving}
+            className="flex flex-col items-center gap-1 px-3 py-1.5 text-xs font-medium text-body transition hover:text-brand-600 disabled:opacity-50"
+          >
+            <Save className="size-5" />
+            <span>Save</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            className="flex flex-col items-center gap-1 px-3 py-1.5 text-xs font-medium text-body transition hover:text-brand-600"
+          >
+            <Download className="size-5" />
+            <span>PDF</span>
+          </button>
+          <button
+            onClick={() => setIsMobilePreview(true)}
+            className="flex flex-col items-center gap-1 px-3 py-1.5 text-xs font-medium text-body transition hover:text-brand-600"
+          >
+            <Eye className="size-5" />
+            <span>Preview</span>
+          </button>
+          <button
+            onClick={() => setShowVersionHistory(true)}
+            className="flex flex-col items-center gap-1 px-3 py-1.5 text-xs font-medium text-body transition hover:text-brand-600"
+          >
+            <History className="size-5" />
+            <span>History</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── UNSAVED CHANGES WARNING MODAL ─────────────────────────────── */}
+      <AnimatePresence>
+        {showWarning && (
+          <>
+            <motion.div
+              key="warning-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-sm"
+              onClick={cancelNavigation}
+            />
+            <motion.div
+              key="warning-modal"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="relative w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl">
+                <div className="mb-4 flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/20">
+                    <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-ink">Unsaved Changes</h3>
+                    <p className="mt-1 text-sm text-body">
+                      You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={cancelNavigation}
+                    className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-body transition hover:bg-line/20"
+                  >
+                    Stay
+                  </button>
+                  <button
+                    onClick={confirmNavigation}
+                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+                  >
+                    Leave Anyway
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

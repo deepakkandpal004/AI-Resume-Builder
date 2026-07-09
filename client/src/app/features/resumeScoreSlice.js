@@ -3,9 +3,10 @@ import api from "../../configs/api";
 
 export const scoreResume = createAsyncThunk(
   "resumeScore/score",
-  async ({ resumeId }, { rejectWithValue }) => {
+  async ({ resumeId }, { rejectWithValue, getState }) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getState().auth.token;
+      if (!token) return rejectWithValue("Not authenticated");
       const { data } = await api.post(
         "/api/ai/score-resume",
         { resumeId },
