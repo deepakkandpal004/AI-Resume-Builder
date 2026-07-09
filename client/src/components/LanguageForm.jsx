@@ -1,5 +1,8 @@
-import { Languages, Plus, Trash2, Globe } from "lucide-react";
-import React from "react";
+import { Languages, Plus, Trash2, Globe, Sparkles, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import api from "../configs/api";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const PROFICIENCY_LEVELS = [
@@ -21,6 +24,9 @@ const LEVEL_DOTS = {
 const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
 
 const LanguageForm = ({ data, onChange }) => {
+  const { token } = useSelector((state) => state.auth);
+  const [generatingIndex, setGeneratingIndex] = useState(-1);
+
   const add = () => {
     onChange([...data, { name: "", proficiency: "Conversational" }]);
   };
@@ -31,6 +37,24 @@ const LanguageForm = ({ data, onChange }) => {
     const updated = [...data];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
+  };
+
+  const enhanceEntry = async (index) => {
+    setGeneratingIndex(index);
+    const lang = data[index];
+    try {
+      const prompt = `rewrite this language proficiency entry professionally: ${lang.name || ""} - ${lang.proficiency || ""}`;
+      const { data: result } = await api.post(
+        "/api/ai/enhance-pro-sum",
+        { userContent: prompt },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Entry enhanced!");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setGeneratingIndex(-1);
+    }
   };
 
   return (
@@ -99,6 +123,19 @@ const LanguageForm = ({ data, onChange }) => {
                 ))}
               </div>
 
+              <button
+                type="button"
+                onClick={() => enhanceEntry(index)}
+                disabled={generatingIndex === index}
+                className="p-1.5 rounded-lg text-muted hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors shrink-0"
+                title="Enhance with AI"
+              >
+                {generatingIndex === index ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="size-3.5" />
+                )}
+              </button>
               <button
                 type="button"
                 onClick={() => remove(index)}

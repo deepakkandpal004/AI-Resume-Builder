@@ -32,16 +32,20 @@ const ColorPicker = ({ selectedColor, onChange }) => {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 top-full z-40 mt-1 overflow-hidden rounded-xl border border-line bg-surface shadow-lg p-1.5">
-            <div className="grid grid-cols-5 gap-1">
+          <div className="absolute left-0 top-full z-40 mt-1 w-56 overflow-hidden rounded-xl border border-line bg-surface shadow-lg p-2">
+            <div className="grid grid-cols-5 gap-1.5">
               {colors.map((color) => (
                 <button
                   key={color.value}
                   onClick={() => { onChange(color.value); setIsOpen(false); }}
-                  className={`size-7 rounded-full transition-all ${selectedColor === color.value ? "ring-2 ring-emerald-500 ring-offset-2 ring-offset-surface" : "hover:scale-110"}`}
-                  style={{ backgroundColor: color.value }}
-                  title={color.name}
-                />
+                  className={`flex flex-col items-center gap-1 rounded-lg p-1.5 transition-all ${selectedColor === color.value ? "bg-brand-50 dark:bg-brand-900/20 ring-2 ring-brand-500" : "hover:bg-canvas"}`}
+                >
+                  <span
+                    className="size-8 rounded-full ring-1 ring-black/10"
+                    style={{ backgroundColor: color.value }}
+                  />
+                  <span className="text-[9px] text-muted leading-tight">{color.name}</span>
+                </button>
               ))}
             </div>
           </div>

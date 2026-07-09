@@ -456,27 +456,29 @@ const Dashboard = () => {
                   {viewMode === "grid" ? (
                     <>
                       <span className="absolute inset-x-0 top-0 h-1.5" style={{ backgroundColor: accent }} />
-                      <div className="relative flex-1 min-h-0 rounded-lg overflow-hidden bg-white">
-                        {(() => {
-                          const Preview = TEMPLATE_MAP[r.template] || ClassicTemplate;
-                          return (
-                            <div
-                              className="origin-top"
-                              style={{
-                                transform: "scale(0.17)",
-                                width: "calc(100% / 0.17)",
-                                transformOrigin: "top left",
-                              }}
-                            >
-                              <Preview
-                                data={r}
-                                accentColor={accent}
-                                styleOptions={{ fontSize: 11, lineSpacing: 1.3, pageSize: "letter" }}
-                              />
-                            </div>
-                          );
-                        })()}
-                        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white to-transparent" />
+                      <div className="relative flex-1 min-h-0 rounded-lg overflow-hidden bg-canvas/30 flex items-center justify-center p-2">
+                        <div className="resume-preview relative w-full h-full bg-white shadow-sm rounded overflow-hidden border border-line/10 text-slate-900">
+                          {(() => {
+                            const Preview = TEMPLATE_MAP[r.template] || ClassicTemplate;
+                            return (
+                              <div
+                                className="origin-top"
+                                style={{
+                                  transform: "scale(0.14)",
+                                  width: "calc(100% / 0.14)",
+                                  transformOrigin: "top left",
+                                }}
+                              >
+                                <Preview
+                                  data={r}
+                                  accentColor={accent}
+                                  styleOptions={{ fontSize: 11, lineSpacing: 1.3, pageSize: "letter" }}
+                                />
+                              </div>
+                            );
+                          })()}
+                          <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white to-transparent" />
+                        </div>
                       </div>
                       <div className="mt-2 flex items-start gap-2 min-w-0">
                         <span className="flex size-7 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: accent + "1A", color: accent }}>
@@ -557,7 +559,7 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <span className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: accent }} />
-                      <div className="relative size-12 shrink-0 rounded-lg overflow-hidden bg-white">
+                      <div className="resume-preview relative size-12 shrink-0 rounded-lg overflow-hidden bg-white text-slate-900">
                         {(() => {
                           const Preview = TEMPLATE_MAP[r.template] || ClassicTemplate;
                           return (
