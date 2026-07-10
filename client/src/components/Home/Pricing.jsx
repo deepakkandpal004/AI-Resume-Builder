@@ -46,6 +46,7 @@ const plans = [
 ];
 
 const Pricing = () => {
+  void motion;
   const ref = useScrollReveal();
 
   return (

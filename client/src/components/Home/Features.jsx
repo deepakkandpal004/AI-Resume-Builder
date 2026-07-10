@@ -66,6 +66,7 @@ const features = [
 ];
 
 const Features = () => {
+  void motion;
   const ref = useScrollReveal();
 
   return (

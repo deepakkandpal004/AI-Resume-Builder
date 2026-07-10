@@ -31,7 +31,7 @@ const CertificationForm = ({ data, onChange }) => {
     const cert = data[index];
     try {
       const prompt = `enhance this certification description: ${cert.name || ""} issued by ${cert.issuer || ""}`;
-      const { data: result } = await api.post(
+      await api.post(
         "/api/ai/enhance-pro-sum",
         { userContent: prompt },
         { headers: { Authorization: `Bearer ${token}` } }

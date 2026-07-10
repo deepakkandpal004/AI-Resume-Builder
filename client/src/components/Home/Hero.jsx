@@ -6,6 +6,7 @@ import ModernTemplate from "../templates/ModernTemplate";
 import { dummyResumeData } from "../../assets/assets";
 
 const Hero = () => {
+  void motion;
   const { user } = useSelector((state) => state.auth);
 
   return (

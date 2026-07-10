@@ -75,8 +75,7 @@ export const handleError = (error, customMessage = null) => {
     duration: code === "QUOTA_EXCEEDED" ? 6000 : 4000,
   });
 
-  // Log error for debugging
-  if (process.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     console.error("[Error Handler]", { code, message, error });
   }
 

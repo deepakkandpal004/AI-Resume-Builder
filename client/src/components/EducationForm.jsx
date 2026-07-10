@@ -38,7 +38,7 @@ const EducationForm = ({ data, onChange }) => {
     const entry = data[index];
     try {
       const prompt = `enhance this education entry: ${entry.degree || ""} in ${entry.field || ""} from ${entry.institution || ""}`;
-      const response = await api.post(
+      await api.post(
         "/api/ai/enhance-pro-sum",
         { userContent: prompt },
         { headers: { Authorization: `Bearer ${token}` } }

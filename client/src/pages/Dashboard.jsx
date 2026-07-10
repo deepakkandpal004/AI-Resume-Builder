@@ -94,6 +94,7 @@ const Modal = ({ onClose, title, children }) => (
 );
 
 const Dashboard = () => {
+  void motion;
   const { user, token } = useSelector((state) => state.auth);
   const accents = ["#10b981", "#2dd4bf", "#6366f1", "#2563EB", "#E11D48", "#D97706"];
 
@@ -212,6 +213,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (token) loadAllResumes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const filtered = allResumes

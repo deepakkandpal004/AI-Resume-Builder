@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import ResumePreview from "../components/ResumePreview";
 import Loader from "../components/Loader";
@@ -18,7 +18,7 @@ const Preview = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [resumeData, setResumeData] = React.useState(null);
 
-  const loadResume = async () => {
+  const loadResume = useCallback(async () => {
     try {
       const endpoint = isBuilderPreview && token
         ? `/api/resumes/get/${cleanId}`
@@ -47,11 +47,11 @@ const Preview = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isBuilderPreview, token, cleanId]);
 
   useEffect(() => {
     loadResume();
-  }, [resumeId]);
+  }, [loadResume]);
 
   return resumeData ? (
     <div className="bg-white">

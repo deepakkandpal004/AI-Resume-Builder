@@ -214,6 +214,7 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
 });
 
 const ResumeBuilder = () => {
+  void motion;
   const { resumeId } = useParams();
   const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -493,6 +494,7 @@ const ResumeBuilder = () => {
       await performSave(true);
     }, 2500);
     return () => clearTimeout(autoSaveTimerRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeData]);
 
   // Load + reset slices
@@ -504,6 +506,7 @@ const ResumeBuilder = () => {
       dispatch(resetTailor());
       dispatch(resetInterview());
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeId, token]);
 
   useEffect(() => {
@@ -542,17 +545,17 @@ const ResumeBuilder = () => {
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
-    'mod+s': (e) => {
+    'mod+s': () => {
       saveResume();
       toast.success('Saved with Ctrl+S', { duration: 1500 });
     },
-    'mod+e': (e) => {
+    'mod+e': () => {
       handleExportPDF();
     },
-    'mod+p': (e) => {
+    'mod+p': () => {
       setIsMobilePreview(true);
     },
-    'escape': (e) => {
+    'escape': () => {
       if (showVersionHistory) setShowVersionHistory(false);
       if (isMobilePreview) setIsMobilePreview(false);
       if (showQuickJump) setShowQuickJump(false);
@@ -561,13 +564,13 @@ const ResumeBuilder = () => {
         setTitleDraft(resumeData.title);
       }
     },
-    'mod+k': (e) => {
+    'mod+k': () => {
       setShowQuickJump(true);
     },
   }, !editingTitle); // Disable when editing title to allow normal text input
 
   // Unsaved changes warning
-  const { showWarning, confirmNavigation, cancelNavigation, checkUnsavedChanges } = 
+  const { showWarning, confirmNavigation, cancelNavigation } = 
     useUnsavedChangesWarning(hasUnsavedChanges);
 
   const sections = [
@@ -596,7 +599,7 @@ const ResumeBuilder = () => {
   ];
 
   const { score: completenessScore, missing: completenessMissing } = getCompleteness(resumeData);
-  const { bar: completenessBar, text: completenessText } = getCompletenessColor(completenessScore);
+  getCompletenessColor(completenessScore);
 
   const sectionHasData = (section) => {
     const val = resumeData[section.id];

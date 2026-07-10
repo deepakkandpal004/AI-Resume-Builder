@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 
 const CallToAction = () => {
+  void motion;
   const ref = useScrollReveal();
 
   return (

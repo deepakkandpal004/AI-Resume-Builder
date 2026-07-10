@@ -144,6 +144,7 @@ const mockup = (tab) => (
 );
 
 const ProductShowcase = () => {
+  void motion;
   const [activeTab, setActiveTab] = useState("builder");
   const ref = useScrollReveal();
 

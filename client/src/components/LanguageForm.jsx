@@ -21,8 +21,6 @@ const LEVEL_DOTS = {
   "Native / Bilingual": 5,
 };
 
-const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
-
 const LanguageForm = ({ data, onChange }) => {
   const { token } = useSelector((state) => state.auth);
   const [generatingIndex, setGeneratingIndex] = useState(-1);
@@ -44,7 +42,7 @@ const LanguageForm = ({ data, onChange }) => {
     const lang = data[index];
     try {
       const prompt = `rewrite this language proficiency entry professionally: ${lang.name || ""} - ${lang.proficiency || ""}`;
-      const { data: result } = await api.post(
+      await api.post(
         "/api/ai/enhance-pro-sum",
         { userContent: prompt },
         { headers: { Authorization: `Bearer ${token}` } }
