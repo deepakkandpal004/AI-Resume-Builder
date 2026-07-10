@@ -17,7 +17,12 @@ const PORT = process.env.PORT || 3000;
 await connectDB();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
+app.use(cors({
+  origin: process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(",").map((s) => s.trim())
+    : ["http://localhost:5173", "https://resume-builder-saas-rsdeepakg.vercel.app"],
+  credentials: true,
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(mongoSanitize());
