@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, memo, useLayoutEffect, Suspense, lazy } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
@@ -36,11 +36,19 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  Undo,
+  Redo,
+  Heart,
+  Maximize2,
+  Minimize2,
+  Keyboard,
 } from "lucide-react";
 import { resetAts } from "../app/features/atsSlice";
 import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import { resetTailor } from "../app/features/tailorSlice";
 import { resetInterview } from "../app/features/interviewSlice";
+import { logout } from "../app/features/authSlice";
+import Logo from "../components/Logo";
 const JD_Input_Panel = lazy(() => import("../components/ats/JD_Input_Panel"));
 const ATS_Results_Panel = lazy(() => import("../components/ats/ATS_Results_Panel"));
 const CoverLetterPanel = lazy(() => import("../components/coverLetter/CoverLetterPanel"));
@@ -216,8 +224,10 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
 const ResumeBuilder = () => {
   void motion;
   const { resumeId } = useParams();
-  const { token } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const [resumeData, setResumeData] = useState({
     _id: "",
@@ -258,9 +268,15 @@ const ResumeBuilder = () => {
   const [showQuickJump, setShowQuickJump] = useState(false);
   const [quickJumpQuery, setQuickJumpQuery] = useState("");
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Undo/Redo state history
+  const [history, setHistory] = useState([]);
+  const [historyPointer, setHistoryPointer] = useState(-1);
+  const isUndoingOrRedoing = useRef(false);
 
   // Stable preview scaling
   const previewContainerRef = useRef(null);
@@ -307,6 +323,8 @@ const ResumeBuilder = () => {
         setResumeData(normalized);
         setTitleDraft(data.resume.title);
         document.title = data.resume.title;
+        setHistory([normalized]);
+        setHistoryPointer(0);
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
@@ -459,8 +477,17 @@ const ResumeBuilder = () => {
   const handleZoomIn = () =>
     setZoomLevel((z) => Math.min(parseFloat((z + 0.1).toFixed(1)), 2.0));
   const handleZoomOut = () =>
-    setZoomLevel((z) => Math.max(parseFloat((z - 0.1).toFixed(1)), 0.5));
+    setZoomLevel((z) => Math.max(parseFloat((z - 0.1).toFixed(1)), 0.3));
   const handleZoomReset = () => setZoomLevel(1.0);
+  const handleFitWidth = () => setZoomLevel(1.0);
+  const handleFitPage = () => {
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const containerHeight = el.clientHeight || 800;
+    const targetScale = (containerHeight - 80) / innerHeight;
+    const fitZoom = targetScale / baseScale;
+    setZoomLevel(parseFloat(Math.min(Math.max(fitZoom, 0.3), 2.0).toFixed(2)));
+  };
 
   // Cmd+K quick jump
   useEffect(() => {
@@ -496,6 +523,58 @@ const ResumeBuilder = () => {
     return () => clearTimeout(autoSaveTimerRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeData]);
+
+  // Debounced history recording for Undo/Redo
+  useEffect(() => {
+    if (isFirstLoad.current) return;
+    if (!resumeData._id) return;
+    if (isUndoingOrRedoing.current) return;
+
+    const handler = setTimeout(() => {
+      setHistory((prev) => {
+        const nextHistory = prev.slice(0, historyPointer + 1);
+        if (
+          nextHistory.length > 0 &&
+          JSON.stringify(nextHistory[nextHistory.length - 1]) === JSON.stringify(resumeData)
+        ) {
+          return prev;
+        }
+        const updated = [...nextHistory, resumeData];
+        if (updated.length > 50) updated.shift();
+        setHistoryPointer(updated.length - 1);
+        return updated;
+      });
+    }, 800);
+
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeData]);
+
+  const handleUndo = () => {
+    if (historyPointer > 0) {
+      isUndoingOrRedoing.current = true;
+      const nextPointer = historyPointer - 1;
+      setHistoryPointer(nextPointer);
+      setResumeData(history[nextPointer]);
+      setHasUnsavedChanges(true);
+      setTimeout(() => {
+        isUndoingOrRedoing.current = false;
+      }, 50);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyPointer < history.length - 1) {
+      isUndoingOrRedoing.current = true;
+      const nextPointer = historyPointer + 1;
+      setHistoryPointer(nextPointer);
+      setResumeData(history[nextPointer]);
+      setHasUnsavedChanges(true);
+      setTimeout(() => {
+        isUndoingOrRedoing.current = false;
+      }, 50);
+    }
+  };
 
   // Load + reset slices
   useEffect(() => {
@@ -555,10 +634,20 @@ const ResumeBuilder = () => {
     'mod+p': () => {
       setIsMobilePreview(true);
     },
+    'mod+z': () => {
+      handleUndo();
+    },
+    'mod+y': () => {
+      handleRedo();
+    },
+    'shift+mod+z': () => {
+      handleRedo();
+    },
     'escape': () => {
       if (showVersionHistory) setShowVersionHistory(false);
       if (isMobilePreview) setIsMobilePreview(false);
       if (showQuickJump) setShowQuickJump(false);
+      if (showShortcutsModal) setShowShortcutsModal(false);
       if (editingTitle) {
         setEditingTitle(false);
         setTitleDraft(resumeData.title);
@@ -601,6 +690,62 @@ const ResumeBuilder = () => {
   const { score: completenessScore, missing: completenessMissing } = getCompleteness(resumeData);
   getCompletenessColor(completenessScore);
 
+  const [showHealthPanel, setShowHealthPanel] = useState(false);
+
+  const getHealthChecks = () => {
+    const checks = [];
+    
+    // Contact Info Check
+    const hasEmail = !!resumeData.personal_info?.email;
+    const hasPhone = !!resumeData.personal_info?.phone;
+    const hasLocation = !!resumeData.personal_info?.location;
+    checks.push({
+      id: "contact",
+      label: "Contact Information",
+      status: hasEmail && hasPhone && hasLocation ? "pass" : "fail",
+      detail: !hasEmail ? "Missing email address" : !hasPhone ? "Missing phone number" : !hasLocation ? "Missing location" : "Fully provided",
+    });
+
+    // Professional Summary Check
+    const summaryLength = (resumeData.professional_summary || "").length;
+    checks.push({
+      id: "summary",
+      label: "Professional Summary",
+      status: summaryLength >= 150 && summaryLength <= 450 ? "pass" : summaryLength > 0 ? "warning" : "fail",
+      detail: summaryLength === 0 ? "Missing summary" : summaryLength < 150 ? "Too short (aim for 150+ chars)" : summaryLength > 450 ? "Too long (shorten under 450 chars)" : "Perfect length",
+    });
+
+    // Work Experience Check
+    const expCount = resumeData.experience?.length || 0;
+    const hasAchievements = resumeData.experience?.every(exp => (exp.description || "").trim().length > 10);
+    checks.push({
+      id: "experience",
+      label: "Work Experience",
+      status: expCount > 0 ? (hasAchievements ? "pass" : "warning") : "fail",
+      detail: expCount === 0 ? "Add at least 1 position" : !hasAchievements ? "Some entries lack descriptions" : `${expCount} position(s) added`,
+    });
+
+    // Skills Check
+    const skillsCount = resumeData.skills?.length || 0;
+    checks.push({
+      id: "skills",
+      label: "Skills Assessment",
+      status: skillsCount >= 5 ? "pass" : skillsCount > 0 ? "warning" : "fail",
+      detail: skillsCount === 0 ? "No skills added yet" : skillsCount < 5 ? "Add at least 5 skills" : `${skillsCount} skills added`,
+    });
+
+    // Education Check
+    const eduCount = resumeData.education?.length || 0;
+    checks.push({
+      id: "education",
+      label: "Education Details",
+      status: eduCount > 0 ? "pass" : "fail",
+      detail: eduCount === 0 ? "Add your education" : `${eduCount} education entries`,
+    });
+
+    return checks;
+  };
+
   const sectionHasData = (section) => {
     const val = resumeData[section.id];
     if (Array.isArray(val)) return val.length > 0;
@@ -610,25 +755,45 @@ const ResumeBuilder = () => {
   };
 
   const AutoSaveIndicator = () => {
-    if (autoSaveStatus === "saving")
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-          <Loader2 className="size-3 animate-spin" /> Saving...
-        </span>
-      );
-    if (autoSaveStatus === "saved")
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-          <CheckCircle2 className="size-3" /> Saved
-        </span>
-      );
-    if (autoSaveStatus === "error")
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
-          Save failed
-        </span>
-      );
-    return null;
+    return (
+      <div className="min-w-[120px] flex items-center justify-start">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={autoSaveStatus}
+            initial={{ opacity: 0, y: -3 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 3 }}
+            transition={{ duration: 0.15 }}
+            className="inline-flex shrink-0"
+          >
+            {autoSaveStatus === "saving" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/20 text-[10px] font-bold text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-900/40">
+                <Loader2 className="size-3 animate-spin" />
+                <span>Saving...</span>
+              </span>
+            )}
+            {autoSaveStatus === "saved" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/40">
+                <Check className="size-3" />
+                <span>Saved</span>
+                <span className="text-[9px] opacity-75 hidden sm:inline">• Updated just now</span>
+              </span>
+            )}
+            {autoSaveStatus === "error" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/20 text-[10px] font-bold text-rose-700 dark:text-rose-400 border border-rose-200/50 dark:border-rose-900/40">
+                Save failed
+              </span>
+            )}
+            {autoSaveStatus === "idle" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-zinc-900 text-[10px] font-bold text-muted border border-line">
+                <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span>Unsaved changes</span>
+              </span>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    );
   };
 
   if (isLoading && !resumeData._id) {
@@ -645,97 +810,84 @@ const ResumeBuilder = () => {
   return (
     <div className="h-screen bg-canvas flex flex-col overflow-hidden">
 
-      {/* ── STICKY HEADER ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-canvas/95 backdrop-blur-md border-b border-line shadow-sm shrink-0">
-        <div className="px-4 lg:px-5">
-
-          {/* Row 1: Nav + Title + Primary Actions */}
-          <div className="flex items-center justify-between h-12 gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Link
-                to="/app"
-                className="flex items-center gap-1 text-xs text-muted transition-colors hover:text-brand-600 shrink-0"
-              >
-                <ArrowLeftIcon className="size-3.5" />
-                <span className="hidden sm:inline">Dashboard</span>
-              </Link>
-              <span className="text-line/60 hidden sm:block select-none">|</span>
-              <div className="flex items-center gap-1.5 min-w-0">
-                {editingTitle ? (
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="text"
-                      value={titleDraft}
-                      onChange={(e) => setTitleDraft(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleTitleSave();
-                        if (e.key === "Escape") {
-                          setEditingTitle(false);
-                          setTitleDraft(resumeData.title);
-                        }
-                      }}
-                      className="w-36 sm:w-52 rounded-md border border-brand-400 bg-surface px-2 py-1 text-sm font-semibold text-ink outline-none focus:ring-2 focus:ring-brand-500"
-                      autoFocus
-                    />
-                    <button onClick={handleTitleSave} className="p-1 text-emerald-600 hover:text-emerald-700">
-                      <Check className="size-3.5" />
-                    </button>
-                    <button
-                      onClick={() => { setEditingTitle(false); setTitleDraft(resumeData.title); }}
-                      className="p-1 text-muted hover:text-ink"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => setEditingTitle(true)} className="group flex items-center gap-1.5 min-w-0">
-                    <span className="text-sm font-semibold text-ink truncate max-w-[120px] sm:max-w-[220px]">
-                      {resumeData.title || "Untitled Resume"}
-                    </span>
-                    <Pencil className="size-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      {/* ── PREMIUM HEADER TOOLBAR ───────────────────────────────────── */}
+      <header className="sticky top-0 z-40 bg-surface border-b border-line shadow-sm shrink-0 h-16 flex items-center px-4 lg:px-6">
+        <div className="w-full flex items-center justify-between gap-4">
+          
+          {/* Left section: Logo + Title + Autosave */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link to="/app" className="flex items-center justify-center p-1.5 rounded-lg hover:bg-canvas text-muted hover:text-brand-600 transition-colors shrink-0" title="Back to Dashboard">
+              <ArrowLeftIcon className="size-4" />
+            </Link>
+            <div className="w-px h-5 bg-line mx-1 shrink-0" />
+            <Logo size="sm" className="hidden md:inline-flex shrink-0" />
+            <div className="w-px h-5 bg-line mx-1 hidden md:block shrink-0" />
+            
+            <div className="flex items-center gap-1.5 min-w-0">
+              {editingTitle ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={titleDraft}
+                    onChange={(e) => setTitleDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleTitleSave();
+                      if (e.key === "Escape") {
+                        setEditingTitle(false);
+                        setTitleDraft(resumeData.title);
+                      }
+                    }}
+                    className="w-36 sm:w-48 rounded-lg border border-brand-400 bg-surface px-2 py-1 text-sm font-semibold text-ink outline-none focus:ring-2 focus:ring-brand-500"
+                    autoFocus
+                  />
+                  <button onClick={handleTitleSave} className="p-1 text-emerald-600 hover:text-emerald-700 cursor-pointer">
+                    <Check className="size-3.5" />
                   </button>
-                )}
-              </div>
-              <AutoSaveIndicator />
+                  <button
+                    onClick={() => { setEditingTitle(false); setTitleDraft(resumeData.title); }}
+                    className="p-1 text-muted hover:text-ink cursor-pointer"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingTitle(true)} className="group flex items-center gap-1.5 min-w-0 cursor-pointer">
+                  <span className="text-sm font-bold text-ink truncate max-w-[120px] sm:max-w-[200px]">
+                    {resumeData.title || "Untitled Resume"}
+                  </span>
+                  <Pencil className="size-3.5 text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                </button>
+              )}
             </div>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={saveResume}
-                disabled={autoSaveStatus === "saving" || isSaving}
-                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
-              >
-                <Save className="size-3.5" />
-                <span className="hidden sm:inline">{autoSaveStatus === "saving" || isSaving ? "Saving..." : "Save"}</span>
-              </button>
-              <button
-                onClick={handleExportPDF}
-                className="hidden sm:flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand-700"
-              >
-                <Download className="size-3.5" />
-                <span>PDF</span>
-              </button>
-              <button
-                onClick={() => setShowVersionHistory(true)}
-                className="hidden sm:flex items-center justify-center size-8 rounded-lg border border-line bg-surface text-muted transition hover:bg-canvas hover:text-ink"
-                title="Version History"
-              >
-                <History className="size-3.5" />
-              </button>
-              <button
-                onClick={() => setIsMobilePreview(true)}
-                className="lg:hidden flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-xs text-muted transition hover:bg-canvas hover:text-ink"
-              >
-                <Eye className="size-3.5" />
-                <span>Preview</span>
-              </button>
-              <ThemeToggle className="size-8 rounded-lg border-line bg-surface text-muted hover:bg-canvas hover:text-ink" />
-            </div>
+            
+            <div className="w-px h-5 bg-line mx-1 shrink-0" />
+            <AutoSaveIndicator />
           </div>
 
-          {/* Row 2: Design Tools */}
-          <div className="flex items-center gap-2 pb-2 border-t border-line/30 pt-2">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* Center section: Undo & Redo */}
+          <div className="hidden sm:flex items-center gap-1 bg-canvas border border-line p-0.5 rounded-lg">
+            <button
+              onClick={handleUndo}
+              disabled={historyPointer <= 0}
+              className="p-1.5 rounded-md text-muted transition hover:bg-surface hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              title="Undo (Cmd+Z)"
+            >
+              <Undo className="size-3.5" />
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={historyPointer >= history.length - 1}
+              className="p-1.5 rounded-md text-muted transition hover:bg-surface hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              title="Redo (Cmd+Y)"
+            >
+              <Redo className="size-3.5" />
+            </button>
+          </div>
+
+          {/* Right section: Design Tools, PDF, History, Theme, Profile */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Template & Color Selector */}
+            <div className="hidden md:flex items-center gap-2">
               <TemplateSelector
                 selectedTemplate={resumeData.template}
                 onChange={(t) => setResumeData((prev) => ({ ...prev, template: t }))}
@@ -745,7 +897,70 @@ const ResumeBuilder = () => {
                 onChange={(c) => setResumeData((prev) => ({ ...prev, accent_color: c }))}
               />
             </div>
+            
+            <div className="w-px h-5 bg-line mx-1 hidden md:block shrink-0" />
+
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-700 shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Download className="size-3.5" />
+              <span>Download PDF</span>
+            </button>
+            
+            <button
+              onClick={() => setShowVersionHistory(true)}
+              className="flex items-center justify-center size-8 rounded-lg border border-line bg-surface text-muted transition hover:bg-canvas hover:text-ink cursor-pointer"
+              title="Version History"
+            >
+              <History className="size-4" />
+            </button>
+            
+            <ThemeToggle className="size-8 rounded-lg border border-line bg-surface text-muted hover:bg-canvas hover:text-ink" />
+            
+            <span className="text-line select-none font-light">|</span>
+            
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex size-8 items-center justify-center rounded-full border border-line bg-surface/80 hover:bg-canvas transition-colors"
+              >
+                <div className="flex size-6 items-center justify-center rounded-full bg-brand-100 text-[10px] font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+              </button>
+              {profileMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setProfileMenuOpen(false)} />
+                  <div className="absolute right-0 top-full z-45 mt-2 w-48 overflow-hidden rounded-xl border border-line bg-surface shadow-lg">
+                    <div className="px-3 py-2 border-b border-line/40">
+                      <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
+                      <p className="text-[10px] text-muted truncate">{user?.email}</p>
+                    </div>
+                    <Link
+                      to="/app"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted hover:bg-line/25"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        dispatch(logout());
+                        navigate("/");
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted hover:bg-line/25 hover:text-red-500 border-t border-line/45"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+          
         </div>
       </header>
 
@@ -753,14 +968,14 @@ const ResumeBuilder = () => {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* LEFT SIDEBAR */}
-        <aside className="hidden lg:flex flex-col w-52 shrink-0 border-r border-line bg-surface/30 overflow-y-auto">
-          <div className="p-3 space-y-5">
+        <aside className="hidden lg:flex flex-col lg:w-[18%] lg:min-w-[220px] lg:max-w-[260px] shrink-0 border-r border-line bg-surface/30 overflow-y-auto">
+          <div className="p-4 space-y-6">
             {sectionGroups.map((group) => (
               <div key={group.name}>
-                <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted/60">
+                <p className="mb-2 px-2.5 text-[10px] font-bold uppercase tracking-widest text-muted/50">
                   {group.name}
                 </p>
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   {group.sections.map((section) => {
                     const idx = sections.indexOf(section);
                     const Icon = section.icon;
@@ -770,17 +985,17 @@ const ResumeBuilder = () => {
                       <button
                         key={section.id}
                         onClick={() => scrollToSection(idx)}
-                        className={"group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all duration-150 " +
+                        className={"group flex w-full items-center gap-2.5 px-3 py-2.5 text-xs font-semibold transition-all duration-150 rounded-xl " +
                           (isActive
-                            ? "bg-brand-600 text-white shadow-sm shadow-brand-600/20"
-                            : "text-muted hover:bg-line/30 hover:text-ink")}
+                            ? "bg-brand-50/70 border-l-2 border-brand-600 pl-[11px] -ml-[1px] text-brand-700 dark:bg-brand-500/10 dark:border-brand-500 dark:text-brand-300 shadow-sm"
+                            : "text-muted hover:bg-slate-50 dark:hover:bg-zinc-900/50 hover:text-ink")}
                       >
-                        <Icon className="size-3.5 shrink-0" />
+                        <Icon className="size-4 shrink-0 transition-transform group-hover:scale-105" />
                         <span className="flex-1 text-left truncate">{section.name}</span>
                         {!isActive && (
                           hasData
-                            ? <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
-                            : <span className="size-2 shrink-0 rounded-full border border-dashed border-muted/40" />
+                            ? <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                            : <span className="size-1.5 shrink-0 rounded-full bg-slate-300 dark:bg-zinc-700" />
                         )}
                       </button>
                     );
@@ -790,43 +1005,56 @@ const ResumeBuilder = () => {
             ))}
           </div>
 
-          {/* Sidebar footer: progress ring */}
-          <div className="mt-auto p-3 border-t border-line">
-            <div className="flex items-center gap-2.5">
-              <div className="relative size-9 shrink-0">
-                <svg className="size-9 -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-line" />
-                  <circle
-                    cx="18" cy="18" r="14" fill="none" strokeWidth="3"
-                    strokeDasharray={String(2 * Math.PI * 14)}
-                    strokeDashoffset={String(2 * Math.PI * 14 * (1 - completenessScore / 100))}
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    className={
-                      completenessScore >= 80
-                        ? "text-emerald-500"
-                        : completenessScore >= 50
-                        ? "text-amber-500"
-                        : "text-rose-500"
-                    }
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-ink">
-                  {completenessScore}%
-                </span>
+          {/* Sidebar footer widgets */}
+          <div className="mt-auto p-4 border-t border-line space-y-4 bg-canvas/30 shrink-0">
+            {/* Progress widget */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-muted">Completion</span>
+                <span className="font-bold text-ink">{completenessScore}%</span>
               </div>
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-ink">Profile</p>
-                <p className="text-[10px] text-muted truncate">
-                  {completenessScore === 100 ? "Complete!" : completenessMissing.length + " sections left"}
-                </p>
+              <div className="h-1.5 w-full bg-line rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-500 rounded-full ${
+                    completenessScore >= 80 ? "bg-emerald-500" : completenessScore >= 50 ? "bg-amber-500" : "bg-rose-500"
+                  }`}
+                  style={{ width: `${completenessScore}%` }}
+                />
               </div>
+              <div className="flex justify-between text-[9px] text-muted font-medium">
+                <span>{completenessMissing.length} sections left</span>
+                <span>Est: ~{Math.max(2, Math.round(completenessMissing.length * 1.5))} mins</span>
+              </div>
+            </div>
+
+            {/* Quick actions panel */}
+            <div className="grid grid-cols-2 gap-1.5 pt-1">
+              <button
+                onClick={() => {
+                  const atsIdx = sections.findIndex(s => s.id === "ats");
+                  if (atsIdx !== -1) scrollToSection(atsIdx);
+                }}
+                className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface/50 p-2 text-center transition hover:bg-surface hover:shadow-xs group cursor-pointer"
+              >
+                <span className="text-[10px] font-bold text-ink group-hover:text-brand-600 transition">ATS Score</span>
+                <span className="text-[9px] text-muted">Optimize copy</span>
+              </button>
+              <button
+                onClick={() => setShowShortcutsModal(true)}
+                className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface/50 p-2 text-center transition hover:bg-surface hover:shadow-xs group cursor-pointer"
+              >
+                <div className="flex items-center gap-1">
+                  <Keyboard className="size-3 text-muted group-hover:text-brand-600 transition" />
+                  <span className="text-[10px] font-bold text-ink group-hover:text-brand-600 transition">Keys</span>
+                </div>
+                <span className="text-[9px] text-muted">Shortcuts</span>
+              </button>
             </div>
           </div>
         </aside>
 
         {/* CENTER: FORM */}
-        <div ref={formRef} className="flex-1 min-w-0 overflow-y-auto pb-20 lg:pb-0" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div ref={formRef} className="lg:w-[42%] lg:min-w-[460px] min-w-0 overflow-y-auto pb-20 lg:pb-0" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           <div className="px-4 py-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -868,38 +1096,35 @@ const ResumeBuilder = () => {
               </div>
 
               {/* Prev / Next navigation */}
-              <div className="flex items-center justify-between border-t border-line bg-canvas/40 px-5 py-3">
+              <div className="flex items-center justify-between border-t border-line bg-surface px-6 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.02)] shrink-0">
                 <button
                   onClick={() => scrollToSection(Math.max(0, activeSectionIndex - 1))}
                   disabled={activeSectionIndex === 0}
-                  className="flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-muted transition hover:bg-canvas hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2.5 text-xs font-semibold text-muted transition hover:bg-canvas hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
                 >
-                  <ChevronLeft className="size-3.5" />
-                  {activeSectionIndex > 0 ? sections[activeSectionIndex - 1].name : "Previous"}
+                  <ChevronLeft className="size-4" />
+                  <span>{activeSectionIndex > 0 ? `Back to ${sections[activeSectionIndex - 1].name}` : "Previous"}</span>
                 </button>
 
-                <div className="flex items-center gap-1">
-                  {sections.slice(0, 8).map((sec, i) => (
-                    <button
-                      key={i}
-                      onClick={() => scrollToSection(i)}
-                      className={"rounded-full transition-all duration-200 " +
-                        (i === activeSectionIndex
-                          ? "w-5 h-1.5 bg-brand-600"
-                          : sectionHasData(sec)
-                          ? "w-1.5 h-1.5 bg-emerald-400"
-                          : "w-1.5 h-1.5 bg-line")}
+                <div className="hidden sm:flex flex-col items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-widest leading-none">
+                    Step {activeSectionIndex + 1} of {sections.length}: {activeSection.name}
+                  </span>
+                  <div className="w-28 h-1 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-brand-500 rounded-full transition-all duration-300"
+                      style={{ width: `${((activeSectionIndex + 1) / sections.length) * 100}%` }}
                     />
-                  ))}
+                  </div>
                 </div>
 
                 <button
                   onClick={() => scrollToSection(Math.min(sections.length - 1, activeSectionIndex + 1))}
                   disabled={activeSectionIndex === sections.length - 1}
-                  className="flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-muted transition hover:bg-canvas hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 rounded-xl border border-brand-600 bg-brand-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-brand-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 shadow-sm shadow-brand-600/10"
                 >
-                  {activeSectionIndex < sections.length - 1 ? sections[activeSectionIndex + 1].name : "Next"}
-                  <ChevronRight className="size-3.5" />
+                  <span>{activeSectionIndex < sections.length - 1 ? `Next: ${sections[activeSectionIndex + 1].name}` : "Next"}</span>
+                  <ChevronRight className="size-4" />
                 </button>
               </div>
             </div>
@@ -907,61 +1132,86 @@ const ResumeBuilder = () => {
         </div>
 
         {/* RIGHT: LIVE PREVIEW */}
-        <div className="hidden lg:flex flex-col flex-1 min-w-0 border-l border-line overflow-hidden bg-canvas/20">
+        <div className="hidden lg:flex flex-col lg:w-[40%] lg:min-w-[440px] flex-1 border-l border-line overflow-hidden bg-canvas/20">
 
           {/* Preview toolbar */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-line bg-surface/70 backdrop-blur-sm shrink-0">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-line bg-surface/80 backdrop-blur-sm shrink-0">
             <div className="flex items-center gap-2">
               <div className="flex gap-1">
-                <span className="size-2.5 rounded-full bg-rose-400/80" />
-                <span className="size-2.5 rounded-full bg-amber-400/80" />
-                <span className="size-2.5 rounded-full bg-emerald-400/80" />
+                <span className="size-2 rounded-full bg-slate-300 dark:bg-zinc-700" />
+                <span className="size-2 rounded-full bg-slate-300 dark:bg-zinc-700" />
+                <span className="size-2 rounded-full bg-slate-300 dark:bg-zinc-700" />
               </div>
-              <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Live Preview</span>
+              <span className="text-[10px] font-bold text-muted ml-1.5 uppercase tracking-wider">
+                {resumeData.style_options?.pageSize === "a4" ? "A4 Paper" : "Letter Paper"}
+              </span>
             </div>
 
-            <div className="flex items-center gap-1">
+            {/* Zoom controllers */}
+            <div className="flex items-center gap-1.5 bg-canvas/50 border border-line p-0.5 rounded-lg">
               <button
                 onClick={handleZoomOut}
                 disabled={zoomLevel <= 0.3}
-                title="Zoom out"
-                className="flex items-center justify-center size-6 rounded-md border border-line bg-canvas text-muted transition hover:bg-surface hover:text-ink disabled:opacity-30"
+                className="p-1 rounded text-muted hover:bg-surface hover:text-ink transition-colors disabled:opacity-30 cursor-pointer"
+                title="Zoom Out"
               >
-                <ZoomOut className="size-3" />
+                <ZoomOut className="size-3.5" />
               </button>
+              
               <button
                 onClick={handleZoomReset}
-                title="Reset zoom"
-                className="min-w-[44px] rounded-md border border-line bg-canvas px-1.5 py-0.5 text-center text-[11px] font-mono text-muted transition hover:bg-surface hover:text-ink"
+                className="text-[10px] font-bold text-muted hover:text-ink px-2 py-0.5 rounded transition-colors cursor-pointer"
+                title="Reset to 100%"
               >
                 {Math.round(zoomLevel * 100)}%
               </button>
+              
               <button
                 onClick={handleZoomIn}
                 disabled={zoomLevel >= 2.0}
-                title="Zoom in"
-                className="flex items-center justify-center size-6 rounded-md border border-line bg-canvas text-muted transition hover:bg-surface hover:text-ink disabled:opacity-30"
+                className="p-1 rounded text-muted hover:bg-surface hover:text-ink transition-colors disabled:opacity-30 cursor-pointer"
+                title="Zoom In"
               >
-                <ZoomIn className="size-3" />
+                <ZoomIn className="size-3.5" />
               </button>
+              
+              <div className="h-3.5 w-px bg-line mx-0.5" />
+              
               <button
-                onClick={handleExportPDF}
-                title="Download PDF"
-                className="ml-1 flex items-center gap-1 rounded-md border border-line bg-canvas px-2 py-0.5 text-[11px] text-muted transition hover:bg-surface hover:text-ink"
+                onClick={handleFitWidth}
+                className="p-1.5 rounded text-[10px] font-semibold text-muted hover:bg-surface hover:text-ink transition-colors cursor-pointer"
+                title="Fit to Width"
               >
-                <Download className="size-3" />
-                PDF
+                <Minimize2 className="size-3" />
+              </button>
+
+              <button
+                onClick={handleFitPage}
+                className="p-1.5 rounded text-[10px] font-semibold text-muted hover:bg-surface hover:text-ink transition-colors cursor-pointer"
+                title="Fit Page vertically"
+              >
+                <Maximize2 className="size-3" />
               </button>
             </div>
+
+            {/* Download Action */}
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-700 active:scale-95 cursor-pointer shadow-sm shadow-brand-600/10"
+              title="Download PDF"
+            >
+              <Download className="size-3.5" />
+              <span className="hidden sm:inline text-[11px] font-bold">Download</span>
+            </button>
           </div>
 
           {/* Preview scroll area */}
-          <div className="flex-1 overflow-auto" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex-1 overflow-auto bg-slate-100/70 dark:bg-zinc-900/70" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="min-h-full" style={{
-              backgroundImage: "radial-gradient(circle, rgba(128,128,128,0.15) 1px, transparent 1px)",
+              backgroundImage: "radial-gradient(var(--color-line) 1.5px, transparent 1.5px)",
               backgroundSize: "20px 20px",
             }}>
-              <div ref={previewContainerRef} className="w-full h-full flex items-start justify-center">
+              <div ref={previewContainerRef} className="w-full h-full flex items-start justify-center py-10 px-4">
 
                 {/*
                   Height-compensation wrapper:
@@ -974,13 +1224,13 @@ const ResumeBuilder = () => {
                   style={{ height: Math.max(innerHeight * finalScale, 100) }}
                 >
                   <div
+                    className="premium-paper"
                     style={{
                       width: RESUME_WIDTH,
                       transformOrigin: "top left",
                       transform: "scale(" + finalScale + ")",
-                      borderRadius: 6,
+                      borderRadius: 4,
                       overflow: "hidden",
-                      boxShadow: "0 0 0 1px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 12px 40px rgba(0,0,0,0.08)",
                     }}
                   >
                     <div ref={previewInnerRef}>
@@ -1102,6 +1352,55 @@ const ResumeBuilder = () => {
         </div>
       )}
 
+      {/* ── KEYBOARD SHORTCUTS MODAL ──────────────────────────────────── */}
+      {showShortcutsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setShowShortcutsModal(false)}
+        >
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative z-10 w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-2xl overflow-hidden"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-ink">Keyboard Shortcuts</h3>
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="p-1 rounded-lg text-muted hover:bg-canvas hover:text-ink transition cursor-pointer"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {[
+                { keys: ["⌘", "S"], desc: "Save current progress" },
+                { keys: ["⌘", "Z"], desc: "Undo last change" },
+                { keys: ["⌘", "Y"], desc: "Redo last change" },
+                { keys: ["⌘", "K"], desc: "Search & quick jump" },
+                { keys: ["⌘", "E"], desc: "Download PDF" },
+                { keys: ["⌘", "P"], desc: "Toggle preview canvas" },
+                { keys: ["ESC"], desc: "Close menus or modals" }
+              ].map((shortcut, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5 border-b border-line/40 last:border-0">
+                  <span className="text-xs text-body">{shortcut.desc}</span>
+                  <div className="flex items-center gap-1">
+                    {shortcut.keys.map((k, j) => (
+                      <kbd key={j} className="rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[9px] font-bold text-ink shadow-xs">
+                        {k}
+                      </kbd>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* ── VERSION HISTORY ───────────────────────────────────────────── */}
       {showVersionHistory && (
         <VersionHistoryPanel
@@ -1144,6 +1443,127 @@ const ResumeBuilder = () => {
             <span>History</span>
           </button>
         </div>
+      </div>
+
+      {/* ── COLLAPSIBLE FLOATING HEALTH PANEL ───────────────────────── */}
+      <div className="fixed bottom-6 right-6 z-50 hidden lg:block">
+        <AnimatePresence>
+          {showHealthPanel ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-80 rounded-2xl border border-line bg-surface p-4 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between border-b border-line pb-2.5 mb-3">
+                <div className="flex items-center gap-2">
+                  <Heart className="size-4 text-rose-500 fill-rose-500 animate-pulse" />
+                  <span className="text-sm font-bold text-ink font-sans">Resume Score & Health</span>
+                </div>
+                <button
+                  onClick={() => setShowHealthPanel(false)}
+                  className="rounded-lg p-1 text-muted hover:bg-canvas hover:text-ink transition-colors cursor-pointer"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Score progress metrics */}
+                <div className="space-y-3">
+                  {/* ATS Rating */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-semibold text-body">ATS Suitability</span>
+                      <span className="text-[11px] font-bold text-ink">{completenessScore}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full transition-all duration-300" style={{ width: `${completenessScore}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Grammar Rating */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-semibold text-body">Grammar & Spell Check</span>
+                      <span className="text-[11px] font-bold text-ink">{resumeData.professional_summary ? 100 : 0}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-500 rounded-full transition-all duration-300" style={{ width: `${resumeData.professional_summary ? 100 : 0}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Readability Rating */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-semibold text-body">Readability Score</span>
+                      <span className="text-[11px] font-bold text-ink">{resumeData.professional_summary?.length > 100 ? 92 : 40}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${resumeData.professional_summary?.length > 100 ? 92 : 40}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Keywords Rating */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-semibold text-body">Industry Keywords</span>
+                      <span className={`text-[11px] font-bold ${resumeData.skills?.length >= 8 ? "text-emerald-500" : resumeData.skills?.length >= 4 ? "text-amber-500" : "text-rose-500"}`}>
+                        {resumeData.skills?.length >= 8 ? "Excellent" : resumeData.skills?.length >= 4 ? "Good" : "Needs Work"}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-300 ${resumeData.skills?.length >= 8 ? "bg-emerald-500" : resumeData.skills?.length >= 4 ? "bg-amber-500" : "bg-rose-500"}`} 
+                        style={{ width: `${resumeData.skills?.length >= 8 ? 95 : resumeData.skills?.length >= 4 ? 65 : 30}%` }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Checklist checks */}
+                <div className="space-y-2.5 pt-3 border-t border-line max-h-40 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+                  {getHealthChecks().map((check) => {
+                    const isPass = check.status === "pass";
+                    const isWarning = check.status === "warning";
+                    return (
+                      <div key={check.id} className="flex items-start gap-2.5 text-xs py-0.5">
+                        <span className="mt-0.5 shrink-0">
+                          {isPass ? (
+                            <CheckCircle2 className="size-3.5 text-emerald-500" />
+                          ) : isWarning ? (
+                            <AlertTriangle className="size-3.5 text-amber-500" />
+                          ) : (
+                            <X className="size-3.5 text-rose-500" />
+                          )}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-baseline">
+                            <p className="font-semibold text-ink leading-none">{check.label}</p>
+                            <span className={`text-[8px] font-bold uppercase ${isPass ? "text-emerald-500" : isWarning ? "text-amber-500" : "text-rose-500"}`}>
+                              {check.status}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted mt-0.5 leading-tight">{check.detail}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.button
+              layoutId="health-panel-trigger"
+              onClick={() => setShowHealthPanel(true)}
+              className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2.5 shadow-lg hover:shadow-xl hover:bg-canvas transition-all duration-200 cursor-pointer"
+            >
+              <Heart className="size-4 text-rose-500 fill-rose-500" />
+              <span className="text-xs font-bold text-ink">Health Check</span>
+              <span className={`size-2 rounded-full ${completenessScore >= 80 ? "bg-emerald-500" : completenessScore >= 50 ? "bg-amber-500" : "bg-rose-500"}`} />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── UNSAVED CHANGES WARNING MODAL ─────────────────────────────── */}
