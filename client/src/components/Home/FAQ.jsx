@@ -14,6 +14,7 @@ const faqs = [
 ];
 
 const FAQ = () => {
+  void motion;
   const [openIndex, setOpenIndex] = useState(null);
   const ref = useScrollReveal();
 

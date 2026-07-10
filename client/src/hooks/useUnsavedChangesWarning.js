@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Custom hook to track unsaved changes and warn user before leaving

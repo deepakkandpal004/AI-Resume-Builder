@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Menu, X, ArrowRight } from "lucide-react";
@@ -18,22 +18,8 @@ const NAV_LINKS = [
 const HomeNavbar = () => {
   const { user } = useSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  void motion;
   const [activeSection, setActiveSection] = useState("");
-  const rafRef = useRef(null);
-
-  /* ── Scroll detection for header shrink ───────────────────────── */
-  useEffect(() => {
-    const onScroll = () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => setScrolled(window.scrollY > 24));
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
 
   /* ── IntersectionObserver for active section tracking ─────────── */
   useEffect(() => {
@@ -86,7 +72,7 @@ const HomeNavbar = () => {
 
         {/* Desktop nav links with dynamic active indicator & sliding hover */}
         <div className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map((l, index) => {
+          {NAV_LINKS.map((l) => {
             const isActive = l.href === `#${activeSection}`;
             return (
               <a

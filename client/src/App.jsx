@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useCallback } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
@@ -20,7 +20,7 @@ const App = () => {
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
 
-  const getUserData = async () => {
+  const getUserData = useCallback(async () => {
     try {
       if (token) {
         const { data } = await api.get("/api/users/data", {
@@ -37,11 +37,11 @@ const App = () => {
       dispatch(setLoading(false));
       console.log(error.message);
     }
-  };
+  }, [token, dispatch]);
 
   useEffect(() => {
     getUserData();
-  }, [token]);
+  }, [getUserData]);
   return (
     <>
       <Toaster

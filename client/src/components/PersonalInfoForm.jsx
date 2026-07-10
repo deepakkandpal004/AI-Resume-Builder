@@ -40,7 +40,7 @@ const PersonalInfoForm = ({
         removeBg: false,
       });
       onChange({ ...data, image: cdnUrl });
-    } catch {}
+    } catch { /* upload failure handled by useImageUpload */ }
   };
 
   const handleRemoveImage = () => {

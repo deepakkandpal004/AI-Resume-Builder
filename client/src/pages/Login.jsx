@@ -15,6 +15,7 @@ const stagger = {
 };
 
 const Login = () => {
+  void motion;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const query = new URLSearchParams(window.location.search);
@@ -65,8 +66,6 @@ const Login = () => {
 
   const inputClass = "flex h-12 w-full items-center gap-3 rounded-xl border border-line bg-surface px-4 transition-all duration-200 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/15";
   const inputInner = "h-full w-full border-none bg-transparent text-sm text-ink outline-none placeholder:text-muted focus:ring-0";
-
-  const form = (state === "login" ? "Log in" : "Sign up");
 
   return (
     <motion.div

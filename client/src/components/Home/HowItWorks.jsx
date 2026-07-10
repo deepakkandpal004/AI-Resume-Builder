@@ -31,6 +31,7 @@ const steps = [
 ];
 
 const HowItWorks = () => {
+  void motion;
   const ref = useScrollReveal();
 
   return (

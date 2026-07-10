@@ -1,12 +1,12 @@
 import { Code2, Plus, Trash2, ChevronDown, ChevronUp, Github, Globe, Sparkles, Loader2 } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
 
 const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
 
-const TechTag = ({ value, onChange, onRemove }) => (
+const TechTag = ({ value, onRemove }) => (
   <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 dark:bg-brand-500/10 pl-2.5 pr-1 py-0.5 text-xs text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
     {value}
     <button onClick={onRemove} className="rounded-full p-0.5 hover:bg-brand-200 dark:hover:bg-brand-500/30 transition-colors">

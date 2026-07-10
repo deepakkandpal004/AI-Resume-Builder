@@ -63,6 +63,7 @@ const templates = [
 ];
 
 const TemplateShowcase = () => {
+  void motion;
   const [hovered, setHovered] = useState(null);
   const ref = useScrollReveal();
   const data = dummyResumeData[0];
@@ -85,7 +86,7 @@ const TemplateShowcase = () => {
         </div>
 
         <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.map((t, i) => {
+          {templates.map((t) => {
             const Template = t.component;
             const isHovered = hovered === t.id;
             return (

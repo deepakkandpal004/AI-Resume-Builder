@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   ArrowLeft, Check, Zap, Sparkles, Lock,
-  BarChart2, Mail, MessageSquare, FileText, Infinity,
+  BarChart2, Mail, MessageSquare, FileText, Infinity as InfinityIcon,
   ShieldCheck, Clock, Star,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -68,7 +68,7 @@ const COMPARISON = [
 
 const PERKS = [
   { icon: ShieldCheck, text: "Lifetime access — pay once, use forever" },
-  { icon: Infinity,    text: "No monthly fees or hidden charges" },
+  { icon: InfinityIcon,    text: "No monthly fees or hidden charges" },
   { icon: Clock,       text: "Instant unlock after payment" },
   { icon: Star,        text: "All future AI features included" },
 ];
@@ -89,6 +89,7 @@ const loadRazorpayScript = () => {
 };
 
 const Upgrade = () => {
+  void motion;
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
   const { user, token } = useSelector((state) => state.auth);
