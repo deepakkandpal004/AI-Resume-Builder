@@ -516,10 +516,11 @@ const ProductShowcase = () => {
         </div>
 
       </div>
+    </div>
 
-      <div className="section-line absolute bottom-0 inset-x-0" />
-    </section>
-  );
+    <div className="section-line absolute bottom-0 inset-x-0" />
+  </section>
+);
 };
 
 export default ProductShowcase;
