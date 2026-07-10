@@ -23,7 +23,7 @@ const PersonalInfoForm = ({
   resumeId,
 }) => {
   const { user } = useSelector((state) => state.auth);
-  const { upload, uploading, progress, error: uploadError } = useImageUpload();
+  const { upload, uploading, error: uploadError } = useImageUpload();
   const fileInputRef = useRef(null);
 
   const handleChange = (field, value) => {
