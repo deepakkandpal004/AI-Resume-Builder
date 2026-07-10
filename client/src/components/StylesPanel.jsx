@@ -121,7 +121,7 @@ const SortableItem = ({ id, label }) => {
   );
 };
 
-const ToggleButton = ({ active, onClick, label }) => (
+const ToggleButton = ({ active, onClick, label, icon: Icon }) => (
   <button
     onClick={onClick}
     title={label}

@@ -67,37 +67,29 @@ const PersonalInfoForm = ({
       : null;
 
   return (
-    <div>
+    <div className="space-y-5">
       {/* ── Photo uploader ───────────────────────────────────────── */}
-      <div className="flex items-start gap-5 pb-6 mb-6 border-b border-line">
-
-        {/* Avatar / click-to-upload trigger */}
+      <div className="premium-card p-5 flex flex-col sm:flex-row items-center gap-6">
         <label className="relative cursor-pointer group shrink-0">
           {imagePreviewSrc ? (
-            <div className="relative w-16 h-16">
+            <div className="relative w-20 h-20 overflow-hidden rounded-2xl border border-line shadow-sm">
               <img
                 src={imagePreviewSrc}
                 alt=""
-                className="w-16 h-16 rounded-full object-cover ring-2 ring-line group-hover:opacity-70 transition-opacity"
+                className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
               />
               {uploading && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55">
-                  <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="15.9" fill="none"
-                      stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" />
-                    <circle cx="18" cy="18" r="15.9" fill="none"
-                      stroke="white" strokeWidth="2.5"
-                      strokeDasharray={`${progress} 100`} strokeLinecap="round" />
-                  </svg>
-                  <span className="absolute text-[10px] font-bold text-white">{progress}%</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <Loader2 className="size-5 animate-spin text-white" />
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center w-16 h-16 rounded-full border-2 border-dashed border-line bg-canvas text-muted hover:border-brand-400 hover:text-brand-600 transition-colors">
+            <div className="flex flex-col items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-line bg-canvas/30 text-muted hover:border-brand-500 hover:text-brand-600 transition-all hover:bg-canvas/50">
               {uploading
-                ? <RefreshCw className="size-5 animate-spin" />
-                : <User className="size-5" />}
+                ? <RefreshCw className="size-6 animate-spin text-brand-500" />
+                : <User className="size-6 text-muted/50" />}
+              <span className="text-[10px] mt-1 font-bold tracking-wide uppercase text-muted/65">Photo</span>
             </div>
           )}
           <input
@@ -109,98 +101,148 @@ const PersonalInfoForm = ({
           />
         </label>
 
-        {/* Photo controls */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          {!imagePreviewSrc && (
+        <div className="flex-1 min-w-0 text-center sm:text-left">
+          <h4 className="text-sm font-semibold text-ink">Profile Picture</h4>
+          <p className="text-xs text-muted mt-0.5 mb-3.5">PNG or JPG. Maximum 5MB.</p>
+          
+          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-canvas transition-colors disabled:opacity-50"
+              className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-semibold text-ink hover:bg-canvas transition-colors disabled:opacity-50 active:scale-95"
             >
-              {uploading ? `Uploading… ${progress}%` : "Upload Photo"}
+              {imagePreviewSrc ? "Replace" : "Select Photo"}
             </button>
-          )}
-          {imagePreviewSrc && (
-            <>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-canvas transition-colors disabled:opacity-50"
-              >
-                Replace
-              </button>
+            
+            {imagePreviewSrc && (
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                className="rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors active:scale-95"
               >
                 <Trash2 className="size-3.5" />
               </button>
-            </>
-          )}
+            )}
 
-          {/* Remove Background toggle */}
-          {data.image && (
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <span className="text-xs text-muted">Remove BG</span>
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={removeBackground}
-                disabled={uploading}
-                onChange={() => setRemoveBackground((prev) => !prev)}
-              />
-              <div className="w-8 h-4 bg-slate-300 rounded-full peer-checked:bg-brand-600 transition-colors duration-200 relative">
-                <div className="absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform duration-200 peer-checked:translate-x-4" />
-              </div>
-            </label>
-          )}
+            {imagePreviewSrc && (
+              <div className="h-4 w-px bg-line mx-1" />
+            )}
+
+            {/* Remove Background toggle */}
+            {data.image && (
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <span className="text-xs text-muted font-medium">Remove BG</span>
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={removeBackground}
+                  disabled={uploading}
+                  onChange={() => setRemoveBackground((prev) => !prev)}
+                />
+                <div className="w-8 h-4.5 bg-slate-200 dark:bg-zinc-800 rounded-full peer-checked:bg-emerald-500 transition-colors duration-200 relative shrink-0">
+                  <div className="absolute left-0.5 top-0.5 bg-white w-3.5 h-3.5 rounded-full transition-transform duration-200 peer-checked:translate-x-3.5 shadow-sm" />
+                </div>
+              </label>
+            )}
+          </div>
 
           {removeBackground && (
-            <p className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 w-full">
+            <p className="flex items-center justify-center sm:justify-start gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 mt-2.5">
               <Info className="size-3 shrink-0" />
-              Applied when you save
+              Background removal applied upon next save
             </p>
-          )}
-
-          {uploading && (
-            <p className="text-[11px] text-muted animate-pulse">{progress}% uploaded</p>
           )}
         </div>
       </div>
 
       {/* Upload error */}
       {uploadError && (
-        <div className="mb-4 flex items-start gap-2 text-xs text-rose-600">
+        <div className="flex items-start gap-2 text-xs text-rose-600">
           <AlertCircle className="size-3.5 shrink-0 mt-0.5" />
           <span>Upload failed: {uploadError}. Photo will be saved on next resume save.</span>
         </div>
       )}
 
-      {/* ── Fields grid ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
-        {fields.map((field) => {
-          const Icon = field.icon;
-          return (
-            <div key={field.key} className={field.col === 2 ? "md:col-span-2" : ""}>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-body mb-1.5">
-                <Icon className="size-3.5 text-muted" />
-                {field.label}
-                {field.required && <span className="text-rose-500">*</span>}
-              </label>
-              <input
-                type={field.type}
-                value={data[field.key] || ""}
-                required={field.required}
-                onChange={(e) => handleChange(field.key, e.target.value)}
-                className={inp}
-                placeholder={`Enter ${field.label.toLowerCase()}`}
-              />
-            </div>
-          );
-        })}
+      {/* ── Identity details card ─────────────────────────────────── */}
+      <div className="premium-card p-5 space-y-4">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Identity Details</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.slice(0, 2).map((field) => {
+            const Icon = field.icon;
+            return (
+              <div key={field.key}>
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted mb-1.5">
+                  <Icon className="size-3.5" />
+                  {field.label}
+                  {field.required && <span className="text-rose-500">*</span>}
+                </label>
+                <input
+                  type={field.type}
+                  value={data[field.key] || ""}
+                  required={field.required}
+                  onChange={(e) => handleChange(field.key, e.target.value)}
+                  className={inp}
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Contact details card ──────────────────────────────────── */}
+      <div className="premium-card p-5 space-y-4">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Contact Details</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {fields.slice(2, 5).map((field) => {
+            const Icon = field.icon;
+            return (
+              <div key={field.key}>
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted mb-1.5">
+                  <Icon className="size-3.5" />
+                  {field.label}
+                  {field.required && <span className="text-rose-500">*</span>}
+                </label>
+                <input
+                  type={field.type}
+                  value={data[field.key] || ""}
+                  required={field.required}
+                  onChange={(e) => handleChange(field.key, e.target.value)}
+                  className={inp}
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Online presence card ──────────────────────────────────── */}
+      <div className="premium-card p-5 space-y-4">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Online Presence</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.slice(5).map((field) => {
+            const Icon = field.icon;
+            return (
+              <div key={field.key}>
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted mb-1.5">
+                  <Icon className="size-3.5" />
+                  {field.label}
+                  {field.required && <span className="text-rose-500">*</span>}
+                </label>
+                <input
+                  type={field.type}
+                  value={data[field.key] || ""}
+                  required={field.required}
+                  onChange={(e) => handleChange(field.key, e.target.value)}
+                  className={inp}
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

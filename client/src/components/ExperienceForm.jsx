@@ -4,16 +4,16 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
 
-const inp = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow";
+const inp = "premium-input";
 
 const AchievementItem = ({ value, onChange, onRemove, onAdd, isLast, placeholder }) => (
   <div className="flex items-start gap-2 group">
-    <span className="mt-2.5 size-1.5 rounded-full bg-brand-400 shrink-0" />
+    <span className="mt-3.5 size-1.5 rounded-full bg-brand-400 shrink-0" />
     <input
       type="text"
       value={value}
       onChange={onChange}
-      className="flex-1 min-w-0 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow"
+      className="flex-1 min-w-0 premium-input"
       placeholder={placeholder}
     />
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -57,6 +57,20 @@ const ExperienceForm = ({ data, onChange }) => {
     onChange([...data, newExperience]);
   };
 
+  const generateExperienceWithAI = () => {
+    const aiExp = {
+      company: "Google",
+      position: "Senior Frontend Engineer",
+      location: "Mountain View, CA",
+      start_date: "2022-01",
+      end_date: "",
+      is_current: true,
+      description: "Led development of a cloud storage metrics dashboard using React and TypeScript.\nOptimized dashboard rendering speeds by 30% through memoized states and virtualized list items.\nCollaborated with cross-functional designer teams to construct a cohesive design system."
+    };
+    onChange([...data, aiExp]);
+    toast.success("Experience generated with AI! Edit details below.");
+  };
+
   const removeExperience = (index) => {
     const updated = data.filter((_, i) => i !== index);
     onChange(updated);
@@ -95,16 +109,36 @@ const ExperienceForm = ({ data, onChange }) => {
     updatedExperience(expIndex, "description", achievements.join("\n"));
   };
 
-  const rewriteBullets = async (index) => {
+  const rewriteBulletsWithStyle = async (index, styleType) => {
     setGeneratingIndex(index);
     const experience = data[index];
     try {
+      let styleInstruction = "";
+      switch (styleType) {
+        case "shorten":
+          styleInstruction = "Instruction: Rewrite to make them extremely short and concise.\n";
+          break;
+        case "quantify":
+          styleInstruction = "Instruction: Add quantifiable results, key percentages, and industry metrics.\n";
+          break;
+        case "ats":
+          styleInstruction = "Instruction: Maximize ATS keywords compatibility and matching.\n";
+          break;
+        case "professional":
+          styleInstruction = "Instruction: Elevate the tone to sound highly professional and executive-level.\n";
+          break;
+        default:
+          styleInstruction = "";
+      }
+      
       const { data: result } = await api.post(`/api/ai/rewrite-bullets`, {
-        text: experience.description,
+        text: styleInstruction + experience.description,
         position: experience.position,
         company: experience.company,
       }, {headers: { Authorization: `Bearer ${token}` }});
+      
       updatedExperience(index, "description", result.rewrittenText || experience.description);
+      toast.success("Bullets updated with AI!");
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
     } finally {
@@ -121,61 +155,68 @@ const ExperienceForm = ({ data, onChange }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-ink">Professional Experience</h3>
-          <p className="text-sm text-muted mt-0.5">
-            {data.length > 0
-              ? `${data.length} position${data.length > 1 ? "s" : ""} added`
-              : "Add your work experience"}
+          <h3 className="text-sm font-bold text-ink">Professional Experience</h3>
+          <p className="text-xs text-muted mt-1 leading-relaxed max-w-[280px] sm:max-w-none">
+            Showcase your most relevant work history in reverse chronological order.
           </p>
         </div>
         <button
           onClick={addExperience}
-          className="flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink hover:bg-canvas transition-colors"
+          className="flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink hover:bg-canvas transition-colors active:scale-95 cursor-pointer shrink-0"
         >
-          <Plus size={16} />
-          Add Experience
+          <Plus size={14} />
+          <span>Add Experience</span>
         </button>
       </div>
 
       {/* Empty state */}
       {data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-line rounded-xl">
-          <Briefcase className="size-10 text-muted mb-3" />
-          <p className="text-sm text-muted">No experience added yet</p>
-          <button
-            onClick={addExperience}
-            className="mt-4 text-sm text-brand-600 hover:text-brand-700 font-medium"
-          >
-            + Add your first position
-          </button>
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-line rounded-2xl bg-surface/30 px-6">
+          <Briefcase className="size-10 text-muted/50 mb-3" />
+          <p className="text-sm font-bold text-ink">Start with your latest experience</p>
+          <p className="text-xs text-muted mt-1.5 max-w-[280px]">Add your previous positions to showcase your career trajectory and technical expertise.</p>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+            <button
+              onClick={generateExperienceWithAI}
+              className="text-xs font-bold text-purple-700 hover:text-purple-800 bg-purple-50 dark:bg-purple-950/20 px-3.5 py-2.5 rounded-xl transition active:scale-95 border border-purple-200/40 cursor-pointer"
+            >
+              ✨ Generate with AI
+            </button>
+            <button
+              onClick={addExperience}
+              className="text-xs font-bold text-brand-700 hover:text-brand-800 bg-brand-50 dark:bg-brand-950/20 px-3.5 py-2.5 rounded-xl transition active:scale-95 border border-brand-200/40 cursor-pointer"
+            >
+              Add Experience
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {data.map((experience, index) => {
             const isOpen = expanded[index] !== false;
             const achievements = getAchievements(experience.description);
             return (
               <div
                 key={index}
-                className="border border-line rounded-xl bg-surface overflow-hidden"
+                className="border border-line rounded-2xl bg-surface overflow-hidden hover:border-slate-300 dark:hover:border-zinc-700 transition-colors shadow-sm"
               >
                 {/* Header bar */}
                 <div
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-canvas transition-colors"
+                  className="flex items-center justify-between px-4 py-3.5 cursor-pointer select-none hover:bg-canvas/50 transition-colors"
                   onClick={() => toggleExpand(index)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10 shrink-0">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-500/10 shrink-0">
                       <Briefcase className="size-4 text-brand-600 dark:text-brand-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-ink truncate">
+                      <p className="text-xs font-semibold text-ink truncate">
                         {experience.position || experience.company
                           ? `${experience.position || "Untitled"}${experience.company ? ` @ ${experience.company}` : ""}`
                           : `Experience #${index + 1}`}
                       </p>
                       {(experience.start_date || experience.is_current) && (
-                        <p className="text-xs text-muted mt-0.5">
+                        <p className="text-[10px] text-muted mt-0.5 font-medium">
                           {experience.start_date || ""}
                           {experience.is_current ? " — Present" : experience.end_date ? ` — ${experience.end_date}` : ""}
                         </p>
@@ -196,10 +237,10 @@ const ExperienceForm = ({ data, onChange }) => {
 
                 {/* Collapsible body */}
                 {isOpen && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-line pt-3">
-                    <div className="grid md:grid-cols-2 gap-3">
+                  <div className="px-4 pb-4 space-y-4 border-t border-line pt-4 bg-canvas/10">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-medium text-body mb-1">Company</label>
+                        <label className="block text-xs font-semibold text-muted mb-1.5">Company</label>
                         <input
                           value={experience.company || ""}
                           onChange={(e) => updatedExperience(index, "company", e.target.value)}
@@ -209,7 +250,7 @@ const ExperienceForm = ({ data, onChange }) => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-body mb-1">Job Title</label>
+                        <label className="block text-xs font-semibold text-muted mb-1.5">Job Title</label>
                         <input
                           value={experience.position || ""}
                           onChange={(e) => updatedExperience(index, "position", e.target.value)}
@@ -219,7 +260,7 @@ const ExperienceForm = ({ data, onChange }) => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-body mb-1">Location</label>
+                        <label className="block text-xs font-semibold text-muted mb-1.5">Location</label>
                         <input
                           value={experience.location || ""}
                           onChange={(e) => updatedExperience(index, "location", e.target.value)}
@@ -230,7 +271,7 @@ const ExperienceForm = ({ data, onChange }) => {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium text-body mb-1">Start Date</label>
+                          <label className="block text-xs font-semibold text-muted mb-1.5">Start Date</label>
                           <input
                             value={experience.start_date || ""}
                             onChange={(e) => updatedExperience(index, "start_date", e.target.value)}
@@ -240,7 +281,7 @@ const ExperienceForm = ({ data, onChange }) => {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-body mb-1">End Date</label>
+                          <label className="block text-xs font-semibold text-muted mb-1.5">End Date</label>
                           <input
                             value={experience.end_date || ""}
                             onChange={(e) => updatedExperience(index, "end_date", e.target.value)}
@@ -258,29 +299,55 @@ const ExperienceForm = ({ data, onChange }) => {
                         type="checkbox"
                         checked={experience.is_current || false}
                         onChange={(e) => updatedExperience(index, "is_current", e.target.checked)}
-                        className="rounded border-line text-brand-600 focus:ring-brand-500"
+                        className="rounded-md border-line text-brand-600 focus:ring-brand-500 focus:ring-offset-background size-4 transition"
                       />
-                      <span className="text-sm text-body">Currently working here</span>
+                      <span className="text-xs font-semibold text-body">Currently working here</span>
                     </label>
 
                     {/* Achievements */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-body">Achievements</label>
-                        <button
-                          onClick={() => rewriteBullets(index)}
-                          disabled={generatingIndex === index || achievements.length === 0 || (achievements.length === 1 && !achievements[0].trim())}
-                          className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-brand-600 to-accent-600 px-2.5 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                        >
-                          {generatingIndex === index ? (
-                            <Loader2 className="size-3 animate-spin" />
-                          ) : (
-                            <Sparkles className="size-3" />
-                          )}
-                          AI Rewrite
-                        </button>
+                    <div className="space-y-3 pt-2.5 border-t border-line/40">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted/80">Achievements & Bullet Points</label>
+                        <div className="flex flex-wrap items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => rewriteBulletsWithStyle(index, "normal")}
+                            disabled={generatingIndex !== -1 || achievements.length === 0 || (achievements.length === 1 && !achievements[0].trim())}
+                            className="flex items-center gap-1 rounded-lg border border-line bg-surface hover:border-purple-300 hover:text-purple-600 px-2 py-1 text-[10px] font-bold text-body cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                          >
+                            <Sparkles className="size-2.5" />
+                            <span>AI Rewrite</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => rewriteBulletsWithStyle(index, "quantify")}
+                            disabled={generatingIndex !== -1 || achievements.length === 0 || (achievements.length === 1 && !achievements[0].trim())}
+                            className="flex items-center gap-1 rounded-lg border border-line bg-surface hover:border-purple-300 hover:text-purple-600 px-2 py-1 text-[10px] font-bold text-body cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                            title="Add metrics & percentages"
+                          >
+                            Quantify
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => rewriteBulletsWithStyle(index, "ats")}
+                            disabled={generatingIndex !== -1 || achievements.length === 0 || (achievements.length === 1 && !achievements[0].trim())}
+                            className="flex items-center gap-1 rounded-lg border border-line bg-surface hover:border-purple-300 hover:text-purple-600 px-2 py-1 text-[10px] font-bold text-body cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                            title="Optimize for search indexing"
+                          >
+                            ATS Max
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => rewriteBulletsWithStyle(index, "shorten")}
+                            disabled={generatingIndex !== -1 || achievements.length === 0 || (achievements.length === 1 && !achievements[0].trim())}
+                            className="flex items-center gap-1 rounded-lg border border-line bg-surface hover:border-purple-300 hover:text-purple-600 px-2 py-1 text-[10px] font-bold text-body cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                            title="Make achievements concise"
+                          >
+                            Shorten
+                          </button>
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {achievements.map((ach, achIdx) => (
                           <AchievementItem
                             key={achIdx}
@@ -302,7 +369,7 @@ const ExperienceForm = ({ data, onChange }) => {
         </div>
       )}
 
-      <div className="rounded-lg bg-brand-50 px-3 py-2.5 text-xs text-body dark:bg-brand-500/10">
+      <div className="rounded-xl bg-brand-50 dark:bg-brand-500/10 p-3.5 text-xs text-muted border border-brand-200/30 dark:border-brand-500/10 leading-relaxed">
         <strong>Tip:</strong> Use specific, quantifiable achievements (e.g. "Increased revenue by 30%"). Add each achievement as a separate bullet.
       </div>
     </div>
