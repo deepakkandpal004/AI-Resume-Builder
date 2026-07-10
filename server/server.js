@@ -32,6 +32,14 @@ app.use('/api/ai', aiRouter);
 app.use('/api/imagekit', imagekitRouter);
 app.use('/api/payments', paymentRouter);
 
+// Catch unrouted favicon requests
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// 404 handler for everything else
+app.use((req, res) => {
+  res.status(404).json({ message: "Not found" });
+});
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {

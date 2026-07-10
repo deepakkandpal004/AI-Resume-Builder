@@ -13,7 +13,11 @@ const errorHandler = (err, req, res, next) => {
     return res.status(409).json({ message: "Duplicate entry" });
   }
 
-  const status = err.status || 500;
+  if (err.status === 404) {
+    return res.status(404).json({ message: err.message || "Not found" });
+  }
+
+  const status = typeof err.status === "number" ? err.status : 500;
   const message = err.status ? err.message : "Internal server error";
   res.status(status).json({ message });
 };
