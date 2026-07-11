@@ -40,28 +40,35 @@ const FAQ = () => {
           {faqs.map((faq, i) => (
             <div
               key={i}
-              className="overflow-hidden rounded-2xl border border-line bg-surface/20 transition-all duration-300"
+              className={`overflow-hidden rounded-2xl border transition-all duration-250 ease-out ${
+                openIndex === i 
+                  ? "border-brand-500/35 bg-surface/40 shadow-xs" 
+                  : "border-line/65 bg-surface/20 hover:border-brand-500/20"
+              }`}
             >
-              <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="flex w-full items-center justify-between px-6 py-5 text-left transition-colors hover:bg-line/20"
-              >
-                <span className="font-medium text-ink/80 pr-4">{faq.q}</span>
-                <ChevronDown
-                  className={`size-5 shrink-0 text-muted transition-transform duration-300 ${
-                    openIndex === i ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
+              <h3>
+                <button
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                  aria-expanded={openIndex === i}
+                  className="flex w-full items-center justify-between px-6 py-5 text-left transition-colors hover:bg-line/10 focus-visible:ring-2 focus-visible:ring-brand-500 outline-none"
+                >
+                  <span className="font-bold text-ink pr-4 text-sm sm:text-base">{faq.q}</span>
+                  <ChevronDown
+                    className={`size-5 shrink-0 text-muted transition-transform duration-250 ease-out transform-gpu ${
+                      openIndex === i ? "rotate-180 text-brand-500" : ""
+                    }`}
+                  />
+                </button>
+              </h3>
               <AnimatePresence>
                 {openIndex === i && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
                   >
-                    <p className="border-t border-line px-6 py-5 text-sm leading-relaxed text-body">
+                    <p className="border-t border-line/45 px-6 py-5 text-xs sm:text-sm leading-relaxed text-body font-medium">
                       {faq.a}
                     </p>
                   </motion.div>

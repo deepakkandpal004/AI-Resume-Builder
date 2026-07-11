@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Check } from "lucide-react";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 
 const CallToAction = () => {
@@ -39,34 +39,45 @@ const CallToAction = () => {
               className="mx-auto max-w-3xl text-4xl font-black text-ink sm:text-5xl lg:text-6xl leading-[1.1] dark:text-white"
               style={{ letterSpacing: "-0.03em" }}
             >
-              Build Your Resume Today. <br />
-              <span className="text-gradient">Get More Interviews</span> Tomorrow.
+              Ready to <span className="text-gradient font-black">Build Your Resume?</span>
             </h2>
 
-            <p className="mx-auto mt-6 max-w-lg text-lg text-body dark:text-white/60">
-              Join thousands of job seekers who have already created professional,
-              ATS-friendly resumes in minutes.
+            <p className="mx-auto mt-5 max-w-md text-base sm:text-lg leading-relaxed text-body dark:text-white/60 font-semibold">
+              Create a professional ATS-friendly resume in minutes.
             </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row w-full sm:w-auto">
               <Link
                 to="/app"
-                className="btn-primary px-10 py-4 text-base shadow-xl"
+                aria-label="Create Resume Free"
+                className="group btn-primary px-10 py-4 text-base shadow-xl hover:-translate-y-0.5 transition-all duration-250 ease-out transform-gpu flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-brand-500 outline-none"
               >
-                Create Resume Free
-                <ArrowRight className="size-4" />
+                <span>Create Resume Free</span>
+                <ArrowRight className="size-4 transition-transform duration-250 ease-out transform-gpu group-hover:translate-x-0.5" />
               </Link>
               <a
                 href="#templates"
-                className="btn-outline px-10 py-4 text-base"
+                aria-label="View Templates"
+                className="btn-outline px-10 py-4 text-base hover:-translate-y-0.5 transition-all duration-250 ease-out transform-gpu flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-brand-500 outline-none"
               >
-                View Templates
+                <span>View Templates</span>
               </a>
             </div>
 
-            <p className="mt-5 text-sm text-muted dark:text-white/40">
-              Free forever &middot; No credit card &middot; No subscription needed
-            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-6 text-xs font-bold text-muted dark:text-white/40 select-none">
+              <div className="flex items-center gap-1.5">
+                <Check className="size-3.5 text-brand-500" />
+                <span>Free Forever</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="size-3.5 text-brand-500" />
+                <span>No Credit Card</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="size-3.5 text-brand-500" />
+                <span>No Subscription</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
