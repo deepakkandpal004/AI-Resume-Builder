@@ -20,7 +20,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(",").map((s) => s.trim())
-    : ["http://localhost:5173", "https://resume-builder-saas-rsdeepakg.vercel.app"],
+    : ["http://localhost:5173", "https://resume-builder-saas-rsdeepakg.vercel.app", "https://resume.deepakkandpal.me"],
   credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));
@@ -37,10 +37,8 @@ app.use('/api/ai', aiRouter);
 app.use('/api/imagekit', imagekitRouter);
 app.use('/api/payments', paymentRouter);
 
-// Catch unrouted favicon requests
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// 404 handler for everything else
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
 });

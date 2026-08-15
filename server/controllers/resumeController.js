@@ -3,48 +3,42 @@ import mongoose from "mongoose";
 import Resume from "../models/resume.js";
 import ResumeVersion from "../models/ResumeVersion.js";
 import fs from "fs";
+import { getMongoUserId } from "../utils/userHelper.js";
 
-// controller for new resume
-/// POST: api/resumes/create
-
+// POST: api/resumes/create
 export const createResume = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { title } = req.body;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
 
-    // create new resume
+    const { title } = req.body;
     const newResume = await Resume.create({ userId, title });
-    return res
-      .status(201)
-      .json({ message: "Resume created successfully", resume: newResume });
+    return res.status(201).json({ message: "Resume created successfully", resume: newResume });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-// controller for deleting a resume
 // DELETE: api/resumes/delete
-
 export const deleteResume = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
+
     const { resumeId } = req.params;
-
     await Resume.findOneAndDelete({ userId, _id: resumeId });
-
-    // return success message
     return res.status(200).json({ message: "Resume deleted successfully" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-// get user resume by id
-// GET: /api/resumes/get
-
+// GET: /api/resumes/get/:resumeId
 export const getResumeById = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
+
     const { resumeId: rawId } = req.params;
     const id = (rawId || "").match(/[a-fA-F0-9]{24}/)?.[0] || "";
     if (!mongoose.isValidObjectId(id)) {
@@ -52,10 +46,7 @@ export const getResumeById = async (req, res) => {
     }
 
     const resume = await Resume.findOne({ userId, _id: id });
-
-    if (!resume) {
-      return res.status(404).json({ message: "Resume not found" });
-    }
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
 
     resume.__v = undefined;
     resume.createdAt = undefined;
@@ -67,9 +58,7 @@ export const getResumeById = async (req, res) => {
   }
 };
 
-// get user by public id
-// GET: api/users/public
-
+// GET: api/resumes/public/:resumeId
 export const getPublicResumeById = async (req, res) => {
   try {
     const { resumeId: rawId } = req.params;
@@ -78,10 +67,8 @@ export const getPublicResumeById = async (req, res) => {
       return res.status(404).json({ message: "Invalid resume id" });
     }
     const resume = await Resume.findOne({ public: true, _id: id });
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
 
-    if (!resume) {
-      return res.status(404).json({ message: "Resume not found" });
-    }
     resume.__v = undefined;
     resume.createdAt = undefined;
     resume.updatedAt = undefined;
@@ -91,33 +78,35 @@ export const getPublicResumeById = async (req, res) => {
   }
 };
 
-// controller for updating a resume
-// PUT: api/resumes/update
-
 // POST: api/resumes/duplicate/:resumeId
 export const duplicateResume = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { resumeId } = req.params;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
 
+    const { resumeId } = req.params;
     const original = await Resume.findOne({ userId, _id: resumeId }).lean();
     if (!original) return res.status(404).json({ message: "Resume not found" });
 
-    // Strip DB-managed fields and create a fresh copy
     const { _id, createdAt, updatedAt, __v, ...rest } = original;
     const copy = await Resume.create({
       ...rest,
       title: `${original.title} (Copy)`,
-      public: false, // copies are private by default
+      public: false,
     });
 
     return res.status(201).json({ message: "Resume duplicated", resume: copy });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
-};export const updateResume = async (req, res) => {
+};
+
+// PUT: api/resumes/update
+export const updateResume = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
+
     const { resumeId, resumeData, removeBackground } = req.body;
     const image = req.file;
 
@@ -137,16 +126,12 @@ export const duplicateResume = async (req, res) => {
     let resumeDataCopy = parsePayload(resumeData);
     if (!resumeDataCopy.personal_info) resumeDataCopy.personal_info = {};
 
-    // Preserve existing image if client sends empty/missing image field
     if (!resumeDataCopy.personal_info.image || resumeDataCopy.personal_info.image === "") {
       resumeDataCopy.personal_info.image = existingResume?.personal_info?.image || "";
     }
 
     const isRemoveBackground = removeBackground === "true" || removeBackground === true;
 
-    // ── New file uploaded (fallback path when direct upload failed) ──
-    // bg-removal for CDN images is now handled client-side via the
-    // e-bgremove URL transform — no re-upload needed.
     if (image) {
       const uploadOptions = {
         file: fs.createReadStream(image.path),
@@ -170,7 +155,6 @@ export const duplicateResume = async (req, res) => {
       }
     }
 
-    // Save a version snapshot before updating (skip for auto-saves)
     if (existingResume) {
       await ResumeVersion.create({
         userId,
@@ -178,7 +162,6 @@ export const duplicateResume = async (req, res) => {
         label: "",
         snapshot: existingResume.toObject(),
       });
-      // Keep only the latest 20 versions per resume
       const versions = await ResumeVersion.find({ resumeId }).sort({ createdAt: -1 }).lean();
       if (versions.length > 20) {
         const toDelete = versions.slice(20).map(v => v._id);
@@ -201,9 +184,10 @@ export const duplicateResume = async (req, res) => {
 // GET /api/resumes/versions/:resumeId
 export const listVersions = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { resumeId } = req.params;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
 
+    const { resumeId } = req.params;
     const resume = await Resume.findOne({ userId, _id: resumeId });
     if (!resume) return res.status(404).json({ message: "Resume not found" });
 
@@ -221,9 +205,10 @@ export const listVersions = async (req, res) => {
 // POST /api/resumes/restore/:resumeId/:versionId
 export const restoreVersion = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { resumeId, versionId } = req.params;
+    const userId = await getMongoUserId(req.userId);
+    if (!userId) return res.status(404).json({ message: "User not found" });
 
+    const { resumeId, versionId } = req.params;
     const resume = await Resume.findOne({ userId, _id: resumeId });
     if (!resume) return res.status(404).json({ message: "Resume not found" });
 

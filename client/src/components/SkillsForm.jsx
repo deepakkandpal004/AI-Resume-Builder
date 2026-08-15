@@ -5,7 +5,7 @@ import api from "../configs/api";
 
 const inp = "premium-input";
 
-const SkillsForm = ({ data, onChange, profession, token }) => {
+const SkillsForm = ({ data, onChange, profession }) => {
   const [newSkill, setNewSkill] = React.useState("");
   const [suggestions, setSuggestions] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
@@ -38,8 +38,7 @@ const SkillsForm = ({ data, onChange, profession, token }) => {
     try {
       const { data: result } = await api.post(
         "/api/ai/suggest-skills",
-        { targetRole: profession, currentSkills: data },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { targetRole: profession, currentSkills: data }
       );
       setSuggestions(result.suggestedSkills);
     } catch (error) {

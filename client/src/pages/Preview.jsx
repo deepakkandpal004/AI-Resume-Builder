@@ -4,14 +4,12 @@ import ResumePreview from "../components/ResumePreview";
 import Loader from "../components/Loader";
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import api from "../configs/api";
 import Logo from "../components/Logo";
 
 const Preview = () => {
   const { resumeId } = useParams();
   const [searchParams] = useSearchParams();
-  const { token } = useSelector((state) => state.auth);
   const isBuilderPreview = searchParams.get("builder") === "true";
   const cleanId = (resumeId || "").match(/[a-fA-F0-9]{24}/)?.[0] || resumeId;
 
@@ -20,11 +18,10 @@ const Preview = () => {
 
   const loadResume = useCallback(async () => {
     try {
-      const endpoint = isBuilderPreview && token
+      const endpoint = isBuilderPreview
         ? `/api/resumes/get/${cleanId}`
         : `/api/resumes/public/${cleanId}`;
-      const headers = isBuilderPreview && token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await api.get(endpoint, { headers });
+      const response = await api.get(endpoint);
       const resume = isBuilderPreview ? response.data.resume : response.data;
       const styleOptions = {
         fontFamily: "inter",
@@ -47,7 +44,7 @@ const Preview = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isBuilderPreview, token, cleanId]);
+  }, [isBuilderPreview, cleanId]);
 
   useEffect(() => {
     loadResume();

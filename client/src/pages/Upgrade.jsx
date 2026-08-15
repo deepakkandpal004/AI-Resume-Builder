@@ -9,7 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import api from "../configs/api";
-import { login } from "../app/features/authSlice";
+import { setPremium } from "../app/features/authSlice";
 
 const PLANS = [
   {
@@ -92,7 +92,7 @@ const Upgrade = () => {
   void motion;
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
-  const { user, token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const isPremium  = user?.subscriptionTier === "premium";
 
   const [loading, setLoading]       = useState(false);
@@ -109,8 +109,7 @@ const Upgrade = () => {
 
       const { data: orderData } = await api.post(
         "/api/payments/create-order",
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {}
       );
 
       const options = {
@@ -136,18 +135,12 @@ const Upgrade = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
+              }
             );
 
             if (verifyData.success) {
               toast.success(verifyData.message || "Upgrade successful!");
-              dispatch(
-                login({
-                  user: { ...user, subscriptionTier: "premium" },
-                  token,
-                })
-              );
+              dispatch(setPremium());
               navigate("/app");
             } else {
               toast.error(verifyData.message || "Payment verification failed.");

@@ -20,11 +20,12 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
+    "firebase-admin": "^14.2.0",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "multer": "^2.0.2",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^6.10.1",
     "openai": "^6.9.1",
     "razorpay": "^2.9.6"
   },

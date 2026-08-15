@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { LayoutTemplate, ArrowRight, Check, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ClassicTemplate from "../templates/ClassicTemplate";
 import ModernTemplate from "../templates/ModernTemplate";
 import MinimalTemplate from "../templates/MinimalTemplate";
@@ -71,6 +71,7 @@ const TemplateShowcase = () => {
   const scrollRef = useScrollReveal();
   const data = dummyResumeData[0];
   const shouldReduceMotion = useReducedMotion();
+  const navigate = useNavigate();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -150,8 +151,16 @@ const TemplateShowcase = () => {
                 key={t.id}
                 className="h-full"
               >
-                <Link
-                  to={`/app?template=${t.id}`}
+                <div
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => navigate(`/app?template=${t.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      navigate(`/app?template=${t.id}`);
+                    }
+                  }}
                   aria-label={`Use ${t.name} Template`}
                   className={`group relative flex flex-col h-full overflow-hidden rounded-[24px] border bg-gradient-to-b transition-all duration-250 ease-out transform-gpu cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:-translate-y-2 focus-visible:scale-[1.01] focus-visible:shadow-2xl ${
                     isFeatured
@@ -237,7 +246,7 @@ const TemplateShowcase = () => {
                     </p>
                   </div>
 
-                </Link>
+                </div>
               </motion.div>
             );
           })}

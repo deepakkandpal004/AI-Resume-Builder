@@ -4,17 +4,12 @@ import api from "../../configs/api";
 // Thunk: POST /api/ai/ats-score
 export const runScan = createAsyncThunk(
   "ats/runScan",
-  async ({ resumeId, jobDescription }, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async ({ resumeId, jobDescription }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         "/api/ai/ats-score",
         { resumeId, jobDescription },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 35000, 
-        }
+        { timeout: 35000 }
       );
       return response.data;
     } catch (err) {
@@ -24,17 +19,13 @@ export const runScan = createAsyncThunk(
           quotaExhausted: true,
         });
       }
-      // Axios timeout
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         return rejectWithValue({
           message: "Analysis timed out. Please try again.",
         });
       }
       return rejectWithValue({
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Scan failed",
+        message: err.response?.data?.message || err.message || "Scan failed",
       });
     }
   }
@@ -43,28 +34,21 @@ export const runScan = createAsyncThunk(
 // Thunk: GET /api/ai/ats-score/:resumeId
 export const fetchLatestScan = createAsyncThunk(
   "ats/fetchLatestScan",
-  async (resumeId, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async (resumeId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/ai/ats-score/${resumeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data; // { scans: [...] }
+      const response = await api.get(`/api/ai/ats-score/${resumeId}`);
+      return response.data;
     } catch (err) {
       return rejectWithValue({
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to load history",
+        message: err.response?.data?.message || err.message || "Failed to load history",
       });
     }
   }
 );
 
 const initialState = {
-  scanStatus: "idle",     // 'idle' | 'loading' | 'succeeded' | 'failed' — tracks runScan only
-  historyStatus: "idle",  // 'idle' | 'loading' | 'failed' — tracks fetchLatestScan
+  scanStatus: "idle",
+  historyStatus: "idle",
   error: null,
   quotaExhausted: false,
   scansRemainingToday: null,
@@ -80,7 +64,6 @@ const atsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // runScan cases
       .addCase(runScan.pending, (state) => {
         state.scanStatus = "loading";
         state.error = null;
@@ -116,10 +99,7 @@ const atsSlice = createSlice({
           state.quotaExhausted = true;
         }
       })
-
-      // fetchLatestScan cases
       .addCase(fetchLatestScan.pending, (state) => {
-        // Use historyStatus so it doesn't disable the Analyze button
         state.historyStatus = "loading";
         state.error = null;
       })

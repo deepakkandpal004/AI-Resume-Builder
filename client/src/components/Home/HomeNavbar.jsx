@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import Logo from "../Logo";
 import ThemeToggle from "../ThemeToggle";
 import { logout } from "../../app/features/authSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "../../config/firebase";
 
 const NAV_LINKS = [
   { label: "How It Works", href: "#how-it-works" },
@@ -38,6 +40,7 @@ const HomeNavbar = () => {
   const handleLogout = () => {
     setProfileDropdownOpen(false);
     dispatch(logout());
+    signOut(auth);
     navigate("/");
   };
 

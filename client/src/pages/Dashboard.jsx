@@ -99,7 +99,7 @@ const Modal = ({ onClose, title, children }) => (
 
 const Dashboard = () => {
   void motion;
-  const { user, token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const accents = ["#10b981", "#2dd4bf", "#6366f1", "#2563EB", "#E11D48", "#D97706"];
 
   const [allResumes, setAllResumes] = useState([]);
@@ -121,9 +121,7 @@ const Dashboard = () => {
 
   const loadAllResumes = async () => {
     try {
-      const { data } = await api.get("/api/users/resumes", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.get("/api/users/resumes");
       setAllResumes(Array.isArray(data.resumes) ? data.resumes : []);
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
@@ -137,8 +135,7 @@ const Dashboard = () => {
     e.preventDefault();
     try {
       const { data } = await api.post(
-        "/api/resumes/create", { title, template: selectedTemplate },
-        { headers: { Authorization: `Bearer ${token}` } }
+        "/api/resumes/create", { title, template: selectedTemplate }
       );
       setAllResumes((prev) => [...prev, data.resume]);
       setTitle(""); setShowCreate(false);
@@ -155,8 +152,7 @@ const Dashboard = () => {
     try {
       const resumeText = await pdfToText(resume);
       const { data } = await api.post(
-        "/api/ai/upload-resume", { title, resumeText },
-        { headers: { Authorization: `Bearer ${token}` } }
+        "/api/ai/upload-resume", { title, resumeText }
       );
       toast.success("Resume uploaded successfully");
       setTitle(""); setResume(null); setShowUpload(false);
@@ -176,9 +172,7 @@ const Dashboard = () => {
       const formData = new FormData();
       formData.append("resumeId", editResumeId);
       formData.append("resumeData", JSON.stringify({ title, personal_info: target.personal_info || {} }));
-      await api.put("/api/resumes/update", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put("/api/resumes/update", formData);
       setAllResumes((prev) => prev.map((r) => (r._id === editResumeId ? { ...r, title } : r)));
       toast.success("Title updated");
       setEditResumeId(""); setTitle("");
@@ -190,9 +184,7 @@ const Dashboard = () => {
 
   const deleteResume = async (resumeId) => {
     try {
-      await api.delete(`/api/resumes/delete/${resumeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/resumes/delete/${resumeId}`);
       setAllResumes((prev) => prev.filter((r) => r._id !== resumeId));
       toast.success("Resume deleted");
     } catch (error) {
@@ -205,8 +197,7 @@ const Dashboard = () => {
   const duplicateResume = async (resumeId) => {
     try {
       const { data } = await api.post(
-        `/api/resumes/duplicate/${resumeId}`, {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        `/api/resumes/duplicate/${resumeId}`, {}
       );
       setAllResumes((prev) => [...prev, data.resume]);
       toast.success("Resume duplicated");
@@ -216,9 +207,8 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (token) loadAllResumes();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    if (user) loadAllResumes();
+  }, [user]);
 
   const filtered = allResumes
     .filter((r) => r.title.toLowerCase().includes(searchQuery.toLowerCase()))

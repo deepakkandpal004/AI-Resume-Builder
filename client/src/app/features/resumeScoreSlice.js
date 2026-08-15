@@ -3,15 +3,9 @@ import api from "../../configs/api";
 
 export const scoreResume = createAsyncThunk(
   "resumeScore/score",
-  async ({ resumeId }, { rejectWithValue, getState }) => {
+  async ({ resumeId }, { rejectWithValue }) => {
     try {
-      const token = getState().auth.token;
-      if (!token) return rejectWithValue("Not authenticated");
-      const { data } = await api.post(
-        "/api/ai/score-resume",
-        { resumeId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const { data } = await api.post("/api/ai/score-resume", { resumeId });
       return data;
     } catch (error) {
       if (error.response?.data?.quotaExhausted) {

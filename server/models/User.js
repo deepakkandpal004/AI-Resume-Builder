@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
+    firebaseUid: {
+        type: String,
+        required: true,
+        unique: true
+    },
     name: {
         type: String,
         required: true
@@ -11,24 +15,14 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    password: {
-        type: String,
-        required: true
-    },
     subscriptionTier: {
         type: String,
         enum: ["free", "premium"],
         default: "free"
     },
-    resetPasswordToken:   { type: String,  default: undefined },
-    resetPasswordExpires: { type: Date,    default: undefined },
     razorpayOrderId:      { type: String,  default: null },
     razorpayPaymentId:    { type: String,  default: null },
 }, { timestamps: true });
-
-userSchema.methods.comparePassword = async function(password) {
-    return await bcrypt.compare(password, this.password);
-}
 
 const User = mongoose.model("User", userSchema);
 

@@ -4,39 +4,31 @@ import api from "../../configs/api";
 // Thunk: POST /api/ai/tailor-resume
 export const tailorResume = createAsyncThunk(
   "tailor/generate",
-  async ({ resumeId, jobDescription }, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async ({ resumeId, jobDescription }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         "/api/ai/tailor-resume",
         { resumeId, jobDescription },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 45000,
-        }
+        { timeout: 45000 }
       );
-      return response.data; // { original, tailored }
+      return response.data;
     } catch (err) {
       if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
         return rejectWithValue({ message: "Tailoring timed out. Please try again." });
       }
       return rejectWithValue({
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to tailor resume",
+        message: err.response?.data?.message || err.message || "Failed to tailor resume",
       });
     }
   }
 );
 
 const initialState = {
-  status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+  status: "idle",
   error: null,
-  original: null, // { professional_summary, skills, experience, project }
-  tailored: null, // same shape
-  applied: false, // true once user clicks "Apply"
+  original: null,
+  tailored: null,
+  applied: false,
 };
 
 const tailorSlice = createSlice({

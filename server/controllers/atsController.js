@@ -4,6 +4,7 @@ import AtsScore from "../models/AtsScore.js";
 import User from "../models/User.js";
 import getAI from "../config/ai.js";
 import { buildResumeText, normalizeText, buildAtsPrompt, parseAtsResponse, AtsParseError } from "../services/atsService.js";
+import { getMongoUserId } from "../utils/userHelper.js";
 
 /**
  * GET /api/ai/ats-score/:resumeId
@@ -32,7 +33,7 @@ export const getScanHistory = async (req, res) => {
     return res.status(404).json({ message: "Resume not found." });
   }
 
-  if (resume.userId.toString() !== req.userId) {
+  if (resume.userId.toString() !== (await getMongoUserId(req.userId)).toString()) {
     return res.status(403).json({ message: "Access denied." });
   }
 
@@ -91,7 +92,7 @@ export const runAtsScan = async (req, res) => {
     return res.status(404).json({ message: "Resume not found." });
   }
 
-  if (resume.userId.toString() !== req.userId) {
+  if (resume.userId.toString() !== (await getMongoUserId(req.userId)).toString()) {
     return res.status(403).json({ message: "Access denied." });
   }
 
@@ -166,7 +167,7 @@ export const runAtsScan = async (req, res) => {
 
   // Step 11: Save new scan document
   const newScan = new AtsScore({
-    userId: req.userId,
+    userId: await getMongoUserId(req.userId),
     resumeId,
     jdSnippet: jobDescription.slice(0, 500),
     atsScore: parsed.atsScore,
@@ -185,12 +186,13 @@ export const runAtsScan = async (req, res) => {
   // Step 12: Compute scansRemainingToday for free-tier users
   let scansRemainingToday = null;
   try {
-    const user = await User.findById(req.userId).select("subscriptionTier");
+    const mongoUserId = await getMongoUserId(req.userId);
+    const user = await User.findById(mongoUserId).select("subscriptionTier");
     if (!user || user.subscriptionTier !== "premium") {
       const utcDayStart = new Date();
       utcDayStart.setUTCHours(0, 0, 0, 0);
       const todayCount = await AtsScore.countDocuments({
-        userId: req.userId,
+        userId: mongoUserId,
         createdAt: { $gte: utcDayStart },
       });
       scansRemainingToday = Math.max(0, 1 - todayCount);

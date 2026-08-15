@@ -4,17 +4,12 @@ import api from "../../configs/api";
 // Thunk: POST /api/ai/generate-cover-letter
 export const generateCoverLetter = createAsyncThunk(
   "coverLetter/generate",
-  async ({ resumeId, jobDescription, companyName, positionTitle, tone }, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async ({ resumeId, jobDescription, companyName, positionTitle, tone }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         "/api/ai/generate-cover-letter",
         { resumeId, jobDescription, companyName, positionTitle, tone },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 35000,
-        }
+        { timeout: 35000 }
       );
       return response.data;
     } catch (err) {
@@ -30,10 +25,7 @@ export const generateCoverLetter = createAsyncThunk(
         });
       }
       return rejectWithValue({
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Generation failed",
+        message: err.response?.data?.message || err.message || "Generation failed",
       });
     }
   }
@@ -42,20 +34,13 @@ export const generateCoverLetter = createAsyncThunk(
 // Thunk: GET /api/ai/cover-letter/:resumeId
 export const fetchCoverLetters = createAsyncThunk(
   "coverLetter/fetch",
-  async (resumeId, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async (resumeId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/ai/cover-letter/${resumeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data; // { letters: [...] }
+      const response = await api.get(`/api/ai/cover-letter/${resumeId}`);
+      return response.data;
     } catch (err) {
       return rejectWithValue({
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to load cover letters",
+        message: err.response?.data?.message || err.message || "Failed to load cover letters",
       });
     }
   }
@@ -64,32 +49,25 @@ export const fetchCoverLetters = createAsyncThunk(
 // Thunk: DELETE /api/ai/cover-letter/:letterId
 export const deleteCoverLetter = createAsyncThunk(
   "coverLetter/delete",
-  async (letterId, { getState, rejectWithValue }) => {
-    const token = getState().auth.token;
-
+  async (letterId, { rejectWithValue }) => {
     try {
-      await api.delete(`/api/ai/cover-letter/${letterId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/ai/cover-letter/${letterId}`);
       return { letterId };
     } catch (err) {
       return rejectWithValue({
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to delete cover letter",
+        message: err.response?.data?.message || err.message || "Failed to delete cover letter",
       });
     }
   }
 );
 
 const initialState = {
-  genStatus: "idle",      // 'idle' | 'loading' | 'succeeded' | 'failed' — tracks generateCoverLetter
-  historyStatus: "idle",  // 'idle' | 'loading' | 'failed' — tracks fetchCoverLetters
+  genStatus: "idle",
+  historyStatus: "idle",
   error: null,
   quotaExhausted: false,
   lettersRemainingToday: null,
-  current: null,          // most recently generated/selected letter
+  current: null,
   history: [],
 };
 
@@ -104,7 +82,6 @@ const coverLetterSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // generateCoverLetter
       .addCase(generateCoverLetter.pending, (state) => {
         state.genStatus = "loading";
         state.error = null;
@@ -122,8 +99,7 @@ const coverLetterSlice = createSlice({
 
         state.genStatus = "succeeded";
         state.quotaExhausted = false;
-        state.lettersRemainingToday =
-          lettersRemainingToday ?? state.lettersRemainingToday;
+        state.lettersRemainingToday = lettersRemainingToday ?? state.lettersRemainingToday;
 
         const letter = {
           letterId: coverLetterId,
@@ -143,8 +119,6 @@ const coverLetterSlice = createSlice({
           state.quotaExhausted = true;
         }
       })
-
-      // fetchCoverLetters
       .addCase(fetchCoverLetters.pending, (state) => {
         state.historyStatus = "loading";
         state.error = null;
@@ -157,8 +131,6 @@ const coverLetterSlice = createSlice({
         state.historyStatus = "failed";
         state.error = action.payload?.message || "Failed to load cover letters";
       })
-
-      // deleteCoverLetter
       .addCase(deleteCoverLetter.fulfilled, (state, action) => {
         const { letterId } = action.payload;
         state.history = state.history.filter((l) => l.letterId !== letterId);

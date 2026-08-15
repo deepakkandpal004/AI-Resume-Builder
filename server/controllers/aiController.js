@@ -4,6 +4,7 @@ import Resume from "../models/resume.js";
 import CoverLetter from "../models/CoverLetter.js";
 import InterviewQuestion from "../models/InterviewQuestion.js";
 import User from "../models/User.js";
+import { getMongoUserId } from "../utils/userHelper.js";
 
 // Free-tier daily cover-letter quota (kept in sync with coverLetterRateLimiter).
 const COVER_LETTER_DAILY_LIMIT = 3;
@@ -120,7 +121,7 @@ export const rewriteBullets = async (req, res) => {
 export const uploadResume = async (req, res) => {
   try {
     const { resumeText, title } = req.body;
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -326,7 +327,7 @@ export const suggestSkills = async (req, res) => {
 export const generateCoverLetter = async (req, res) => {
   try {
     const { resumeId, jobDescription, companyName, positionTitle, tone } = req.body;
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -468,7 +469,7 @@ export const getCoverLetterHistory = async (req, res) => {
   if (!resume) {
     return res.status(404).json({ message: "Resume not found." });
   }
-  if (resume.userId.toString() !== req.userId) {
+  if (resume.userId.toString() !== (await getMongoUserId(req.userId)).toString()) {
     return res.status(403).json({ message: "Access denied." });
   }
 
@@ -499,7 +500,8 @@ export const deleteCoverLetter = async (req, res) => {
 
   let letter;
   try {
-    letter = await CoverLetter.findOne({ _id: letterId, userId: req.userId });
+    const userId = await getMongoUserId(req.userId);
+    letter = await CoverLetter.findOne({ _id: letterId, userId });
   } catch (err) {
     return res.status(503).json({ message: "Database unavailable. Please try again." });
   }
@@ -516,7 +518,7 @@ export const deleteCoverLetter = async (req, res) => {
 export const generateInterviewQuestions = async (req, res) => {
   try {
     const { resumeId, targetRole, jobDescription } = req.body;
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -662,7 +664,7 @@ export const getInterviewHistory = async (req, res) => {
 
   const resume = await Resume.findById(resumeId);
   if (!resume) return res.status(404).json({ message: "Resume not found." });
-  if (resume.userId.toString() !== req.userId) return res.status(403).json({ message: "Access denied." });
+  if (resume.userId.toString() !== (await getMongoUserId(req.userId)).toString()) return res.status(403).json({ message: "Access denied." });
 
   const sets = await InterviewQuestion.find({ resumeId })
     .sort({ createdAt: -1 })
@@ -682,7 +684,7 @@ export const getInterviewHistory = async (req, res) => {
 export const tailorResume = async (req, res) => {
   try {
     const { resumeId, jobDescription } = req.body;
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -791,7 +793,7 @@ export const scoreResume = async (req, res) => {
       return res.status(400).json({ message: "Invalid resume ID." });
     }
 
-    const resume = await Resume.findOne({ _id: resumeId, userId: req.userId });
+    const resume = await Resume.findOne({ _id: resumeId, userId: await getMongoUserId(req.userId) });
     if (!resume) {
       return res.status(404).json({ message: "Resume not found." });
     }

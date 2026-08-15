@@ -32,7 +32,6 @@ function createStore() {
     },
     preloadedState: {
       auth: {
-        token: 'test-token',
         user: { id: 'user-1' },
         loading: false,
       },
@@ -84,12 +83,7 @@ describe('CoverLetterPanel', () => {
   test('loads history, generates a letter, and deletes it from the UI', async () => {
     renderPanel();
 
-    expect(api.get).toHaveBeenCalledWith(
-      '/api/ai/cover-letter/resume-123',
-      expect.objectContaining({
-        headers: { Authorization: 'Bearer test-token' },
-      })
-    );
+    expect(api.get).toHaveBeenCalledWith('/api/ai/cover-letter/resume-123');
 
     await screen.findByText('No cover letters yet. Generate one above.');
 
@@ -116,7 +110,7 @@ describe('CoverLetterPanel', () => {
           tone: 'formal',
         }),
         expect.objectContaining({
-          headers: { Authorization: 'Bearer test-token' },
+          timeout: 35000,
         })
       );
     });
@@ -131,12 +125,7 @@ describe('CoverLetterPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /Delete cover letter/i }));
 
     await waitFor(() => {
-      expect(api.delete).toHaveBeenCalledWith(
-        '/api/ai/cover-letter/letter-123',
-        expect.objectContaining({
-          headers: { Authorization: 'Bearer test-token' },
-        })
-      );
+      expect(api.delete).toHaveBeenCalledWith('/api/ai/cover-letter/letter-123');
     });
 
     await waitFor(() => {

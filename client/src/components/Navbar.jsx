@@ -5,6 +5,8 @@ import { logout } from "../app/features/authSlice";
 import { LogOut, Sparkles, Zap, Settings } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebase";
 
 const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
@@ -46,6 +48,7 @@ const Navbar = () => {
     setMenuOpen(false);
     navigate("/");
     dispatch(logout());
+    signOut(auth);
   };
 
   const isPremium = user?.subscriptionTier === "premium";

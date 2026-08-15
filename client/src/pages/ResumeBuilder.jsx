@@ -48,6 +48,8 @@ import { resetCoverLetter } from "../app/features/coverLetterSlice";
 import { resetTailor } from "../app/features/tailorSlice";
 import { resetInterview } from "../app/features/interviewSlice";
 import { logout } from "../app/features/authSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebase";
 import Logo from "../components/Logo";
 const JD_Input_Panel = lazy(() => import("../components/ats/JD_Input_Panel"));
 const ATS_Results_Panel = lazy(() => import("../components/ats/ATS_Results_Panel"));
@@ -77,7 +79,7 @@ import useUnsavedChangesWarning from "../hooks/useUnsavedChangesWarning";
 // Resume canvas width (Letter @ 96dpi)
 const RESUME_WIDTH = 816;
 
-const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, removeBackground, setRemoveBackground, loadExistingResume, setActiveSectionIndex }) => {
+const SectionForm = memo(({ section, resumeData, onChange, resumeId, removeBackground, setRemoveBackground, loadExistingResume, setActiveSectionIndex }) => {
   const formContent = (() => {
     switch (section.id) {
       case "personal":
@@ -124,7 +126,6 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
           <SkillsForm
             data={resumeData.skills}
             profession={resumeData.personal_info?.profession || ""}
-            token={token}
             onChange={(data) => onChange((prev) => ({ ...prev, skills: data }))}
           />
         );
@@ -224,7 +225,7 @@ const SectionForm = memo(({ section, resumeData, onChange, token, resumeId, remo
 const ResumeBuilder = () => {
   void motion;
   const { resumeId } = useParams();
-  const { token, user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -293,9 +294,7 @@ const ResumeBuilder = () => {
   const loadExistingResume = async () => {
     try {
       setIsLoading(true);
-      const { data } = await api.get(`/api/resumes/get/${resumeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.get(`/api/resumes/get/${resumeId}`);
       if (data.resume) {
         const normalized = {
           ...data.resume,
@@ -377,7 +376,6 @@ const ResumeBuilder = () => {
 
       const { data } = await api.put("/api/resumes/update", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
@@ -578,15 +576,13 @@ const ResumeBuilder = () => {
 
   // Load + reset slices
   useEffect(() => {
-    if (token) {
-      loadExistingResume();
-      dispatch(resetAts());
-      dispatch(resetCoverLetter());
-      dispatch(resetTailor());
-      dispatch(resetInterview());
-    }
+    loadExistingResume();
+    dispatch(resetAts());
+    dispatch(resetCoverLetter());
+    dispatch(resetTailor());
+    dispatch(resetInterview());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resumeId, token]);
+  }, [resumeId]);
 
   useEffect(() => {
     return () => {
@@ -949,6 +945,7 @@ const ResumeBuilder = () => {
                       onClick={() => {
                         setProfileMenuOpen(false);
                         dispatch(logout());
+                        signOut(auth);
                         navigate("/");
                       }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted hover:bg-line/25 hover:text-red-500 border-t border-line/45"
@@ -1084,7 +1081,6 @@ const ResumeBuilder = () => {
                       section={activeSection}
                       resumeData={resumeData}
                       onChange={setResumeData}
-                      token={token}
                       resumeId={resumeId}
                       removeBackground={removeBackground}
                       setRemoveBackground={setRemoveBackground}

@@ -1,133 +1,69 @@
 import User from "../models/User.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import Resume from "../models/resume.js";
 import AtsScore from "../models/AtsScore.js";
+import { verifyIdToken } from "../config/firebase.js";
 
-const generateToken = (userId) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
-  return token;
-};
-
-// Controller for user registration
-// POST /api/users/register
-
-export const registerUser = async (req, res) => {
+// POST /api/users/sync
+// Syncs Firebase user data with MongoDB
+export const syncUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, photoURL } = req.body;
+    const firebaseUid = req.userId;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    let user = await User.findOne({ firebaseUid });
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
-
-    if (name.trim().length < 1 || name.length > 100) {
-      return res.status(400).json({ message: "Name must be 1-100 characters" });
-    }
-    const user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      user.name = name || user.name;
+      user.email = email || user.email;
+      await user.save();
+    } else {
+      user = await User.findOne({ email });
+      if (user) {
+        user.firebaseUid = firebaseUid;
+        user.name = name || user.name;
+        await user.save();
+      } else {
+        user = await User.create({
+          firebaseUid,
+          name: name || email?.split("@")[0] || "User",
+          email,
+        });
+      }
     }
 
-    // Hash the password (10 is the salt rounds)
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-    });
-
-    await newUser.save();
-
-    // return succes message
-    const token = generateToken(newUser._id);
-    newUser.password = undefined;
-
-    return res
-      .status(201)
-      .json({ message: "User Create Successfully", token, user: newUser });
+    return res.status(200).json({ user });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-// controller for user login
-// POST: api/users/login
-
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email and password" });
-    }
-
-    // check if password is correct
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
-
-    // return succes message
-    const token = generateToken(user._id);
-    user.password = undefined;
-
-    return res.status(200).json({ message: "Login Successfully", token, user });
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
-
-// controller for getting user by Id
-// GET: /api/users/get
-
+// GET /api/users/data
+// Gets current user data
 export const getUserId = async (req, res) => {
   try {
-    const userId = req.userId;
-
-    // check if user exists
-    const user = await User.findById(userId);
+    const firebaseUid = req.userId;
+    const user = await User.findOne({ firebaseUid });
     if (!user) {
       return res.status(404).json({ message: "user not found" });
     }
-
-    //return user
-    user.password = undefined;
-    return res.status(200).json({user});
+    return res.status(200).json({ user });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-// controller for getting user resumes
-// GET: /api/users/resumes
-// Returns each resume enriched with its latest ATS score (if any)
-
+// GET /api/users/resumes
+// Returns each resume enriched with its latest ATS score
 export const getUserResumes = async (req, res) => {
     try {
-        const userId = req.userId;
+        const firebaseUid = req.userId;
+        const user = await User.findOne({ firebaseUid });
+        if (!user) {
+            return res.status(404).json({ message: "user not found" });
+        }
 
-        const resumes = await Resume.find({ userId }).lean();
+        const resumes = await Resume.find({ userId: user._id }).lean();
 
-        // Fetch the most recent ATS scan for each resume in one query
         const resumeIds = resumes.map((r) => r._id);
         const latestScans = await AtsScore.aggregate([
             { $match: { resumeId: { $in: resumeIds } } },
@@ -135,7 +71,6 @@ export const getUserResumes = async (req, res) => {
             { $group: { _id: "$resumeId", atsScore: { $first: "$atsScore" }, scannedAt: { $first: "$createdAt" } } },
         ]);
 
-        // Map resumeId → score for O(1) lookup
         const scoreMap = Object.fromEntries(
             latestScans.map((s) => [s._id.toString(), { atsScore: s.atsScore, scannedAt: s.scannedAt }])
         );
@@ -149,14 +84,10 @@ export const getUserResumes = async (req, res) => {
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
-}
+};
 
 // POST /api/users/upgrade
-// Upgrades a user to premium tier.
-// In production: verify a payment provider webhook/session before calling this.
-// For now, accepts an optional promo code defined in PROMO_CODE env var
-// so the feature is fully functional without a payment integration.
-
+// Upgrades a user to premium tier
 const VALID_PROMO_CODES = (process.env.PROMO_CODES || "")
   .split(",")
   .map((c) => c.trim().toUpperCase())
@@ -164,17 +95,16 @@ const VALID_PROMO_CODES = (process.env.PROMO_CODES || "")
 
 export const upgradeUser = async (req, res) => {
   try {
-    const userId = req.userId;
+    const firebaseUid = req.userId;
     const { promoCode } = req.body;
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({ firebaseUid });
     if (!user) return res.status(404).json({ message: "User not found." });
 
     if (user.subscriptionTier === "premium") {
       return res.status(400).json({ message: "Your account is already premium." });
     }
 
-    // Validate promo code when provided
     if (promoCode) {
       const normalised = promoCode.trim().toUpperCase();
       if (VALID_PROMO_CODES.length > 0 && !VALID_PROMO_CODES.includes(normalised)) {
@@ -185,7 +115,6 @@ export const upgradeUser = async (req, res) => {
     user.subscriptionTier = "premium";
     await user.save();
 
-    user.password = undefined;
     return res.status(200).json({
       message: "Upgrade successful! You now have Premium access.",
       user,

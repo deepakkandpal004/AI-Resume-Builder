@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import User from "../models/User.js";
+import { getMongoUserId } from "../utils/userHelper.js";
 
 // Helper to initialize Razorpay. Throws error if keys are missing in env.
 const getRazorpayInstance = () => {
@@ -21,7 +22,7 @@ const getRazorpayInstance = () => {
 // Creates a new Razorpay Order (amount: ₹299 = 29900 paise)
 export const createRazorpayOrder = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
     const user = await User.findById(userId);
 
     if (!user) {
@@ -71,7 +72,7 @@ export const createRazorpayOrder = async (req, res) => {
 export const verifyRazorpayPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    const userId = req.userId;
+    const userId = await getMongoUserId(req.userId);
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ message: "Missing required payment details" });
