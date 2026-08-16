@@ -1,4 +1,4 @@
-import { Check, Sparkles, ArrowRight } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
@@ -12,9 +12,9 @@ const plans = [
     desc: "Build a complete resume without paying upfront.",
     categories: [
       {
-        title: "AI Features",
+        title: "Rewriting Features",
         features: [
-          "AI Enhance (10/day)",
+          "Bullet Rewriter (10/day)",
           "Resume Tailor (3/day)",
           "ATS Score Check (1/day)",
         ],
@@ -43,15 +43,15 @@ const plans = [
     price: "299",
     currency: "₹",
     period: "lifetime",
-    desc: "Unlock unlimited AI with a single payment.",
+    desc: "Unlock unlimited rewriting with a single payment.",
     categories: [
       {
-        title: "AI Features",
+        title: "Rewriting Features",
         features: [
-          "Unlimited AI Enhance",
+          "Unlimited Bullet Rewrites",
           "Unlimited Resume Tailor",
           "Unlimited ATS Score Check",
-          "Priority AI processing",
+          "Priority processing",
         ],
       },
       {
@@ -98,16 +98,12 @@ const Pricing = () => {
 
   return (
     <section id="pricing" className="relative overflow-hidden px-6 py-24 md:px-10">
-      {/* Background gradients */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.03),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(16,185,129,0.02),transparent_50%)] blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 dot-grid" />
       <div className="section-line absolute top-0 inset-x-0" />
 
       <div ref={ref} className="mx-auto max-w-5xl reveal">
         {/* Header Block */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-bold text-brand-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-brand-400">
-            <Sparkles className="size-4 text-brand-500" />
             <span>Straightforward pricing</span>
           </div>
           <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl lg:text-6xl leading-[1.15] max-w-3xl">
@@ -149,7 +145,7 @@ const Pricing = () => {
                   <motion.span
                     animate={{ y: [0, -3, 0] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full border border-brand-500/30 bg-emerald-600 px-4 py-1 text-xs font-bold text-white shadow-md shadow-brand-500/20 backdrop-blur-md"
+                    className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full border border-slate-300 bg-slate-800 px-4 py-1 text-xs font-bold text-white shadow-md backdrop-blur-md"
                   >
                     Best value
                   </motion.span>
@@ -186,11 +182,7 @@ const Pricing = () => {
                       <ul className="space-y-3">
                         {category.features.map((f) => (
                           <li key={f} className="flex items-start gap-2.5 text-xs sm:text-sm">
-                            {category.title === "AI Features" ? (
-                              <Sparkles className="size-3.5 shrink-0 text-brand-500 mt-0.5" />
-                            ) : (
-                              <Check className="size-3.5 shrink-0 text-emerald-400 mt-0.5" />
-                            )}
+                            <Check className="size-3.5 shrink-0 text-brand-500 mt-0.5" />
                             <span className="text-body font-semibold">{f}</span>
                           </li>
                         ))}
@@ -206,7 +198,7 @@ const Pricing = () => {
                     aria-label={`Get started with ${plan.name} plan`}
                     className={`group flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-center text-sm font-semibold transition-all duration-250 ease-out transform-gpu active:scale-98 ${
                       isPro
-                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 hover:scale-[1.01]"
+                        ? "bg-slate-800 text-white shadow-lg shadow-slate-800/20 hover:bg-slate-700 hover:-translate-y-0.5 hover:scale-[1.01]"
                         : "border border-line bg-surface/35 hover:border-brand-500/30 text-body hover:text-ink shadow-xs hover:shadow-md"
                     }`}
                   >
@@ -219,22 +211,6 @@ const Pricing = () => {
             );
           })}
         </motion.div>
-
-        {/* Unified Section Trust Metrics */}
-        <div className="mt-12 flex flex-wrap justify-center gap-6 text-[11px] font-extrabold text-muted select-none reveal">
-          <div className="flex items-center gap-1.5">
-            <Check className="size-3.5 text-brand-500" />
-            <span>One-time payment</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Check className="size-3.5 text-brand-500" />
-            <span>Lifetime updates</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Check className="size-3.5 text-brand-500" />
-            <span>Secure checkout</span>
-          </div>
-        </div>
 
       </div>
 

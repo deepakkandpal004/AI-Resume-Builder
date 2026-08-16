@@ -5,11 +5,11 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 import Title from "./Title";
 
 const faqs = [
-  { q: "Is the resume builder free?", a: "Yes. The free tier includes all templates, customization, PDF export, and limited AI usage. No credit card required." },
-  { q: "What AI features are included?", a: "You can rewrite bullets, improve summaries, suggest skills, score your resume, tailor it to roles, and generate cover letters or interview questions." },
+  { q: "Is the resume builder free?", a: "Yes. The free tier includes all templates, customization, PDF export, and limited rewriting features. No credit card required." },
+  { q: "What features are included?", a: "You can rewrite bullets, improve summaries, suggest skills, score your resume, tailor it to roles, and generate cover letters or interview questions." },
   { q: "Can I import my existing resume?", a: "Yes. Upload a PDF and the app turns it into editable content so you can keep building from there." },
   { q: "Are the templates ATS-friendly?", a: "Yes. The layouts are built with clean structure so ATS systems can parse them easily." },
-  { q: "How does the Pro upgrade work?", a: "It is a one-time ₹299 payment for lifetime access to unlimited AI usage and priority processing." },
+  { q: "How does the Pro upgrade work?", a: "It is a one-time ₹299 payment for lifetime access to unlimited rewriting and priority processing." },
   { q: "Can I share my resume with a public link?", a: "Yes. Turn on public sharing and send a view-only link to recruiters." },
 ];
 
@@ -20,8 +20,6 @@ const FAQ = () => {
 
   return (
     <section id="faq" className="relative overflow-hidden px-6 py-28 md:px-10">
-      <div className="pointer-events-none absolute inset-0 gradient-glow-left" />
-      <div className="pointer-events-none absolute inset-0 dot-grid" />
       <div className="section-line absolute top-0 inset-x-0" />
 
       <div ref={ref} className="mx-auto max-w-3xl reveal">

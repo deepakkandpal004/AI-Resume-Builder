@@ -7,7 +7,7 @@ import { verifyIdToken } from "../config/firebase.js";
 // Syncs Firebase user data with MongoDB
 export const syncUser = async (req, res) => {
   try {
-    const { name, email, photoURL } = req.body;
+    const { name, email, photoURL, emailVerified } = req.body;
     const firebaseUid = req.userId;
 
     let user = await User.findOne({ firebaseUid });
@@ -15,18 +15,21 @@ export const syncUser = async (req, res) => {
     if (user) {
       user.name = name || user.name;
       user.email = email || user.email;
+      if (typeof emailVerified === "boolean") user.emailVerified = emailVerified;
       await user.save();
     } else {
       user = await User.findOne({ email });
       if (user) {
         user.firebaseUid = firebaseUid;
         user.name = name || user.name;
+        if (typeof emailVerified === "boolean") user.emailVerified = emailVerified;
         await user.save();
       } else {
         user = await User.create({
           firebaseUid,
           name: name || email?.split("@")[0] || "User",
           email,
+          emailVerified: !!emailVerified,
         });
       }
     }

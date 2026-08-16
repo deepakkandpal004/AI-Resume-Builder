@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { LayoutTemplate, ArrowRight, Check, Sparkles } from "lucide-react";
+import { LayoutTemplate, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ClassicTemplate from "../templates/ClassicTemplate";
 import ModernTemplate from "../templates/ModernTemplate";
@@ -98,9 +98,6 @@ const TemplateShowcase = () => {
 
   return (
     <section id="templates" className="relative overflow-hidden px-6 py-24 md:px-10">
-      {/* Background radial gradients */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.03),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(16,185,129,0.02),transparent_50%)] blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 dot-grid" />
       <div className="section-line absolute top-0 inset-x-0" />
 
       <div ref={scrollRef} className="mx-auto max-w-7xl reveal">
@@ -113,24 +110,6 @@ const TemplateShowcase = () => {
           <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl lg:text-6xl leading-[1.15] max-w-3xl mx-auto">
             Professional templates that pass ATS scans
           </h2>
-        </div>
-
-        {/* Quick Stats Trust Indicators */}
-        <div className="mt-8 flex flex-wrap justify-center gap-2.5 max-w-4xl mx-auto">
-          {[
-            "7 Premium Layouts",
-            "ATS Optimized",
-            "HR Approved",
-            "Instant Preview",
-          ].map((stat) => (
-            <div
-              key={stat}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/35 backdrop-blur-md px-3.5 py-1 text-xs font-semibold text-body select-none shadow-xs transition duration-250 cursor-default"
-            >
-              <Check className="size-3 text-brand-500" />
-              <span>{stat}</span>
-            </div>
-          ))}
         </div>
 
         {/* Grid Container */}
@@ -184,7 +163,6 @@ const TemplateShowcase = () => {
                     }}
                   >
                     <span className="flex items-center gap-1">
-                      {isFeatured && <Sparkles className="size-3 text-brand-500 animate-pulse-soft" />}
                       {t.tag}
                     </span>
                   </div>
@@ -256,16 +234,11 @@ const TemplateShowcase = () => {
         <div className="mt-14 flex flex-col items-center gap-3 reveal" style={{ transitionDelay: "0.3s" }}>
           <Link
             to="/app"
-            className="group inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-600/10 hover:bg-emerald-600 text-brand-600 hover:text-white px-8 py-3.5 text-sm font-bold shadow-md shadow-brand-500/5 hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-250 ease-out transform-gpu outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="group inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 text-sm font-bold shadow-md hover:-translate-y-0.5 transition-all duration-250 ease-out transform-gpu outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             <span>Explore all templates</span>
             <ArrowRight className="size-4 transition-transform duration-250 ease-out transform-gpu group-hover:translate-x-1" />
           </Link>
-          <div className="flex items-center gap-2 text-[11px] font-bold text-muted mt-1 select-none">
-            <span>✓ Free forever</span>
-            <span className="size-1 rounded-full bg-line" />
-            <span>✓ No credit card required</span>
-          </div>
         </div>
       </div>
 

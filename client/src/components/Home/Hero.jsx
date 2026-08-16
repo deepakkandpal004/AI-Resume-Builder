@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play, Sparkles, Check, LayoutTemplate, Lock, Star, ShieldCheck, FileText, Zap } from "lucide-react";
+import { ArrowRight, Play, Check, LayoutTemplate, Lock, Star, ShieldCheck, FileText, Clock, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import ModernTemplate from "../templates/ModernTemplate";
 import { dummyResumeData } from "../../assets/assets";
@@ -77,7 +77,7 @@ const Hero = () => {
   }, []);
 
   // Compute values for simulation states
-  const jobTitleText = stage === 0 ? "Full Stack Dev" : "AI Platform Engineer";
+  const jobTitleText = stage === 0 ? "Full Stack Dev" : "Platform Engineer";
   const atsScore = stage === 4 || stage === 3 ? 98 : 92;
   const isHighlight = stage >= 2;
   const isSuggesting = stage === 1;
@@ -97,26 +97,9 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-[90px] pb-16 bg-grid-dot">
-      {/* Visual background layers */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-canvas via-canvas/90 to-canvas" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.03),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(16,185,129,0.02),transparent_50%)] blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 gradient-glow" />
-      <div className="pointer-events-none absolute inset-0 gradient-glow-right" />
-
-      {/* Floating color blobs */}
-      <motion.div
-        className="pointer-events-none absolute -top-48 left-1/2 -z-10 -translate-x-1/2 rounded-full bg-emerald-500/10"
-        style={{ width: "600px", height: "600px", filter: "blur(130px)" }}
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="pointer-events-none absolute -bottom-40 -right-24 -z-10 rounded-full bg-teal-400/10"
-        style={{ width: "400px", height: "400px", filter: "blur(100px)" }}
-        animate={{ scale: [1, 1.15, 1] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-[90px] pb-16">
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0 bg-canvas" />
 
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center px-6 py-12 lg:py-16 lg:px-8 z-10 gap-14">
         
@@ -131,7 +114,7 @@ const Hero = () => {
             animate="visible"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50/70 px-4.5 py-1.5 text-xs font-bold text-brand-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-brand-300">
-              <Sparkles className="size-3 text-brand-500 animate-pulse" />
+              <Lightbulb className="size-3 text-brand-500" />
               <span>Build faster. Apply smarter.</span>
             </div>
           </motion.div>
@@ -156,7 +139,7 @@ const Hero = () => {
             animate="visible"
             className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-body font-medium"
           >
-            Build professional templates optimized for ATS, refine every bullet point using our AI resume builder, and export a polished PDF instantly.
+            Build professional templates optimized for ATS, refine every bullet point with smart rewriting, and export a polished PDF instantly.
           </motion.p>
 
           {/* Trust Badges */}
@@ -169,7 +152,7 @@ const Hero = () => {
           >
             {[
               { label: "ATS Optimized", icon: Check, color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400" },
-              { label: "AI Powered", icon: Sparkles, color: "text-brand-600 bg-brand-500/10 border-brand-500/20 dark:text-brand-300" },
+              { label: "Smart Rewriting", icon: Lightbulb, color: "text-indigo-600 bg-indigo-500/10 border-indigo-500/20 dark:text-indigo-400" },
               { label: "Professional Templates", icon: LayoutTemplate, color: "text-blue-600 bg-blue-500/10 border-blue-500/20 dark:text-blue-400" },
               { label: "Secure", icon: Lock, color: "text-purple-600 bg-purple-500/10 border-purple-500/20 dark:text-purple-400" },
               { label: "Free Forever", icon: Star, color: "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400" },
@@ -198,7 +181,7 @@ const Hero = () => {
             <Link
               to="/app"
               aria-label={user ? "Go to Dashboard" : "Create My Resume"}
-              className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-9 py-3.5 text-center text-sm font-extrabold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 hover:scale-[1.01] transition-all duration-250 ease-out transform-gpu active:scale-98"
+              className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-emerald-600 text-white px-9 py-3.5 text-center text-sm font-extrabold shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 hover:-translate-y-0.5 hover:scale-[1.01] transition-all duration-250 ease-out transform-gpu active:scale-98"
             >
               <span>{user ? "Go to Dashboard" : "Create My Resume"}</span>
               <ArrowRight className="size-4 transition-transform duration-250 ease-out transform-gpu group-hover:translate-x-1" />
@@ -220,22 +203,9 @@ const Hero = () => {
             animate="visible"
             className="mt-6 flex flex-wrap justify-center gap-6 text-[11px] font-extrabold text-muted select-none"
           >
-            <div className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-brand-500" />
-              <span>Free Forever</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-brand-500" />
-              <span>No Credit Card</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-brand-500" />
-              <span>Instant PDF Export</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-brand-500" />
-              <span>No Hidden Charges</span>
-            </div>
+            <span>No Credit Card</span>
+            <span>Instant PDF Export</span>
+            <span>No Hidden Charges</span>
           </motion.div>
 
         </div>
@@ -271,7 +241,7 @@ const Hero = () => {
                     <div className="col-span-2 space-y-3 rounded-xl border border-line bg-surface/80 p-3.5 text-left shadow-sm">
                       <div className="flex items-center gap-1.5 border-b border-line/50 pb-2">
                         <span className="size-1.5 rounded-full bg-brand-500 animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">AI Editor</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Resume Editor</span>
                       </div>
                       
                       <div className="space-y-2.5">
@@ -311,7 +281,7 @@ const Hero = () => {
                       }`}>
                         <div className="flex items-center gap-1.5 text-[8px] font-bold text-brand-600">
                           <span className="size-1.5 rounded-full bg-brand-500 animate-ping" />
-                          <span>AI Suggestion</span>
+                          <span>Smart Suggestion</span>
                         </div>
                         <p className="mt-1 text-[7.5px] leading-normal text-muted font-medium">
                           {isHighlight 
@@ -354,7 +324,7 @@ const Hero = () => {
                       <span className="text-[10px] text-muted font-semibold">
                         {isSaved 
                           ? "✓ Saved • Updated just now" 
-                          : "AI reviewing resume details..."}
+                          : "Reviewing resume details..."}
                       </span>
                     </div>
                     <span className="text-[8.5px] font-bold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded-md dark:bg-brand-500/10">
@@ -399,9 +369,9 @@ const Hero = () => {
               className="absolute -right-4 top-1/3 rounded-xl border border-line bg-surface/90 backdrop-blur-md px-3.5 py-2 shadow-xl hidden sm:flex items-center gap-2 z-20"
             >
               <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-purple-100 text-[10px] font-bold text-purple-600">
-                ✨
+                ✓
               </span>
-              <span className="text-[10.5px] font-bold text-ink font-semibold">AI Improved bullets!</span>
+              <span className="text-[10.5px] font-bold text-ink font-semibold">Improved bullets!</span>
             </motion.div>
           </motion.div>
         </div>
@@ -411,23 +381,23 @@ const Hero = () => {
           {/* Header */}
           <div className="flex flex-col items-center text-center mb-10">
             <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-teal-500/20 bg-teal-500/10 px-3.5 py-1 text-[10px] font-extrabold text-teal-600 dark:text-accent-400 uppercase tracking-wider select-none">
-              <span>Trusted Worldwide</span>
+              <span>Built for Job Seekers</span>
             </div>
             <h3 className="text-2xl font-bold text-ink tracking-tight sm:text-3xl">
-              Trusted by Thousands of Job Seekers
+              Trusted by Job Seekers Everywhere
             </h3>
             <p className="text-xs sm:text-sm text-muted max-w-md mt-2 leading-relaxed font-semibold">
-              Our metrics show the impact of an AI-optimized, ATS-compliant resume on job applications.
+              See how an ATS-optimized resume improves your chances of landing interviews.
             </p>
           </div>
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
             {[
-              { value: "Instant", label: "PDF Downloads", desc: "Export your polished A4 resume directly to PDF with zero watermarks.", icon: FileText, accent: "#10b981" },
+              { value: "Instant", label: "PDF Downloads", desc: "Export your polished A4 resume directly to PDF with zero watermarks.", icon: FileText, accent: "#475569" },
               { value: "ATS", label: "Optimized Formats", desc: "Clean structures explicitly designed to pass applicant tracking scanners.", icon: ShieldCheck, accent: "#6366f1" },
-              { value: "AI", label: "Bullet Enhancer", desc: "Context-aware bullet suggestions to improve your job descriptions.", icon: Sparkles, accent: "#e11d48" },
-              { value: "Lifetime", label: "Access Tier", desc: "Unlock professional elements with a one-time purchase. Zero subscriptions.", icon: Zap, accent: "#d97706" }
+              { value: "Smart", label: "Bullet Rewriter", desc: "Context-aware suggestions to strengthen your job descriptions.", icon: Lightbulb, accent: "#e11d48" },
+              { value: "One-time", label: "Payment", desc: "Unlock professional elements with a single purchase. Zero subscriptions.", icon: Clock, accent: "#d97706" }
             ].map((card, idx) => {
               const Icon = card.icon;
               return (
@@ -455,24 +425,6 @@ const Hero = () => {
             })}
           </div>
 
-          {/* Trust Strip */}
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            {[
-              "ATS Optimized",
-              "AI Powered",
-              "Free Forever",
-              "Secure",
-              "Instant PDF Export"
-            ].map((trust) => (
-              <div
-                key={trust}
-                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/30 px-3.5 py-1 text-[10.5px] font-bold text-muted shadow-xs select-none cursor-default hover:border-brand-500/20 transition duration-200"
-              >
-                <Check className="size-3 text-brand-500" />
-                <span>{trust}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Scroll Indicator */}
@@ -492,7 +444,7 @@ const Hero = () => {
 
       </div>
       {/* Gentle Section Divider Line */}
-      <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-line/70 to-transparent" />
+      <div className="absolute bottom-0 inset-x-0 h-px bg-line/30" />
     </section>
   );
 };

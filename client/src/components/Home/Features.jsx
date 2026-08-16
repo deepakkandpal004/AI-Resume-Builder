@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Sparkles,
+  Lightbulb,
   BarChart3,
   LayoutTemplate,
   Eye,
@@ -17,53 +17,53 @@ import { Link as RouterLink } from "react-router-dom";
 
 const features = [
   {
-    icon: Sparkles,
-    title: "AI Resume Optimization",
+    icon: Lightbulb,
+    title: "Smart Bullet Rewriting",
     desc: "Rewrite bullet points, improve active verbs, and tailor your resume dynamically.",
-    gradient: ["rgba(16,185,129,0.95)", "rgba(20,184,166,0.95)"],
+    color: "bg-emerald-600",
     featured: true,
   },
   {
     icon: BarChart3,
     title: "ATS Score Checker",
     desc: "Instantly analyze keyword gaps and screen compatibility against any job post.",
-    gradient: ["rgba(20,184,166,0.95)", "rgba(34,211,238,0.95)"],
+    color: "bg-indigo-600",
   },
   {
     icon: LayoutTemplate,
     title: "Professional Templates",
     desc: "Access clean, recruiter-approved layout templates optimized for fast reading.",
-    gradient: ["rgba(16,185,129,0.95)", "rgba(34,197,94,0.95)"],
+    color: "bg-slate-700",
   },
   {
     icon: Eye,
     title: "Live Resume Preview",
     desc: "Visualize layout and section adjustments in real time before exporting to PDF.",
-    gradient: ["rgba(20,184,166,0.95)", "rgba(16,185,129,0.95)"],
+    color: "bg-teal-600",
   },
   {
     icon: MessageSquare,
     title: "Cover Letter Generator",
     desc: "Draft tailored cover letters matching the role's tone in a single click.",
-    gradient: ["rgba(34,211,238,0.95)", "rgba(20,184,166,0.95)"],
+    color: "bg-blue-600",
   },
   {
     icon: ScanLine,
     title: "Background Removal",
     desc: "Clean up profile headshots instantly with smart portrait background extraction.",
-    gradient: ["rgba(52,211,153,0.95)", "rgba(16,185,129,0.95)"],
+    color: "bg-rose-600",
   },
   {
     icon: LinkIcon,
     title: "Shareable Resume Links",
     desc: "Host your resume securely and send public access links to hiring teams.",
-    gradient: ["rgba(34,211,238,0.95)", "rgba(20,184,166,0.95)"],
+    color: "bg-amber-600",
   },
   {
     icon: FileText,
     title: "PDF Import & Export",
     desc: "Import files directly to convert details or export to print-ready PDF.",
-    gradient: ["rgba(20,184,166,0.95)", "rgba(16,185,129,0.95)"],
+    color: "bg-slate-600",
   },
 ];
 
@@ -72,9 +72,6 @@ const Features = () => {
 
   return (
     <section id="features" className="relative overflow-hidden px-6 py-28 md:px-10">
-      {/* Background gradients and meshes */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.04),_transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 dot-grid opacity-35" />
       <div className="section-line absolute top-0 inset-x-0" />
 
       <div ref={ref} className="mx-auto max-w-7xl reveal">
@@ -82,7 +79,7 @@ const Features = () => {
         {/* Header Badge & Title */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200/50 bg-brand-50/70 px-4 py-1.5 text-xs font-bold text-brand-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-brand-400 shadow-xs shadow-brand-500/5">
-            <Sparkles className="size-3.5 text-brand-500 animate-pulse" />
+            <Lightbulb className="size-3.5 text-brand-500" />
             <span>Core Capabilities</span>
           </div>
           <Title
@@ -117,10 +114,9 @@ const Features = () => {
                     
                     {/* Icon container */}
                     <div
-                      className={`flex items-center justify-center rounded-xl text-white shadow-xs transition-transform duration-250 ${
+                      className={`flex items-center justify-center rounded-xl text-white shadow-xs transition-transform duration-250 ${f.color} ${
                         isFeatured ? "size-13" : "size-12"
                       }`}
-                      style={{ backgroundImage: `linear-gradient(135deg, ${f.gradient[0]}, ${f.gradient[1]})` }}
                     >
                       <Icon className={`group-hover:scale-108 transition-transform duration-250 ${
                         isFeatured ? "size-6.5" : "size-5.5"
@@ -150,36 +146,22 @@ const Features = () => {
                   <ArrowRight className="size-3.5 text-brand-500 opacity-0 -translate-x-2.5 transition-all duration-250 ease-out group-hover:opacity-100 group-hover:translate-x-0" />
                 </div>
 
-                {/* Glow backdrop layer on hover */}
-                <div className="pointer-events-none absolute -inset-px rounded-[20px] opacity-0 transition-opacity duration-250 group-hover:opacity-100">
-                  <div
-                    className="absolute inset-0 rounded-[20px]"
-                    style={{ backgroundImage: `linear-gradient(135deg, ${f.gradient[0]}, ${f.gradient[1]})`, opacity: 0.02 }}
-                  />
-                </div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Bottom CTA Block with trust elements */}
+        {/* Bottom CTA Block */}
         <div className="mt-14 flex flex-col items-center justify-center text-center space-y-3.5">
           <RouterLink
             to="/app"
             className="btn-primary px-8 py-3.5 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:shadow-emerald-500/20 active:scale-95 transition-all duration-250 flex items-center gap-2 font-bold cursor-pointer hover:bg-brand-600/90"
             style={{ minHeight: "2.75rem" }}
           >
-            <Sparkles className="size-4 animate-pulse" />
+            <Lightbulb className="size-4" />
             <span>Try all features free</span>
             <ArrowRight className="size-4" />
           </RouterLink>
-          
-          {/* Trust bullets underneath */}
-          <div className="flex items-center gap-3.5 text-[10px] font-bold text-muted">
-            <span>✓ Free Forever</span>
-            <span className="text-line select-none">•</span>
-            <span>✓ No Credit Card Required</span>
-          </div>
         </div>
       </div>
 

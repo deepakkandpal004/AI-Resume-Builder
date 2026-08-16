@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Palette, Sparkles, Share2, ArrowRight, Clock, Check } from "lucide-react";
+import { FileText, Palette, Lightbulb, Share2, ArrowRight, Clock, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 import Title from "./Title";
@@ -11,28 +11,28 @@ const steps = [
     title: "Choose a Template",
     time: "30 sec",
     desc: "Choose from professionally designed ATS-friendly templates and preview them before you start.",
-    gradient: ["rgba(16,185,129,0.95)", "rgba(20,184,166,0.95)"],
+    color: "bg-slate-700",
   },
   {
     icon: Palette,
     title: "Add Your Information",
     time: "5 min",
     desc: "Fill in your experience, education, and skills or import an existing resume to parse details.",
-    gradient: ["rgba(20,184,166,0.95)", "rgba(34,211,238,0.95)"],
+    color: "bg-indigo-600",
   },
   {
-    icon: Sparkles,
-    title: "Optimize With AI",
+    icon: Lightbulb,
+    title: "Rewrite & Optimize",
     time: "20 sec",
     desc: "Rewrite bullet points, improve ATS compatibility, strengthen action verbs, and tailor your resume to the job description.",
-    gradient: ["rgba(16,185,129,0.95)", "rgba(34,197,94,0.95)"],
+    color: "bg-emerald-600",
   },
   {
     icon: Share2,
     title: "Download or Share",
     time: "Instant",
     desc: "Export a print-ready PDF, copy a custom hosting link, or publish details instantly.",
-    gradient: ["rgba(20,184,166,0.95)", "rgba(16,185,129,0.95)"],
+    color: "bg-teal-600",
   },
 ];
 
@@ -64,8 +64,6 @@ const HowItWorks = () => {
 
   return (
     <section id="how-it-works" className="relative overflow-hidden px-6 py-28 md:px-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.06),_transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 dot-grid" />
       <div className="section-line absolute top-0 inset-x-0" />
 
       <div ref={scrollRef} className="mx-auto max-w-7xl reveal">
@@ -87,9 +85,6 @@ const HowItWorks = () => {
           
           {/* Left Panel: Live Workflow Demonstration */}
           <div className="glass-card rounded-[24px] p-8 md:p-10 flex flex-col justify-between border border-line bg-surface/40 relative overflow-hidden shadow-2xl">
-            
-            {/* Faint animated grid backing inside panel */}
-            <div className="absolute inset-0 bg-grid-dot opacity-40 pointer-events-none" />
             
             <div className="relative z-10 space-y-6">
               <div>
@@ -117,7 +112,7 @@ const HowItWorks = () => {
                     <motion.div
                       animate={{ width: demoProgress === 0 ? "20%" : `${demoProgress}%` }}
                       transition={{ duration: 1.8, ease: "easeInOut" }}
-                      className="h-full bg-gradient-to-r from-brand-500 to-teal-400"
+                      className="h-full bg-emerald-500"
                     />
                   </div>
                 </div>
@@ -127,7 +122,7 @@ const HowItWorks = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase font-bold text-brand-600 flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-brand-500 animate-ping" />
-                      AI Suggestion
+                      Smart Suggestion
                     </span>
                     <span className="text-[9px] text-muted font-bold">Step 3 of 4</span>
                   </div>
@@ -138,7 +133,7 @@ const HowItWorks = () => {
                       <span className="text-muted/80">"I helped speed up database queries."</span>
                     ) : (
                       <span className="text-ink flex items-center gap-1">
-                        ✨ "Boosted database queries by 45% using indexed Redis keys."
+                        "Boosted database queries by 45% using indexed Redis keys."
                       </span>
                     )}
                   </div>
@@ -198,7 +193,7 @@ const HowItWorks = () => {
           <div className="relative flex flex-col justify-between">
             
             {/* Desktop timeline line overlay */}
-            <div className="absolute left-[36px] top-8 hidden h-[84%] w-px bg-gradient-to-b from-brand-500/35 via-teal-500/20 to-transparent lg:block" />
+            <div className="absolute left-[36px] top-8 hidden h-[84%] w-px bg-line lg:block" />
 
             <div className="space-y-4">
               {steps.map((step, index) => {
@@ -221,10 +216,7 @@ const HowItWorks = () => {
                       
                       {/* step icon wrapper */}
                       <div
-                        className="flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-105"
-                        style={{
-                          backgroundImage: `linear-gradient(135deg, ${step.gradient[0]}, ${step.gradient[1]})`,
-                        }}
+                        className={`flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-105 ${step.color}`}
                       >
                         <Icon className="size-5 animate-pulse-soft" />
                       </div>
@@ -284,7 +276,7 @@ const HowItWorks = () => {
 
                           {index === 2 && (
                             <div className="flex items-center gap-1.5 text-[9px] text-brand-600 font-bold">
-                              <span>✨ AI suggests action verbs to describe dashboard queries compliance.</span>
+                              <span>Suggests stronger action verbs for dashboard compliance.</span>
                             </div>
                           )}
 
@@ -316,10 +308,9 @@ const HowItWorks = () => {
             className="btn-primary px-8.5 py-3 text-xs font-bold shadow-lg shadow-brand-500/10 cursor-pointer active:scale-95 transition-transform hover:scale-102 flex items-center justify-center gap-1.5 group"
             style={{ minHeight: "2.75rem" }}
           >
-            <span>Start Building Free</span>
+            <span>Start Building</span>
             <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
-          <p className="text-[10px] text-muted font-semibold">No credit card required. Free forever.</p>
         </div>
 
       </div>

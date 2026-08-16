@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Github, Twitter, Linkedin, Mail, ArrowRight, Sparkles, Check } from "lucide-react";
+import { Github, Twitter, Linkedin, Mail, ArrowRight, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../Logo";
 
@@ -10,7 +10,7 @@ const sections = [
     links: [
       { label: "Resume Builder", href: "/app" },
       { label: "Templates", href: "#templates" },
-      { label: "AI Resume Writer", href: "/app" },
+      { label: "Resume Writer", href: "/app" },
       { label: "ATS Checker", href: "/app" },
       { label: "Resume Examples", href: "#templates" },
       { label: "Pricing", href: "#pricing" },
@@ -73,17 +73,15 @@ const Footer = () => {
 
   return (
     <footer className="relative overflow-hidden border-t border-line px-6 pt-16 pb-8 md:px-10">
-      <div className="pointer-events-none absolute inset-0 dot-grid" />
 
       <div className="relative mx-auto max-w-7xl">
         
         {/* Top Newsletter Card */}
-        <div className="relative overflow-hidden rounded-[24px] border border-line/60 bg-gradient-to-r from-surface/40 to-surface/10 backdrop-blur-md p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 mb-12 shadow-xs">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.02),transparent_50%)] blur-xl" />
+        <div className="relative overflow-hidden rounded-[24px] border border-line/60 bg-surface/40 backdrop-blur-md p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 mb-12 shadow-xs">
           
           <div className="text-left max-w-md relative z-10">
             <h4 className="text-sm font-extrabold text-ink uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-brand-500" />
+              <Mail className="size-3.5 text-brand-500" />
               <span>Stay Updated</span>
             </h4>
             <p className="text-xs text-muted mt-1 leading-relaxed font-semibold">
@@ -111,7 +109,7 @@ const Footer = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/60 text-white px-5 py-2.5 text-xs font-extrabold shadow-sm active:scale-98 transition duration-200 cursor-pointer h-fit"
+                    className="rounded-xl bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800/60 text-white px-5 py-2.5 text-xs font-extrabold shadow-sm active:scale-98 transition duration-200 cursor-pointer h-fit"
                   >
                     {loading ? "Subscribing..." : "Subscribe"}
                   </button>
@@ -139,12 +137,12 @@ const Footer = () => {
               <Logo size="md" />
             </Link>
             <p className="text-xs leading-relaxed text-body font-semibold max-w-xs text-left">
-              Create professional, AI-powered resumes that help you land your next role faster. Free to get started with no watermarks.
+              Create professional resumes that help you land your next role. Free to get started with no watermarks.
             </p>
             <Link
               to="/app"
               aria-label="Create Resume Free"
-              className="group inline-flex items-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 text-xs font-bold shadow-md shadow-emerald-600/10 hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 transform-gpu"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 text-xs font-bold shadow-md hover:-translate-y-0.5 transition-all duration-200 transform-gpu"
             >
               <span>Create Resume Free</span>
               <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />

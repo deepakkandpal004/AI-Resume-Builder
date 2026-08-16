@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import ThemeToggle from "../components/ThemeToggle";
 import { setUser } from "../app/features/authSlice";
 import { auth, googleProvider } from "../config/firebase";
+import { setCachedToken } from "../configs/api";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,10 +42,12 @@ const Login = () => {
 
   const syncUserWithBackend = React.useCallback(async (firebaseUser) => {
     const idToken = await firebaseUser.getIdToken();
+    setCachedToken(idToken);
     const { data } = await api.post("/api/users/sync", {
       name: firebaseUser.displayName || formData.name || firebaseUser.email?.split("@")[0],
       email: firebaseUser.email,
       photoURL: firebaseUser.photoURL,
+      emailVerified: firebaseUser.emailVerified,
     }, {
       headers: { Authorization: `Bearer ${idToken}` }
     });
@@ -112,16 +115,13 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    console.log("[Google] opening popup");
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      console.log("[Google] popup succeeded:", result.user?.email);
       await syncUserWithBackend(result.user);
       sendLoginNotification(result.user, "Google");
       toast.success("Welcome!");
       navigate("/app");
     } catch (error) {
-      console.error("[Google] popup error:", error.code, error.message);
       if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
         toast.error("Google login was cancelled.");
       } else {

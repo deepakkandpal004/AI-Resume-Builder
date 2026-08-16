@@ -20,7 +20,7 @@ const sendEmail = async ({ to, subject, html }) => {
   const mailer = getMailer();
   return mailer.sendMail({
     from: `"Resume Builder" <${getSender()}>`,
-    to: getNotifyInbox,
+    to: getNotifyInbox(),
     subject,
     html,
   });

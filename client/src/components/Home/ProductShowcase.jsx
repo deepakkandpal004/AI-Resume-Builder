@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Sparkles, LayoutDashboard, BarChart3, ArrowRight, Check, Loader2 } from "lucide-react";
+import { FileText, Lightbulb, LayoutDashboard, BarChart3, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 
 const TABS = [
   { id: "builder", label: "Resume Builder", icon: FileText },
-  { id: "ai", label: "AI Optimizer", icon: Sparkles },
+  { id: "ai", label: "Smart Optimizer", icon: Lightbulb },
   { id: "templates", label: "Templates", icon: LayoutDashboard },
   { id: "ats", label: "ATS Score", icon: BarChart3 },
 ];
@@ -112,7 +112,7 @@ const ProductShowcase = () => {
     const step3 = setTimeout(() => {
       setAiStep(3); // Completed
       setAtsScore(96);
-      setToastMessage("AI Rewrite Finished! ✨");
+      setToastMessage("Rewrite finished!");
     }, 6000);
 
     return () => {
@@ -138,9 +138,6 @@ const ProductShowcase = () => {
 
   return (
     <section id="product-showcase" className="relative overflow-hidden px-6 py-28 md:px-10">
-      {/* Background polish */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.04),_transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 dot-grid opacity-30" />
       <div className="section-line absolute top-0 inset-x-0" />
 
       <div ref={scrollRef} className="mx-auto max-w-7xl reveal">
@@ -152,17 +149,17 @@ const ProductShowcase = () => {
             <span>Product Showcase</span>
           </div>
           <h2 className="text-4xl font-extrabold tracking-tight text-ink sm:text-5xl lg:text-6xl leading-[1.1] max-w-4xl">
-            Everything happens in one intelligent workspace
+            Everything happens in one workspace
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-body font-medium">
-            Everything works together seamlessly—from editing and AI optimization to ATS scoring and export—so you can focus on landing interviews.
+            Edit, rewrite, score, and export — no switching between tools, so you can focus on landing interviews.
           </p>
 
           {/* Minimal Feature pills */}
           <div className="mt-6 flex flex-wrap justify-center gap-2.5 max-w-2xl">
             {[
               { label: "⚡ Live Preview" },
-              { label: "✨ AI Rewrite" },
+              { label: "✦ Smart Rewrite" },
               { label: "📄 ATS Templates" },
               { label: "📈 ATS Checker" },
               { label: "⬇ Export PDF" }
@@ -315,10 +312,10 @@ const ProductShowcase = () => {
                           className="space-y-4"
                         >
                           <div className="flex items-center gap-3 p-3.5 rounded-xl border border-brand-500/25 bg-brand-500/[0.04]">
-                            <Sparkles className="size-5 text-brand-500 animate-pulse" />
+                            <Lightbulb className="size-5 text-brand-500" />
                             <div>
-                              <h4 className="text-xs font-bold text-ink">AI Copilot Engine</h4>
-                              <p className="text-[10px] text-muted">Intelligently strengthening action verbs & metrics.</p>
+                              <h4 className="text-xs font-bold text-ink">Smart Rewriter</h4>
+                              <p className="text-[10px] text-muted">Rewrites weak bullet points with stronger action verbs and metrics.</p>
                             </div>
                           </div>
 
@@ -334,13 +331,13 @@ const ProductShowcase = () => {
                             <div>
                               <span className="text-[8.5px] uppercase font-bold text-brand-600 bg-brand-500/10 px-2 py-0.5 rounded flex items-center gap-1.5 w-fit">
                                 {aiStep === 1 && <Loader2 className="size-2.5 animate-spin" />}
-                                <span>{aiStep === 0 ? "Pending Rewrite" : aiStep === 1 ? "Analyzing..." : aiStep === 2 ? "Improving Bullet..." : "AI Optimized Bullet ✓"}</span>
+                                <span>{aiStep === 0 ? "Pending Rewrite" : aiStep === 1 ? "Analyzing..." : aiStep === 2 ? "Improving Bullet..." : "Optimized Bullet ✓"}</span>
                               </span>
                               <p className="text-xs text-ink mt-2 font-bold leading-relaxed">
                                 {aiStep <= 1 ? (
-                                  <span className="text-muted/50 italic">Waiting for AI parser...</span>
+                                  <span className="text-muted/50 italic">Analyzing...</span>
                                 ) : (
-                                  <span>✨ "Boosted database queries by 45% using indexed Redis keys."</span>
+                                  <span>"Boosted database queries by 45% using indexed Redis keys."</span>
                                 )}
                               </p>
                             </div>
@@ -476,7 +473,7 @@ const ProductShowcase = () => {
                         <div className="h-1 w-10 bg-slate-300 rounded-xs" />
                         <p className="text-[6.5px] text-slate-500 leading-relaxed font-semibold">
                           {activeTab === "ai" && aiStep >= 2 ? (
-                            <span>✨ Boosted database queries by 45% using indexed Redis keys. Managed LCP optimization.</span>
+                            <span>"Boosted database queries by 45% using indexed Redis keys. Managed LCP optimization.</span>
                           ) : (
                             <span>Developed scalable web applications. Managed LCP parameters for modern SaaS dashboard templates.</span>
                           )}

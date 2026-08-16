@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Toaster } from "react-hot-toast";
@@ -7,9 +7,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Loader from "./components/Loader";
 import { auth } from "./config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import api from "./configs/api";
+import api, { setCachedToken } from "./configs/api";
 
-// Lazy load route components
 const Home = lazy(() => import("./pages/Home"));
 const Layout = lazy(() => import("./pages/Layout"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -19,36 +18,38 @@ const Upgrade = lazy(() => import("./pages/Upgrade"));
 
 const App = () => {
   const dispatch = useDispatch();
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("[Auth] onAuthStateChanged:", firebaseUser ? firebaseUser.email : "signed out");
       if (firebaseUser) {
         try {
           const idToken = await firebaseUser.getIdToken();
-          console.log("[Auth] got ID token, syncing user...");
+          setCachedToken(idToken);
           const { data } = await api.post(
             "/api/users/sync",
             {
               name: firebaseUser.displayName || firebaseUser.email?.split("@")[0],
               email: firebaseUser.email,
               photoURL: firebaseUser.photoURL,
+              emailVerified: firebaseUser.emailVerified,
             },
             { headers: { Authorization: `Bearer ${idToken}` } }
           );
-          console.log("[Auth] sync succeeded, user:", data.user?.email);
           dispatch(setUser(data.user));
-        } catch (error) {
-          console.error("[Auth] sync failed:", error.message);
+        } catch {
           dispatch(setLoading(false));
         }
       } else {
         dispatch(setLoading(false));
       }
+      setAuthReady(true);
     });
 
     return () => unsubscribe();
   }, [dispatch]);
+
+  if (!authReady) return <Loader />;
 
   return (
     <>

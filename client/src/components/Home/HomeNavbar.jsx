@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, BadgeCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "../Logo";
 import ThemeToggle from "../ThemeToggle";
@@ -170,8 +170,11 @@ const HomeNavbar = () => {
                 {profileDropdownOpen && (
                   <div className="absolute right-0 top-full mt-2.5 w-48 overflow-hidden rounded-xl border border-line bg-surface shadow-xl z-50">
                     <div className="px-3.5 py-2.5 border-b border-line/40">
-                      <p className="text-xs font-semibold text-ink truncate">
+                      <p className="text-xs font-semibold text-ink truncate flex items-center gap-1">
                         {user?.name || "User"}
+                        {user?.emailVerified && (
+                          <BadgeCheck className="size-3.5 text-emerald-500 shrink-0" />
+                        )}
                       </p>
                       <p className="text-[10px] text-muted truncate">
                         {user?.email || ""}
@@ -206,7 +209,7 @@ const HomeNavbar = () => {
               </Link>
               <Link
                 to="/app?state=register"
-                className="nav-cta-primary group px-4.5 py-2 text-xs font-bold flex items-center gap-1.5 bg-brand-600 text-white rounded-full transition-all hover:bg-brand-700 active:scale-95 shadow-md shadow-brand-500/10 cursor-pointer"
+                className="nav-cta-primary group px-4.5 py-2 text-xs font-bold flex items-center gap-1.5 bg-slate-800 text-white rounded-full transition-all hover:bg-slate-700 active:scale-95 shadow-md cursor-pointer"
               >
                 <span>Get Started Free</span>
                 <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />

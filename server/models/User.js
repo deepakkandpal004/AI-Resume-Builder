@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
     subscriptionTier: {
         type: String,
         enum: ["free", "premium"],

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../app/features/authSlice";
-import { LogOut, Sparkles, Zap, Settings } from "lucide-react";
+import { LogOut, Sparkles, Zap, Settings, BadgeCheck } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
 import { signOut } from "firebase/auth";
@@ -96,8 +96,11 @@ const Navbar = () => {
             {menuOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-line bg-surface shadow-lg">
                 <div className="px-3 py-2.5 border-b border-line/40">
-                  <p className="text-xs font-semibold text-ink truncate">
+                  <p className="text-xs font-semibold text-ink truncate flex items-center gap-1">
                     {user?.name || "User"}
+                    {user?.emailVerified && (
+                      <BadgeCheck className="size-3.5 text-emerald-500 shrink-0" />
+                    )}
                   </p>
                   <p className="text-[10px] text-muted truncate">
                     {user?.email || ""}

@@ -99,7 +99,7 @@ const Modal = ({ onClose, title, children }) => (
 
 const Dashboard = () => {
   void motion;
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
   const accents = ["#10b981", "#2dd4bf", "#6366f1", "#2563EB", "#E11D48", "#D97706"];
 
   const [allResumes, setAllResumes] = useState([]);
@@ -207,8 +207,8 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (user) loadAllResumes();
-  }, [user]);
+    if (user && !loading) loadAllResumes();
+  }, [user, loading]);
 
   const filtered = allResumes
     .filter((r) => r.title.toLowerCase().includes(searchQuery.toLowerCase()))
