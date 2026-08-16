@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Github, Twitter, Linkedin, Mail, ArrowRight, Check } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Github, Twitter, Linkedin, Mail, ArrowRight } from "lucide-react";
 import Logo from "../Logo";
 
 const sections = [
@@ -47,87 +45,11 @@ const socialLinks = [
 ];
 
 const Footer = () => {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    setError("");
-    if (!email) {
-      setError("Email is required");
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Enter a valid email");
-      return;
-    }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubscribed(true);
-      setEmail("");
-    }, 800);
-  };
-
   return (
     <footer className="relative overflow-hidden border-t border-line px-6 pt-16 pb-8 md:px-10">
 
       <div className="relative mx-auto max-w-7xl">
         
-        {/* Top Newsletter Card */}
-        <div className="relative overflow-hidden rounded-[24px] border border-line/60 bg-surface/40 backdrop-blur-md p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 mb-12 shadow-xs">
-          
-          <div className="text-left max-w-md relative z-10">
-            <h4 className="text-sm font-extrabold text-ink uppercase tracking-wider flex items-center gap-1.5">
-              <Mail className="size-3.5 text-brand-500" />
-              <span>Stay Updated</span>
-            </h4>
-            <p className="text-xs text-muted mt-1 leading-relaxed font-semibold">
-              Get resume tips and career advice delivered to your inbox.
-            </p>
-          </div>
-
-          <form onSubmit={handleSubscribe} className="relative z-10 w-full lg:w-auto flex flex-col sm:flex-row items-stretch gap-2.5 max-w-md lg:max-w-none">
-            <AnimatePresence mode="wait">
-              {!subscribed ? (
-                <div className="flex flex-col sm:flex-row gap-2 w-full">
-                  <div className="flex-1 flex flex-col items-start gap-1">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (error) setError("");
-                      }}
-                      className="w-full rounded-xl border border-line bg-surface/50 px-4 py-2.5 text-xs font-semibold text-ink placeholder:text-muted/65 outline-none focus:border-brand-500/40 focus:ring-2 focus:ring-brand-500/10 transition duration-200"
-                    />
-                    {error && <span className="text-[10px] font-bold text-red-500 pl-1">{error}</span>}
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="rounded-xl bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800/60 text-white px-5 py-2.5 text-xs font-extrabold shadow-sm active:scale-98 transition duration-200 cursor-pointer h-fit"
-                  >
-                    {loading ? "Subscribing..." : "Subscribe"}
-                  </button>
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-2.5 text-xs font-extrabold text-emerald-600 dark:text-emerald-400 w-full"
-                >
-                  <Check className="size-4 text-emerald-500" />
-                  <span>Subscribed successfully!</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </form>
-        </div>
-
         {/* 5-Column Grid */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 items-start pb-12">
           
@@ -141,10 +63,10 @@ const Footer = () => {
             </p>
             <Link
               to="/app"
-              aria-label="Create Resume Free"
+              aria-label="Build Resume"
               className="group inline-flex items-center gap-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 text-xs font-bold shadow-md hover:-translate-y-0.5 transition-all duration-200 transform-gpu"
             >
-              <span>Create Resume Free</span>
+              <span>Build Resume</span>
               <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>

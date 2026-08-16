@@ -211,7 +211,7 @@ const HomeNavbar = () => {
                 to="/app?state=register"
                 className="nav-cta-primary group px-4.5 py-2 text-xs font-bold flex items-center gap-1.5 bg-slate-800 text-white rounded-full transition-all hover:bg-slate-700 active:scale-95 shadow-md cursor-pointer"
               >
-                <span>Get Started Free</span>
+                <span>Build Resume</span>
                 <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
             </div>

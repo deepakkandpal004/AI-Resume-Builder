@@ -241,34 +241,6 @@ body::-webkit-scrollbar {
 
 
 
-/* ── Gradient text ────────────────────────────────────────────── */
-.text-gradient {
-  background: linear-gradient(135deg, #34d399, #2dd4bf);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-warm {
-  background: linear-gradient(135deg, #34d399, #10b981);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Gradient glow backgrounds ────────────────────────────────── */
-.gradient-glow {
-  background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(16, 185, 129, 0.15), transparent);
-}
-
-.gradient-glow-right {
-  background: radial-gradient(ellipse 70% 50% at 100% 50%, rgba(45, 212, 191, 0.12), transparent);
-}
-
-.gradient-glow-left {
-  background: radial-gradient(ellipse 70% 50% at 0% 50%, rgba(16, 185, 129, 0.1), transparent);
-}
-
 /* ── Floating animations ──────────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -292,13 +264,6 @@ body::-webkit-scrollbar {
 }
 .animate-pulse-soft {
   animation: pulse-soft 3s ease-in-out infinite;
-}
-
-/* ── Grid pattern ─────────────────────────────────────────────── */
-.dot-grid {
-  background-image: radial-gradient(circle, var(--color-line) 1px, transparent 1px);
-  background-size: 24px 24px;
-  opacity: 0.4;
 }
 
 /* ── Section dividers ─────────────────────────────────────────── */
@@ -325,30 +290,6 @@ body::-webkit-scrollbar {
 /* ── Legacy button (used across app pages) ────────────────────── */
 .btn-brand {
   @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-600 px-6 py-2.5 text-white font-semibold transition-all duration-200 hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-500/25 active:scale-[0.97];
-}
-
-/* ── Gradient border card ─────────────────────────────────────── */
-.gradient-border {
-  position: relative;
-  border-radius: var(--radius-2xl);
-}
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(45,212,191,0.1), transparent);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* ── Step connector ─────────────────────────────────────────────── */
-.step-connector {
-  height: 2px;
-  background: linear-gradient(to right, rgba(16,185,129,0.4), rgba(45,212,191,0.1));
 }
 
 /* ── Premium inputs & forms ───────────────────────────────────── */
@@ -441,13 +382,5 @@ body::-webkit-scrollbar {
 .dark .premium-pill:hover {
   border-color: var(--color-brand-400);
   background-color: rgba(16, 185, 129, 0.15);
-}
-
-.bg-grid-dot {
-  background-image: radial-gradient(color-mix(in srgb, var(--color-brand-500) 10%, transparent) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-.dark .bg-grid-dot {
-  background-image: radial-gradient(color-mix(in srgb, var(--color-brand-400) 15%, transparent) 1px, transparent 1px);
 }
 

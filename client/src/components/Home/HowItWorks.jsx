@@ -308,7 +308,7 @@ const HowItWorks = () => {
             className="btn-primary px-8.5 py-3 text-xs font-bold shadow-lg shadow-brand-500/10 cursor-pointer active:scale-95 transition-transform hover:scale-102 flex items-center justify-center gap-1.5 group"
             style={{ minHeight: "2.75rem" }}
           >
-            <span>Start Building</span>
+            <span>Build my resume</span>
             <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>

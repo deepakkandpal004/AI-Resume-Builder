@@ -25,7 +25,7 @@ const CallToAction = () => {
               className="mx-auto max-w-3xl text-4xl font-black text-ink sm:text-5xl lg:text-6xl leading-[1.1] dark:text-white"
               style={{ letterSpacing: "-0.03em" }}
             >
-              Create Your <span className="text-gradient font-black">ATS-Friendly Resume</span>
+              Create Your <span className="text-brand-600 font-black">ATS-Friendly Resume</span>
             </h2>
 
             <p className="mx-auto mt-5 max-w-md text-base sm:text-lg leading-relaxed text-body dark:text-white/60 font-semibold">
@@ -35,10 +35,10 @@ const CallToAction = () => {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row w-full sm:w-auto">
               <Link
                 to="/app"
-                aria-label="Create Resume"
+                aria-label="Build my resume"
                 className="group btn-primary px-10 py-4 text-base shadow-xl hover:-translate-y-0.5 transition-all duration-250 ease-out transform-gpu flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-brand-500 outline-none"
               >
-                <span>Create Resume</span>
+                <span>Build my resume</span>
                 <ArrowRight className="size-4 transition-transform duration-250 ease-out transform-gpu group-hover:translate-x-0.5" />
               </Link>
               <a

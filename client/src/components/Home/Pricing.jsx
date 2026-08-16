@@ -131,8 +131,8 @@ const Pricing = () => {
                 key={plan.name}
                 className={`relative flex flex-col h-full rounded-[20px] border transition-all duration-250 ease-out transform-gpu select-none outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:-translate-y-1.5 ${
                   isPro
-                    ? "border-brand-500 bg-gradient-to-b from-brand-500/[0.04] to-surface/20 shadow-md shadow-brand-500/[0.02] hover:border-brand-500 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.18)] hover:-translate-y-1.5 hover:scale-[1.03] order-1 md:order-2 z-10"
-                    : "border-line/60 bg-gradient-to-b from-surface/40 to-surface/15 shadow-xs hover:border-brand-500/20 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.08)] hover:-translate-y-1.5 hover:scale-[1.005] order-2 md:order-1"
+                    ? "border-brand-500 bg-surface shadow-md hover:border-brand-500 hover:shadow-lg hover:-translate-y-1.5 hover:scale-[1.03] order-1 md:order-2 z-10"
+                    : "border-line/60 bg-surface shadow-xs hover:border-brand-500/20 hover:shadow-lg hover:-translate-y-1.5 hover:scale-[1.005] order-2 md:order-1"
                 }`}
               >
                 {/* Subtle radial green glow behind Pro card */}

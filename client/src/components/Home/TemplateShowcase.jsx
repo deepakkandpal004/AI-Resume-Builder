@@ -141,10 +141,10 @@ const TemplateShowcase = () => {
                     }
                   }}
                   aria-label={`Use ${t.name} Template`}
-                  className={`group relative flex flex-col h-full overflow-hidden rounded-[24px] border bg-gradient-to-b transition-all duration-250 ease-out transform-gpu cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:-translate-y-2 focus-visible:scale-[1.01] focus-visible:shadow-2xl ${
+                  className={`group relative flex flex-col h-full overflow-hidden rounded-[24px] border bg-surface transition-all duration-250 ease-out transform-gpu cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:-translate-y-2 focus-visible:scale-[1.01] focus-visible:shadow-2xl ${
                     isFeatured
-                      ? "border-brand-500 bg-gradient-to-b from-brand-500/[0.04] to-surface/20 shadow-md shadow-brand-500/[0.02] hover:border-brand-500 hover:shadow-brand-500/[0.08] hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.18)] hover:-translate-y-2 hover:scale-[1.015]"
-                      : "border-line/60 bg-gradient-to-b from-surface/40 to-surface/15 shadow-xs hover:border-brand-500/30 hover:shadow-brand-500/[0.04] hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.12)] hover:-translate-y-2 hover:scale-[1.005]"
+                      ? "border-brand-500 shadow-md hover:border-brand-500 hover:shadow-lg hover:-translate-y-2 hover:scale-[1.015]"
+                      : "border-line/60 shadow-xs hover:border-brand-500/30 hover:shadow-lg hover:-translate-y-2 hover:scale-[1.005]"
                   }`}
                 >
                   {/* Top Color Line */}

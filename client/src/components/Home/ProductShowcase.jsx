@@ -206,40 +206,8 @@ const ProductShowcase = () => {
           {/* Browser Demonstration Window Wrapper */}
           <div className="mt-10 relative">
             
-            {/* Floating callout badges (Visible on lg viewports, hidden on mobile) */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-6 -left-12 z-20 hidden lg:flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-surface/85 backdrop-blur-md px-3.5 py-1.5 text-[10px] font-bold text-brand-600 shadow-lg cursor-default"
-            >
-              <Check className="size-3 text-brand-500" />
-              <span>ATS Score 96%</span>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-4 -right-12 z-20 hidden lg:flex items-center gap-1.5 rounded-full border border-line bg-surface/85 backdrop-blur-md px-3.5 py-1.5 text-[10px] font-bold text-ink shadow-lg cursor-default"
-            >
-              <Check className="size-3 text-brand-500" />
-              <span>Export Ready</span>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-16 -right-14 z-20 hidden lg:flex items-center gap-1.5 rounded-full border border-teal-500/20 bg-surface/85 backdrop-blur-md px-3.5 py-1.5 text-[10px] font-bold text-teal-600 shadow-lg cursor-default"
-            >
-              <Check className="size-3 text-brand-500" />
-              <span>Keyword Match +32%</span>
-            </motion.div>
-
-            {/* Main Interactive Browser Mockup Container */}
-            <motion.div
-              whileHover={{ y: -4, scale: 1.01 }}
-              transition={{ duration: 0.3 }}
-              className="rounded-2xl border border-line bg-surface/20 shadow-2xl hover:shadow-emerald-500/[0.04] transition-shadow duration-300"
-            >
+            {/* Main Browser Mockup Container */}
+            <div className="rounded-2xl border border-line bg-surface/20 shadow-2xl">
               <BrowserChrome 
                 savedTime={activeTab === "builder" ? "2s ago" : "just now"}
                 statusText={activeTab === "builder" ? "Autosaved" : "Draft"}
@@ -509,7 +477,7 @@ const ProductShowcase = () => {
 
               </div>
             </BrowserChrome>
-          </motion.div>
+          </div>
         </div>
 
       </div>

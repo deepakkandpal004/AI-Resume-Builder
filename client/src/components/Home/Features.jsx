@@ -103,7 +103,7 @@ const Features = () => {
                 transition={{ duration: 0.4, delay: i * 0.06 }}
                 className={`premium-card group relative overflow-hidden rounded-[20px] p-7 cursor-default min-h-[200px] flex flex-col justify-between transition-all duration-250 ease-out border bg-surface/50 hover:-translate-y-1.5 hover:shadow-lg hover:shadow-emerald-500/[0.04] ${
                   isFeatured 
-                    ? "border-emerald-500/35 bg-gradient-to-br from-emerald-500/[0.04] to-surface/90 shadow-xs" 
+                    ? "border-emerald-500/35 bg-surface shadow-xs" 
                     : "border-line/70 hover:border-emerald-500/35"
                 }`}
               >
@@ -159,7 +159,7 @@ const Features = () => {
             style={{ minHeight: "2.75rem" }}
           >
             <Lightbulb className="size-4" />
-            <span>Try all features free</span>
+            <span>See it in action</span>
             <ArrowRight className="size-4" />
           </RouterLink>
         </div>

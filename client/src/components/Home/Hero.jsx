@@ -1,87 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play, Check, LayoutTemplate, Lock, Star, ShieldCheck, FileText, Clock, Lightbulb } from "lucide-react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { ArrowRight, Check, LayoutTemplate, Lock, Star, ShieldCheck, FileText, Clock, Lightbulb } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import ModernTemplate from "../templates/ModernTemplate";
 import { dummyResumeData } from "../../assets/assets";
-
-const AnimatedCounter = ({ value, duration = 1500 }) => {
-  const hasNumbers = /[0-9]/.test(value);
-  const [count, setCount] = useState(0);
-  const elementRef = useRef(null);
-  const hasAnimated = useRef(false);
-
-  useEffect(() => {
-    if (!hasNumbers) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          
-          const numberPart = parseFloat(value.replace(/[^0-9.]/g, ""));
-          const isDecimal = value.includes(".");
-          
-          let startTimestamp = null;
-          const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const currentCount = progress * numberPart;
-            setCount(isDecimal ? parseFloat(currentCount.toFixed(1)) : Math.floor(currentCount));
-            if (progress < 1) {
-              window.requestAnimationFrame(step);
-            } else {
-              setCount(numberPart);
-            }
-          };
-          window.requestAnimationFrame(step);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [value, duration, hasNumbers]);
-
-  if (!hasNumbers) {
-    return <span>{value}</span>;
-  }
-
-  const suffix = value.replace(/[0-9.]/g, "");
-  return (
-    <span ref={elementRef}>
-      {count}
-      {suffix}
-    </span>
-  );
-};
 
 const Hero = () => {
   const { user } = useSelector((state) => state.auth);
   const shouldReduceMotion = useReducedMotion();
 
-  // Dynamic simulation loop states (Stages: 0=Typing, 1=Suggesting, 2=Optimized, 3=Scoring, 4=Saved)
-  const [stage, setStage] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStage((prev) => (prev + 1) % 5);
-    }, 1800);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Compute values for simulation states
-  const jobTitleText = stage === 0 ? "Full Stack Dev" : "Platform Engineer";
-  const atsScore = stage === 4 || stage === 3 ? 98 : 92;
-  const isHighlight = stage >= 2;
-  const isSuggesting = stage === 1;
-  const isSaved = stage === 4;
+  // Static values for the mockup (no animation loop needed)
+  const jobTitleText = "Platform Engineer";
+  const atsScore = 96;
 
   const animVariants = {
     hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 15 },
@@ -128,7 +59,7 @@ const Hero = () => {
             className="mt-6 text-4xl font-extrabold leading-[1.1] text-ink sm:text-5xl md:text-6xl lg:text-7xl tracking-tight max-w-4xl"
             style={{ letterSpacing: "-0.04em" }}
           >
-            Create ATS-Friendly Resumes <span className="text-gradient">That Get Interviews</span>
+            Create ATS-Friendly Resumes <span className="text-brand-600">That Get Interviews</span>
           </motion.h1>
 
           {/* Description */}
@@ -180,10 +111,10 @@ const Hero = () => {
           >
             <Link
               to="/app"
-              aria-label={user ? "Go to Dashboard" : "Create My Resume"}
+              aria-label={user ? "Go to Dashboard" : "Build My Resume"}
               className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-emerald-600 text-white px-9 py-3.5 text-center text-sm font-extrabold shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 hover:-translate-y-0.5 hover:scale-[1.01] transition-all duration-250 ease-out transform-gpu active:scale-98"
             >
-              <span>{user ? "Go to Dashboard" : "Create My Resume"}</span>
+              <span>{user ? "Go to Dashboard" : "Build My Resume"}</span>
               <ArrowRight className="size-4 transition-transform duration-250 ease-out transform-gpu group-hover:translate-x-1" />
             </Link>
             <a
@@ -219,9 +150,9 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.15 }}
             className="relative group"
           >
-            {/* Interactive Browser Mockup Container */}
-            <div className="animate-float" style={{ perspective: "1200px" }}>
-              <div className="relative overflow-hidden rounded-[20px] border border-line bg-surface/50 backdrop-blur-md shadow-2xl shadow-emerald-500/[0.04] transition-all duration-300 hover:scale-[1.005] hover:shadow-emerald-500/[0.08] hover:border-brand-500/20">
+            {/* Browser Mockup Container */}
+            <div>
+              <div className="relative overflow-hidden rounded-[20px] border border-line bg-surface/50 backdrop-blur-md shadow-2xl">
                 
                 {/* Browser address bar chrome */}
                 <div className="flex items-center gap-1.5 border-b border-line px-4 py-3 bg-surface/80">
@@ -229,18 +160,18 @@ const Hero = () => {
                   <span className="size-2.5 rounded-full bg-yellow-400/70" />
                   <span className="size-2.5 rounded-full bg-emerald-400/70" />
                   <span className="ml-3 rounded-md bg-canvas px-3 py-1 text-[9px] font-bold text-muted border border-line/60 select-none">
-                    app.resumeai.com/editor
+                    resumebuilder.com/editor
                   </span>
                 </div>
 
-                {/* Editor Content simulation area */}
+                {/* Editor Content */}
                 <div className="p-4 bg-canvas/60">
                   <div className="grid grid-cols-5 gap-4">
                     
-                    {/* Left: AI editor simulation panel */}
+                    {/* Left: editor panel */}
                     <div className="col-span-2 space-y-3 rounded-xl border border-line bg-surface/80 p-3.5 text-left shadow-sm">
                       <div className="flex items-center gap-1.5 border-b border-line/50 pb-2">
-                        <span className="size-1.5 rounded-full bg-brand-500 animate-pulse" />
+                        <span className="size-1.5 rounded-full bg-brand-500" />
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Resume Editor</span>
                       </div>
                       
@@ -254,48 +185,35 @@ const Hero = () => {
                         
                         <div>
                           <div className="text-[8px] text-muted font-bold mb-1 uppercase tracking-wide">Job Title</div>
-                          <div className="relative rounded-lg border border-brand-300 bg-surface px-2.5 py-1.5 text-[10px] text-brand-600 dark:text-brand-400 font-bold overflow-hidden min-h-[28px] flex items-center">
+                          <div className="rounded-lg border border-brand-300 bg-surface px-2.5 py-1.5 text-[10px] text-brand-600 dark:text-brand-400 font-bold min-h-[28px] flex items-center">
                             <span>{jobTitleText}</span>
-                            <span className="w-1.5 h-3 bg-brand-500 ml-0.5 animate-pulse" />
                           </div>
                         </div>
 
-                        {/* Experience bullet optimizer container */}
-                        <div className={`p-2.5 rounded-xl border transition-all duration-500 ${
-                          isHighlight ? "border-brand-500/30 bg-brand-500/5" : "border-line bg-surface"
-                        }`}>
+                        <div className="p-2.5 rounded-xl border border-brand-500/30 bg-brand-500/5">
                           <div className="text-[8px] text-muted font-bold mb-1 uppercase tracking-wide">Experience Bullet</div>
-                          <div className="text-[9.5px] leading-relaxed text-ink font-semibold flex items-center justify-between gap-1.5">
-                            <span>
-                              {isHighlight 
-                                ? "Boosted load speeds by 40% with virtualized list rendering." 
-                                : "Led team to launch SaaS metrics dashboards..."}
-                            </span>
+                          <div className="text-[9.5px] leading-relaxed text-ink font-semibold">
+                            <span>Boosted load speeds by 40% with virtualized list rendering.</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Floating suggestion module */}
-                      <div className={`rounded-xl border p-2.5 text-left transition-all duration-500 ${
-                        isSuggesting || isHighlight ? "border-brand-500/30 bg-brand-500/5 shadow-xs" : "border-line bg-surface/30"
-                      }`}>
+                      <div className="rounded-xl border border-brand-500/30 bg-brand-500/5 p-2.5 text-left shadow-xs">
                         <div className="flex items-center gap-1.5 text-[8px] font-bold text-brand-600">
-                          <span className="size-1.5 rounded-full bg-brand-500 animate-ping" />
+                          <span className="size-1.5 rounded-full bg-brand-500" />
                           <span>Smart Suggestion</span>
                         </div>
                         <p className="mt-1 text-[7.5px] leading-normal text-muted font-medium">
-                          {isHighlight 
-                            ? "Optimized details: 'Boosted load response by 40% with virtualized list matrices.'" 
-                            : "Consider adding dynamic metrics or percent stats to increase score."}
+                          "Boosted load response by 40% with virtualized list matrices."
                         </p>
                       </div>
                     </div>
 
-                    {/* Right: preview canvas template simulator */}
+                    {/* Right: A4 preview */}
                     <div className="col-span-3 flex flex-col rounded-xl border border-line bg-surface p-3.5 shadow-sm">
                       <div className="mb-2 flex items-center gap-1.5 text-left">
                         <span className="size-1.5 rounded-full bg-teal-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">A4 Preview Canvas</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">A4 Preview</span>
                       </div>
 
                       <div className="relative flex-1 overflow-hidden rounded-lg bg-white shadow-inner border border-line/60" style={{ minHeight: "260px" }}>
@@ -317,62 +235,34 @@ const Hero = () => {
                     </div>
                   </div>
 
-                  {/* bottom state panel status bar */}
+                  {/* Status bar */}
                   <div className="mt-3 flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2 text-left">
                     <div className="flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-brand-500 animate-pulse" />
+                      <span className="size-1.5 rounded-full bg-brand-500" />
                       <span className="text-[10px] text-muted font-semibold">
-                        {isSaved 
-                          ? "✓ Saved • Updated just now" 
-                          : "Reviewing resume details..."}
+                        Saved • Updated just now
                       </span>
                     </div>
                     <span className="text-[8.5px] font-bold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded-md dark:bg-brand-500/10">
-                      {isSaved ? "Saved ✓" : "Editing..."}
+                      Saved ✓
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* floating ATS Score gauge badge widget */}
-            <motion.div
-              animate={{ 
-                scale: atsScore === 98 ? [1, 1.06, 1] : 1,
-                y: [0, -3, 0]
-              }}
-              transition={{ 
-                scale: { duration: 0.3 },
-                y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-              }}
-              className="absolute -bottom-4 -left-4 rounded-xl border border-line bg-surface/90 backdrop-blur-md px-4 py-2.5 shadow-xl flex items-center gap-3.5 z-20"
-            >
+            {/* ATS Score badge — static, no floating animation */}
+            <div className="absolute -bottom-4 -left-4 rounded-xl border border-line bg-surface/90 backdrop-blur-md px-4 py-2.5 shadow-xl flex items-center gap-3.5 z-20">
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-emerald-500 font-extrabold text-sm transition-all duration-300">
+                <span className="text-emerald-500 font-extrabold text-sm">
                   ATS Score: {atsScore}%
                 </span>
                 <span className="text-line">|</span>
                 <span className="text-ink font-bold text-[11px]">
-                  {atsScore === 98 ? "Excellent Match" : "Good Match"}
+                  Excellent Match
                 </span>
               </div>
-            </motion.div>
-
-            {/* floating dynamic bullet suggestions alert */}
-            <motion.div
-              animate={{ 
-                y: [0, 4, 0]
-              }}
-              transition={{ 
-                duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5
-              }}
-              className="absolute -right-4 top-1/3 rounded-xl border border-line bg-surface/90 backdrop-blur-md px-3.5 py-2 shadow-xl hidden sm:flex items-center gap-2 z-20"
-            >
-              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-purple-100 text-[10px] font-bold text-purple-600">
-                ✓
-              </span>
-              <span className="text-[10.5px] font-bold text-ink font-semibold">Improved bullets!</span>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
 
@@ -403,12 +293,12 @@ const Hero = () => {
               return (
                 <div
                   key={idx}
-                  className="group relative flex flex-col justify-between p-6 rounded-[20px] border border-line/50 bg-gradient-to-b from-surface/20 to-surface/5 backdrop-blur-md cursor-default min-h-[170px] shadow-xs transition-all duration-250 ease-out transform-gpu hover:-translate-y-1.5 hover:border-brand-500/20 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.08)] hover:bg-surface/30"
+                  className="group relative flex flex-col justify-between p-6 rounded-[20px] border border-line/50 bg-surface/60 backdrop-blur-md cursor-default min-h-[170px] shadow-xs transition-all duration-250 ease-out transform-gpu hover:-translate-y-1.5 hover:border-brand-500/20 hover:shadow-lg hover:bg-surface/80"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex flex-col">
-                      <span className="text-3xl font-extrabold tracking-tight text-brand-600 font-display">
-                        <AnimatedCounter value={card.value} />
+                      <span className="text-3xl font-extrabold tracking-tight text-ink font-display">
+                        {card.value}
                       </span>
                       <span className="text-xs font-bold text-ink mt-1.5">{card.label}</span>
                     </div>
