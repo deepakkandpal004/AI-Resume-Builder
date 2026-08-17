@@ -2,7 +2,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Toaster } from "react-hot-toast";
-import { setUser, setLoading } from "./app/features/authSlice";
+import { setUser, setLoading, logout } from "./app/features/authSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loader from "./components/Loader";
 import { auth } from "./config/firebase";
@@ -41,7 +41,7 @@ const App = () => {
           dispatch(setLoading(false));
         }
       } else {
-        dispatch(setLoading(false));
+        dispatch(logout());
       }
       setAuthReady(true);
     });
