@@ -3,28 +3,36 @@ import { auth } from "../config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 let cachedToken = null;
-let authReady = new Promise((resolve) => {
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      cachedToken = await user.getIdToken();
-    }
-    resolve();
-  });
+
+onAuthStateChanged(auth, async (user) => {
+  try {
+    cachedToken = user ? await user.getIdToken(true) : null;
+  } catch {
+    cachedToken = null;
+  }
 });
 
 export const setCachedToken = (token) => {
   cachedToken = token;
 };
 
-export const waitForAuth = () => authReady;
-
 const api = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL
 });
 
+const waitForUser = async () => {
+  let user = auth.currentUser;
+  if (user || cachedToken) return user;
+  const started = Date.now();
+  while (!user && !cachedToken && Date.now() - started < 3000) {
+    await new Promise((r) => setTimeout(r, 100));
+    user = auth.currentUser;
+  }
+  return user;
+};
+
 api.interceptors.request.use(async (config) => {
-    await authReady;
-    const user = auth.currentUser;
+    const user = await waitForUser();
     if (user) {
         const token = await user.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
