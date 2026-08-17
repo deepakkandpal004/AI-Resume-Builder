@@ -3,6 +3,7 @@ import { verifyIdToken } from "../config/firebase.js";
 const protect = async (req, res, next) => {
   let token = req.headers.authorization;
   if (!token) {
+    console.error("[AUTH] No authorization header");
     return res.status(401).json({ message: "unauthorized" });
   }
   if (token.startsWith("Bearer ")) {
@@ -13,6 +14,7 @@ const protect = async (req, res, next) => {
     req.userId = decoded.uid;
     next();
   } catch (error) {
+    console.error("[AUTH] Token verification failed:", error.message);
     return res.status(401).json({ message: "unauthorized" });
   }
 };
