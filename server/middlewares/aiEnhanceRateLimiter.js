@@ -26,7 +26,7 @@ setInterval(() => {
 export const enhanceRateLimiter = async (req, res, next) => {
   let user;
   try {
-    user = await User.findById(req.userId).select("subscriptionTier");
+    user = await User.findOne({ firebaseUid: req.userId }).select("subscriptionTier");
   } catch (err) {
     return res
       .status(503)
@@ -65,7 +65,7 @@ export const enhanceRateLimiter = async (req, res, next) => {
 export const tailorRateLimiter = async (req, res, next) => {
   let user;
   try {
-    user = await User.findById(req.userId).select("subscriptionTier");
+    user = await User.findOne({ firebaseUid: req.userId }).select("subscriptionTier");
   } catch (err) {
     return res
       .status(503)

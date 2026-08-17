@@ -2,6 +2,7 @@ import {
   BriefcaseBusiness,
   Globe,
   Linkedin,
+  Loader2,
   Mail,
   MapPin,
   Phone,

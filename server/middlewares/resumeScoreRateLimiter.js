@@ -14,7 +14,7 @@ setInterval(() => {
 export default async function resumeScoreRateLimiter(req, res, next) {
   let user;
   try {
-    user = await User.findById(req.userId).select("subscriptionTier");
+    user = await User.findOne({ firebaseUid: req.userId }).select("subscriptionTier");
   } catch {
     return res.status(503).json({ message: "Service unavailable. Please try again." });
   }
