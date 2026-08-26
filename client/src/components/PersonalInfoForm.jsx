@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import React, { useRef } from "react";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 import useImageUpload from "../hooks/useImageUpload";
 
 const PersonalInfoForm = ({
@@ -41,7 +42,9 @@ const PersonalInfoForm = ({
         removeBg: false,
       });
       onChange({ ...data, image: cdnUrl });
-    } catch { /* upload failure handled by useImageUpload */ }
+    } catch (err) {
+      toast.error(err?.message || "Photo upload failed. It will still be saved with your resume.");
+    }
   };
 
   const handleRemoveImage = () => {
@@ -105,7 +108,7 @@ const PersonalInfoForm = ({
         <div className="flex-1 min-w-0 text-center sm:text-left">
           <h4 className="text-sm font-semibold text-ink">Profile Picture</h4>
           <p className="text-xs text-muted mt-0.5 mb-3.5">PNG or JPG. Maximum 5MB.</p>
-          
+
           <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
             <button
               type="button"
@@ -115,7 +118,7 @@ const PersonalInfoForm = ({
             >
               {imagePreviewSrc ? "Replace" : "Select Photo"}
             </button>
-            
+
             {imagePreviewSrc && (
               <button
                 type="button"

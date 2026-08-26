@@ -1,7 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import { setUser, setLoading, logout } from "./app/features/authSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loader from "./components/Loader";
@@ -37,8 +37,11 @@ const App = () => {
             { headers: { Authorization: `Bearer ${idToken}` } }
           );
           dispatch(setUser(data.user));
-        } catch {
+        } catch (err) {
           dispatch(setLoading(false));
+          if (err?.response?.status === 403) {
+            toast.error(err.response.data?.message || "Please verify your email before signing in.");
+          }
         }
       } else {
         dispatch(logout());

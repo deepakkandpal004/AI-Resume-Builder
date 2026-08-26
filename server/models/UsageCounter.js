@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-// One doc per (user, feature, UTC day). The unique index lets claimQuota's
-// upsert + $inc act as a race-safe atomic counter.
 const usageCounterSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true },
@@ -13,6 +11,7 @@ const usageCounterSchema = new mongoose.Schema(
 );
 
 usageCounterSchema.index({ userId: 1, feature: 1, day: 1 }, { unique: true });
+usageCounterSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 3024000 });
 
 const UsageCounter = mongoose.model("UsageCounter", usageCounterSchema);
 
