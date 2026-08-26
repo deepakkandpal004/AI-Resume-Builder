@@ -18,7 +18,12 @@ const connectDB = async () => {
             mongodbURI = mongodbURI.slice(0, -1);
         }
 
-        await mongoose.connect(`${mongodbURI}/${projectName}`);
+        await mongoose.connect(`${mongodbURI}/${projectName}`, {
+            maxPoolSize: 20,
+            minPoolSize: 2,
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+        });
         } catch (error) {
       logger.error("Error connecting to MongoDB:", error.message);
       process.exit(1);

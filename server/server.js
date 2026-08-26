@@ -7,6 +7,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
+import compression from "compression";
 import mongoose from "mongoose";
 import connectDB from "./config/db.js";
 import logger from "./observability/logger.js";
@@ -35,6 +36,7 @@ app.use(cors({
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(mongoSanitize());
+app.use(compression());
 
 app.use(requestContext);
 app.use(requestLogger);
@@ -44,7 +46,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/healthz", (req, res) => {
-  // 0=disconnected 1=connected 2=connecting 3=disconnecting
   const state = mongoose.connection.readyState;
   const healthy = state === 1;
   return res.status(healthy ? 200 : 503).json({
@@ -65,7 +66,6 @@ app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
 });
 
-// Sentry must capture errors before the final handler
 setupSentryErrorHandler(app);
 
 app.use(errorHandler);
