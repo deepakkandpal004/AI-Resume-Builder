@@ -4,34 +4,43 @@ import AtsScore from "../models/AtsScore.js";
 import { verifyIdToken } from "../config/firebase.js";
 
 // POST /api/users/sync
-// Syncs Firebase user data with MongoDB
+// Syncs Firebase user data with MongoDB.
+// Email + verification status come from the verified Firebase token claims —
+// never from the request body. Linking to an existing account (same email)
+// is only allowed when the token proves the email is verified.
 export const syncUser = async (req, res) => {
   try {
-    const { name, email, photoURL, emailVerified } = req.body;
+    const { name, photoURL } = req.body;
     const firebaseUid = req.userId;
+    const tokenEmail = req.firebaseUser?.email || null;
+    const emailVerified = req.firebaseUser?.email_verified === true;
 
     let user = await User.findOne({ firebaseUid });
 
     if (user) {
       user.name = name || user.name;
-      user.email = email || user.email;
-      if (typeof emailVerified === "boolean")
-        user.emailVerified = emailVerified;
+      if (tokenEmail) user.email = tokenEmail;
+      user.emailVerified = emailVerified;
       await user.save();
     } else {
-      user = await User.findOne({ email });
+      user = await User.findOne({ email: tokenEmail });
+
       if (user) {
+        if (!emailVerified) {
+          return res.status(403).json({
+            message: "This email belongs to an existing account. Verify your email before signing in.",
+          });
+        }
         user.firebaseUid = firebaseUid;
         user.name = name || user.name;
-        if (typeof emailVerified === "boolean")
-          user.emailVerified = emailVerified;
+        user.emailVerified = true;
         await user.save();
       } else {
         user = await User.create({
           firebaseUid,
-          name: name || email?.split("@")[0] || "User",
-          email,
-          emailVerified: !!emailVerified,
+          name: name || tokenEmail?.split("@")[0] || "User",
+          email: tokenEmail,
+          emailVerified,
         });
       }
     }

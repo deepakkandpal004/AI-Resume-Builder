@@ -35,6 +35,9 @@ export const enhanceProfessionalSummary = async (req, res) => {
     if (!userContent) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+    if (typeof userContent !== "string" || userContent.length > 5000) {
+      return res.status(400).json({ message: "userContent must be a string of at most 5,000 characters." });
+    }
 
     const response = await getAI().chat.completions.create({
       model: process.env.GROQ_MODEL,
@@ -62,6 +65,9 @@ export const enhanceJobDescription = async (req, res) => {
     if (!userContent) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+    if (typeof userContent !== "string" || userContent.length > 5000) {
+      return res.status(400).json({ message: "userContent must be a string of at most 5,000 characters." });
+    }
 
     const response = await getAI().chat.completions.create({
       model: process.env.GROQ_MODEL,
@@ -88,6 +94,9 @@ export const rewriteBullets = async (req, res) => {
     const { text, position, company } = req.body;
     if (!text || !text.trim()) {
       return res.status(400).json({ message: "Missing description text to rewrite" });
+    }
+    if (typeof text !== "string" || text.length > 5000) {
+      return res.status(400).json({ message: "text must be a string of at most 5,000 characters." });
     }
 
     const context = [position, company].filter(Boolean).join(" at ") || "this role";
@@ -128,6 +137,12 @@ export const uploadResume = async (req, res) => {
     }
     if (!resumeText || resumeText.trim() === "") {
       return res.status(400).json({ message: "Resume text is required" });
+    }
+    if (typeof resumeText !== "string" || resumeText.length > 20000) {
+      return res.status(400).json({ message: "resumeText must be a string of at most 20,000 characters." });
+    }
+    if (title !== undefined && (typeof title !== "string" || title.trim().length > 200)) {
+      return res.status(400).json({ message: "title must be a string of at most 200 characters." });
     }
 
     const systemPrompt =
@@ -260,6 +275,12 @@ export const suggestSkills = async (req, res) => {
     const { targetRole, currentSkills } = req.body;
     if (!targetRole || !targetRole.trim()) {
       return res.status(400).json({ message: "Target role is required." });
+    }
+    if (typeof targetRole !== "string" || targetRole.trim().length > 200) {
+      return res.status(400).json({ message: "targetRole must be a string of at most 200 characters." });
+    }
+    if (currentSkills !== undefined && (!Array.isArray(currentSkills) || currentSkills.length > 50 || currentSkills.some((s) => typeof s !== "string" || s.length > 100))) {
+      return res.status(400).json({ message: "currentSkills must be an array of at most 50 short strings." });
     }
 
     const skillsContext = Array.isArray(currentSkills) && currentSkills.length > 0
@@ -529,6 +550,12 @@ export const generateInterviewQuestions = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(resumeId)) {
       return res.status(400).json({ message: "Invalid resume ID." });
     }
+    if (targetRole !== undefined && (typeof targetRole !== "string" || targetRole.trim().length > 200)) {
+      return res.status(400).json({ message: "targetRole must be a string of at most 200 characters." });
+    }
+    if (jobDescription !== undefined && (typeof jobDescription !== "string" || jobDescription.trim().length > 5000)) {
+      return res.status(400).json({ message: "jobDescription must be a string of at most 5,000 characters." });
+    }
 
     const resume = await Resume.findOne({ _id: resumeId, userId });
     if (!resume) {
@@ -691,6 +718,12 @@ export const tailorResume = async (req, res) => {
     }
     if (!resumeId || !jobDescription) {
       return res.status(400).json({ message: "resumeId and jobDescription are required." });
+    }
+    if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume ID." });
+    }
+    if (typeof jobDescription !== "string" || jobDescription.length < 50 || jobDescription.length > 10000) {
+      return res.status(400).json({ message: "jobDescription must be between 50 and 10,000 characters." });
     }
 
     const resume = await Resume.findOne({ userId, _id: resumeId });

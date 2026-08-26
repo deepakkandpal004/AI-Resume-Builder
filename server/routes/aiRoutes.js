@@ -6,6 +6,7 @@ import atsRateLimiter from "../middlewares/atsRateLimiter.js";
 import coverLetterRateLimiter from "../middlewares/coverLetterRateLimiter.js";
 import interviewRateLimiter from "../middlewares/interviewRateLimiter.js";
 import { enhanceRateLimiter, tailorRateLimiter } from "../middlewares/aiEnhanceRateLimiter.js";
+import uploadResumeRateLimiter from "../middlewares/uploadResumeRateLimiter.js";
 import resumeScoreRateLimiter from "../middlewares/resumeScoreRateLimiter.js";
 import skillRateLimiter from "../middlewares/skillRateLimiter.js";
 
@@ -14,7 +15,7 @@ const aiRouter = express.Router();
 // Existing AI routes — rate limited for free tier
 aiRouter.post('/enhance-pro-sum', protect, enhanceRateLimiter, enhanceProfessionalSummary);
 aiRouter.post('/enhance-job-desc', protect, enhanceRateLimiter, enhanceJobDescription);
-aiRouter.post('/upload-resume', protect, uploadResume);
+aiRouter.post('/upload-resume', protect, uploadResumeRateLimiter, uploadResume);
 aiRouter.post('/tailor-resume', protect, tailorRateLimiter, tailorResume);
 
 // ATS Score Checker routes — protect first, then quota check

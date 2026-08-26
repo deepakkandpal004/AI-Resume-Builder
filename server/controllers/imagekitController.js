@@ -8,7 +8,7 @@ import crypto from "crypto";
 //
 // ImageKit auth spec:
 //   token   = random UUID
-//   expire  = unix timestamp (now + 30 seconds)
+//   expire  = unix timestamp (now + 5 minutes)
 //   signature = HMAC-SHA1(token + expire, privateKey) as hex string
 export const getImageKitAuth = (req, res) => {
   try {
@@ -18,7 +18,7 @@ export const getImageKitAuth = (req, res) => {
     }
 
     const token = crypto.randomUUID();
-    const expire = Math.floor(Date.now() / 1000) + 2400; // valid for 40 minutes
+    const expire = Math.floor(Date.now() / 1000) + 300; // valid for 5 minutes
     const signature = crypto
       .createHmac("sha1", privateKey)
       .update(token + expire)

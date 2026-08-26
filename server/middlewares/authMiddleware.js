@@ -12,6 +12,7 @@ const protect = async (req, res, next) => {
   try {
     const decoded = await verifyIdToken(token);
     req.userId = decoded.uid;
+    req.firebaseUser = decoded;
     next();
   } catch (error) {
     console.error("[AUTH] Token verification failed:", error.message);

@@ -31,12 +31,13 @@ A full-stack resume builder with AI-powered writing assistance, ATS scoring, cov
 - `react-pdftotext` for PDF import
 
 **Backend**
-- Node.js + Express 5
+- Node.js + Express 4
 - MongoDB + Mongoose
-- JWT authentication
+- Firebase Authentication (ID tokens verified via firebase-admin)
 - Multer for file handling
-- Groq AI (llama-3.3-70b-versatile) via OpenAI-compatible SDK
+- Groq AI (OpenAI-compatible SDK, default model: `openai/gpt-oss-20b`)
 - ImageKit for image CDN, transforms, and background removal
+- Razorpay payments · Brevo (SMTP) transactional email
 
 ---
 
@@ -92,15 +93,28 @@ Create `server/.env`:
 ```env
 PORT=3000
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+
+# Firebase Admin — either set the env var or place serviceAccountKey.json in server/config/
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account", ...}
 
 GROQ_API_KEY=your_groq_api_key
 GROQ_BASE_URL=https://api.groq.com/openai/v1
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=openai/gpt-oss-20b
 
 IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
 IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
 IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_imagekit_id
+
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+PROMO_CODES=CODE1,CODE2
+
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_pass
+SMTP_FROM=verified_sender@example.com
+CLIENT_URL=http://localhost:5173
 ```
 
 ```bash
@@ -135,12 +149,16 @@ Open `http://localhost:5173`
 | Variable | Where | Description |
 |---|---|---|
 | `MONGODB_URI` | server | MongoDB connection string |
-| `JWT_SECRET` | server | Secret for signing JWT tokens |
+| `FIREBASE_SERVICE_ACCOUNT` | server | Firebase Admin service account JSON (or `server/config/serviceAccountKey.json`) |
 | `GROQ_API_KEY` | server | Groq API key for AI features |
-| `GROQ_MODEL` | server | Model name (default: `llama-3.3-70b-versatile`) |
+| `GROQ_MODEL` | server | Model name (default: `openai/gpt-oss-20b`) |
 | `IMAGEKIT_PUBLIC_KEY` | server + client | ImageKit public key |
 | `IMAGEKIT_PRIVATE_KEY` | server only | ImageKit private key — never expose to client |
 | `IMAGEKIT_URL_ENDPOINT` | server + client | Your ImageKit URL endpoint |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | server | Razorpay payment credentials |
+| `PROMO_CODES` | server | Comma-separated premium promo codes |
+| `SMTP_*` | server | Brevo SMTP credentials for transactional email |
+| `CLIENT_URL` | server | Allowed CORS origin(s), comma-separated |
 | `VITE_BASE_URL` | client | Backend API base URL |
 
 ---
@@ -168,6 +186,12 @@ Open `http://localhost:5173`
 | `DELETE` | `/api/ai/cover-letter/:id` | Delete a cover letter |
 | `POST` | `/api/ai/interview-questions` | Generate interview Q&A (3/day free tier) |
 | `GET` | `/api/ai/interview-questions/:resumeId` | Get saved interview question sets |
+| `POST` | `/api/ai/score-resume` | General resume quality score (no JD) |
+| `POST` | `/api/ai/rewrite-bullets` | AI-rewrite experience bullet points |
+| `POST` | `/api/ai/suggest-skills` | Suggest skills for a target role |
+| `POST` | `/api/payments/create-order` | Create Razorpay order (₹299 premium) |
+| `POST` | `/api/payments/verify-payment` | Verify payment signature, activate premium |
+| `POST` | `/api/users/upgrade` | Upgrade via promo code |
 
 ---
 
