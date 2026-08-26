@@ -117,7 +117,7 @@ export const runAtsScan = async (req, res) => {
   try {
     aiResponse = await getAI().chat.completions.create(
       {
-        model: process.env.GROQ_MODEL || "llama3-70b-8192",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
         messages,
         response_format: { type: "json_object" },
       },

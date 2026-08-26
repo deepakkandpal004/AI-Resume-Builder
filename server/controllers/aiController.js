@@ -386,7 +386,7 @@ Job Description:
 ${jobDescription}`;
 
     const response = await getAI().chat.completions.create({
-      model: process.env.GROQ_MODEL || "llama3-70b-8192",
+      model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -598,7 +598,7 @@ Instructions:
 }`;
 
     const response = await getAI().chat.completions.create({
-      model: process.env.GROQ_MODEL || "llama3-70b-8192",
+      model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -731,7 +731,7 @@ Current Resume Data:
 - Projects: ${JSON.stringify((resume.project || []).map(proj => ({ name: proj.name, description: proj.description })))}`;
 
     const response = await getAI().chat.completions.create({
-      model: process.env.GROQ_MODEL || "llama3-70b-8192",
+      model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
