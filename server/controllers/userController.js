@@ -15,14 +15,16 @@ export const syncUser = async (req, res) => {
     if (user) {
       user.name = name || user.name;
       user.email = email || user.email;
-      if (typeof emailVerified === "boolean") user.emailVerified = emailVerified;
+      if (typeof emailVerified === "boolean")
+        user.emailVerified = emailVerified;
       await user.save();
     } else {
       user = await User.findOne({ email });
       if (user) {
         user.firebaseUid = firebaseUid;
         user.name = name || user.name;
-        if (typeof emailVerified === "boolean") user.emailVerified = emailVerified;
+        if (typeof emailVerified === "boolean")
+          user.emailVerified = emailVerified;
         await user.save();
       } else {
         user = await User.create({
@@ -36,7 +38,8 @@ export const syncUser = async (req, res) => {
 
     return res.status(200).json({ user });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("syncUser failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -51,42 +54,53 @@ export const getUserId = async (req, res) => {
     }
     return res.status(200).json({ user });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("getUserId failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
 // GET /api/users/resumes
 // Returns each resume enriched with its latest ATS score
 export const getUserResumes = async (req, res) => {
-    try {
-        const firebaseUid = req.userId;
-        const user = await User.findOne({ firebaseUid });
-        if (!user) {
-            return res.status(404).json({ message: "user not found" });
-        }
-
-        const resumes = await Resume.find({ userId: user._id }).lean();
-
-        const resumeIds = resumes.map((r) => r._id);
-        const latestScans = await AtsScore.aggregate([
-            { $match: { resumeId: { $in: resumeIds } } },
-            { $sort:  { createdAt: -1 } },
-            { $group: { _id: "$resumeId", atsScore: { $first: "$atsScore" }, scannedAt: { $first: "$createdAt" } } },
-        ]);
-
-        const scoreMap = Object.fromEntries(
-            latestScans.map((s) => [s._id.toString(), { atsScore: s.atsScore, scannedAt: s.scannedAt }])
-        );
-
-        const enriched = resumes.map((r) => ({
-            ...r,
-            lastAts: scoreMap[r._id.toString()] ?? null,
-        }));
-
-        return res.status(200).json({ resumes: enriched });
-    } catch (error) {
-        return res.status(400).json({ message: error.message });
+  try {
+    const firebaseUid = req.userId;
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
     }
+
+    const resumes = await Resume.find({ userId: user._id }).lean();
+
+    const resumeIds = resumes.map((r) => r._id);
+    const latestScans = await AtsScore.aggregate([
+      { $match: { resumeId: { $in: resumeIds } } },
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: "$resumeId",
+          atsScore: { $first: "$atsScore" },
+          scannedAt: { $first: "$createdAt" },
+        },
+      },
+    ]);
+
+    const scoreMap = Object.fromEntries(
+      latestScans.map((s) => [
+        s._id.toString(),
+        { atsScore: s.atsScore, scannedAt: s.scannedAt },
+      ]),
+    );
+
+    const enriched = resumes.map((r) => ({
+      ...r,
+      lastAts: scoreMap[r._id.toString()] ?? null,
+    }));
+
+    return res.status(200).json({ resumes: enriched });
+  } catch (error) {
+    console.error("getUserResumes failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
 };
 
 // POST /api/users/upgrade
@@ -105,14 +119,18 @@ export const upgradeUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found." });
 
     if (user.subscriptionTier === "premium") {
-      return res.status(400).json({ message: "Your account is already premium." });
+      return res
+        .status(400)
+        .json({ message: "Your account is already premium." });
     }
 
-    if (promoCode) {
-      const normalised = promoCode.trim().toUpperCase();
-      if (VALID_PROMO_CODES.length > 0 && !VALID_PROMO_CODES.includes(normalised)) {
-        return res.status(400).json({ message: "Invalid promo code." });
-      }
+    if (!VALID_PROMO_CODES.length || !promoCode) {
+      return res.status(400).json({ message: "Invalid promo code." });
+    }
+
+    const normalised = promoCode.trim().toUpperCase();
+    if (!VALID_PROMO_CODES.includes(normalised)) {
+      return res.status(400).json({ message: "Invalid promo code." });
     }
 
     user.subscriptionTier = "premium";
@@ -123,6 +141,7 @@ export const upgradeUser = async (req, res) => {
       user,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("upgradeUser failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };

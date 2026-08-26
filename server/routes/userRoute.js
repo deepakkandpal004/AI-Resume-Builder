@@ -11,6 +11,6 @@ userRouter.get("/resumes", protect, getUserResumes);
 userRouter.post("/upgrade", protect, upgradeUser);
 userRouter.post("/forgot-password", forgotPassword);
 userRouter.post("/send-verification", sendVerification);
-userRouter.post("/send-login-notification", sendLoginNotification);
+userRouter.post("/send-login-notification",protect, sendLoginNotification);
 
 export default userRouter;

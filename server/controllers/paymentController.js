@@ -62,8 +62,8 @@ export const createRazorpayOrder = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Create Razorpay Order error:", error);
-    return res.status(500).json({ message: error.message });
+    console.error("Create Razorpay Order error:", error.message);
+    return res.status(500).json({ message: "Something went wrong. Please try again." });
   }
 };
 
@@ -126,7 +126,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Verify Razorpay Payment error:", error);
-    return res.status(500).json({ message: error.message });
+    console.error("Verify Razorpay Payment error:", error.message);
+    return res.status(500).json({ message: "Something went wrong. Please try again." });
   }
 };

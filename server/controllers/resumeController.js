@@ -2,8 +2,36 @@ import getImageKit from "../config/imageKit.js";
 import mongoose from "mongoose";
 import Resume from "../models/resume.js";
 import ResumeVersion from "../models/ResumeVersion.js";
-import fs from "fs";
 import { getMongoUserId } from "../utils/userHelper.js";
+
+// Fields a client may modify on a resume. Everything else (userId, _id,
+// timestamps, __v) is stripped before writing — prevents mass assignment.
+const EDITABLE_FIELDS = [
+  "title", "template", "accent_color", "professional_summary", "skills",
+  "personal_info", "experience", "project", "education", "certifications",
+  "languages", "custom_sections", "style_options", "section_headings", "public",
+];
+
+const parsePayload = (payload) => {
+  let data = payload;
+  for (let i = 0; i < 2; i++) {
+    if (typeof data === "string") {
+      try { data = JSON.parse(data); } catch { break; }
+    }
+  }
+  if (!data || typeof data !== "object") throw new Error("INVALID_RESUME_DATA");
+  return data;
+};
+
+const buildSafeUpdate = (payload) => {
+  const data = parsePayload(payload);
+  const safeUpdate = {};
+  for (const key of EDITABLE_FIELDS) {
+    if (data[key] !== undefined) safeUpdate[key] = data[key];
+  }
+  if (!safeUpdate.personal_info) safeUpdate.personal_info = {};
+  return safeUpdate;
+};
 
 // POST: api/resumes/create
 export const createResume = async (req, res) => {
@@ -15,7 +43,8 @@ export const createResume = async (req, res) => {
     const newResume = await Resume.create({ userId, title });
     return res.status(201).json({ message: "Resume created successfully", resume: newResume });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("createResume failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -26,10 +55,15 @@ export const deleteResume = async (req, res) => {
     if (!userId) return res.status(404).json({ message: "User not found" });
 
     const { resumeId } = req.params;
+    if (!mongoose.isValidObjectId(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume id" });
+    }
+
     await Resume.findOneAndDelete({ userId, _id: resumeId });
     return res.status(200).json({ message: "Resume deleted successfully" });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("deleteResume failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -39,13 +73,12 @@ export const getResumeById = async (req, res) => {
     const userId = await getMongoUserId(req.userId);
     if (!userId) return res.status(404).json({ message: "User not found" });
 
-    const { resumeId: rawId } = req.params;
-    const id = (rawId || "").match(/[a-fA-F0-9]{24}/)?.[0] || "";
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(404).json({ message: "Invalid resume id" });
+    const { resumeId } = req.params;
+    if (!mongoose.isValidObjectId(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume id" });
     }
 
-    const resume = await Resume.findOne({ userId, _id: id });
+    const resume = await Resume.findOne({ userId, _id: resumeId });
     if (!resume) return res.status(404).json({ message: "Resume not found" });
 
     resume.__v = undefined;
@@ -54,19 +87,20 @@ export const getResumeById = async (req, res) => {
 
     return res.status(200).json({ resume });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("getResumeById failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
 // GET: api/resumes/public/:resumeId
 export const getPublicResumeById = async (req, res) => {
   try {
-    const { resumeId: rawId } = req.params;
-    const id = (rawId || "").match(/[a-fA-F0-9]{24}/)?.[0] || "";
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(404).json({ message: "Invalid resume id" });
+    const { resumeId } = req.params;
+    if (!mongoose.isValidObjectId(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume id" });
     }
-    const resume = await Resume.findOne({ public: true, _id: id });
+
+    const resume = await Resume.findOne({ public: true, _id: resumeId });
     if (!resume) return res.status(404).json({ message: "Resume not found" });
 
     resume.__v = undefined;
@@ -74,7 +108,8 @@ export const getPublicResumeById = async (req, res) => {
     resume.updatedAt = undefined;
     return res.status(200).json(resume);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("getPublicResumeById failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -85,6 +120,10 @@ export const duplicateResume = async (req, res) => {
     if (!userId) return res.status(404).json({ message: "User not found" });
 
     const { resumeId } = req.params;
+    if (!mongoose.isValidObjectId(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume id" });
+    }
+
     const original = await Resume.findOne({ userId, _id: resumeId }).lean();
     if (!original) return res.status(404).json({ message: "Resume not found" });
 
@@ -97,7 +136,8 @@ export const duplicateResume = async (req, res) => {
 
     return res.status(201).json({ message: "Resume duplicated", resume: copy });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("duplicateResume failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -110,31 +150,25 @@ export const updateResume = async (req, res) => {
     const { resumeId, resumeData, removeBackground } = req.body;
     const image = req.file;
 
+    if (!mongoose.isValidObjectId(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume id" });
+    }
+
     const existingResume = await Resume.findOne({ userId, _id: resumeId });
 
-    const parsePayload = (payload) => {
-      let data = payload;
-      for (let i = 0; i < 2; i++) {
-        if (typeof data === "string") {
-          try { data = JSON.parse(data); } catch { break; }
-        }
-      }
-      if (!data || typeof data !== "object") throw new Error("Invalid resumeData payload");
-      return data;
-    };
+    // Whitelist client fields — blocks mass assignment of userId/_id/etc.
+    const safeUpdate = buildSafeUpdate(resumeData);
 
-    let resumeDataCopy = parsePayload(resumeData);
-    if (!resumeDataCopy.personal_info) resumeDataCopy.personal_info = {};
-
-    if (!resumeDataCopy.personal_info.image || resumeDataCopy.personal_info.image === "") {
-      resumeDataCopy.personal_info.image = existingResume?.personal_info?.image || "";
+    // Preserve the stored photo when the payload doesn't include one
+    if (!safeUpdate.personal_info.image) {
+      safeUpdate.personal_info.image = existingResume?.personal_info?.image || "";
     }
 
     const isRemoveBackground = removeBackground === "true" || removeBackground === true;
 
     if (image) {
       const uploadOptions = {
-        file: fs.createReadStream(image.path),
+        file: image.buffer,
         fileName: `${userId}_${resumeId}.jpg`,
         folder: "user-resumes",
       };
@@ -147,11 +181,10 @@ export const updateResume = async (req, res) => {
         const filePath = response?.filePath || "";
         const baseUrl = filePath ? `${endpoint}/${filePath}` : response?.url || "";
         const tr = "tr=c-maintain_ratio,fo-face,w-300,h-300";
-        resumeDataCopy.personal_info.image = baseUrl.includes("?") ? `${baseUrl}&${tr}` : `${baseUrl}?${tr}`;
-      } catch {
-        resumeDataCopy.personal_info.image = existingResume?.personal_info?.image || resumeDataCopy.personal_info.image || "";
-      } finally {
-        fs.unlink(image.path, () => {});
+        safeUpdate.personal_info.image = baseUrl.includes("?") ? `${baseUrl}&${tr}` : `${baseUrl}?${tr}`;
+      } catch (error) {
+        console.error("ImageKit upload failed:", error.message);
+        safeUpdate.personal_info.image = existingResume?.personal_info?.image || safeUpdate.personal_info.image || "";
       }
     }
 
@@ -171,13 +204,18 @@ export const updateResume = async (req, res) => {
 
     const resume = await Resume.findOneAndUpdate(
       { userId, _id: resumeId },
-      resumeDataCopy,
+      safeUpdate,
       { new: true }
     );
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
 
     return res.status(200).json({ message: "Saved successfully", resume });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    if (error.message === "INVALID_RESUME_DATA") {
+      return res.status(400).json({ message: "Invalid resumeData payload" });
+    }
+    console.error("updateResume failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -188,6 +226,10 @@ export const listVersions = async (req, res) => {
     if (!userId) return res.status(404).json({ message: "User not found" });
 
     const { resumeId } = req.params;
+    if (!mongoose.isValidObjectId(resumeId)) {
+      return res.status(400).json({ message: "Invalid resume id" });
+    }
+
     const resume = await Resume.findOne({ userId, _id: resumeId });
     if (!resume) return res.status(404).json({ message: "Resume not found" });
 
@@ -198,7 +240,8 @@ export const listVersions = async (req, res) => {
 
     return res.status(200).json({ versions });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("listVersions failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -209,6 +252,10 @@ export const restoreVersion = async (req, res) => {
     if (!userId) return res.status(404).json({ message: "User not found" });
 
     const { resumeId, versionId } = req.params;
+    if (!mongoose.isValidObjectId(resumeId) || !mongoose.isValidObjectId(versionId)) {
+      return res.status(400).json({ message: "Invalid id" });
+    }
+
     const resume = await Resume.findOne({ userId, _id: resumeId });
     if (!resume) return res.status(404).json({ message: "Resume not found" });
 
@@ -225,6 +272,7 @@ export const restoreVersion = async (req, res) => {
 
     return res.status(200).json({ message: "Restored successfully", resume: restored });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("restoreVersion failed:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };

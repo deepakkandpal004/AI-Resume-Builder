@@ -244,7 +244,7 @@ Use this exact structure:
   } catch (error) {
     // Validation errors (Mongoose)
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Invalid resume data: " + error.message });
+      return res.status(400).json({ message: "Invalid resume data." });
     }
     // JSON parsing failure
     if (error.message?.includes("JSON")) {
