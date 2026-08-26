@@ -2,7 +2,7 @@ import React from "react";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { getContainerStyle, getHeadingStyle, getContentStyle, buildSectionOrder } from "../../utils/templateHelpers";
 import { DEFAULT_SECTION_HEADINGS } from "../SectionManager";
-import { applyPhotoEffect } from "../../utils/imagekit";
+import { getImageKitUrl } from "../../utils/imagekit";
 
 /**
  * MinimalImageTemplate — two-column layout (sidebar + main).
@@ -33,7 +33,15 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
   const resolveImageSrc = () => {
     const image = data.personal_info?.image;
     if (!image) return null;
-    if (typeof image === "string") return applyPhotoEffect(image, styleOptions?.photoEffect);
+    if (typeof image === "string") {
+      // Strip any baked-in transforms (legacy uploads) so we control display
+      const clean = image.replace(/[?&]tr=[^&]*/g, "").replace(/[?&]$/, "");
+      const parts = { width: 300, height: 300, crop: "at_max" };
+      if (styleOptions?.photoEffect && styleOptions.photoEffect !== "none") {
+        parts.effect = styleOptions.photoEffect;
+      }
+      return getImageKitUrl(clean, parts);
+    }
     if (typeof image === "object") {
       try { return URL.createObjectURL(image); } catch { return null; }
     }
@@ -294,7 +302,7 @@ const MinimalImageTemplate = ({ data, accentColor, styleOptions = {} }) => {
                 width: "5.5em",
                 height: "5.5em",
                 borderRadius: "9999px",
-                objectFit: "cover",
+                objectFit: "contain",
                 background: accent + "30",
               }}
             />

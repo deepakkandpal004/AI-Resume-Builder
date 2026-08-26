@@ -80,7 +80,7 @@ const PersonalInfoForm = ({
               <img
                 src={imagePreviewSrc}
                 alt=""
-                className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+                className="w-full h-full object-contain group-hover:opacity-75 transition-opacity"
               />
               {uploading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">

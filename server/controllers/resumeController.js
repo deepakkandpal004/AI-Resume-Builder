@@ -160,8 +160,9 @@ export const updateResume = async (req, res) => {
     // Whitelist client fields — blocks mass assignment of userId/_id/etc.
     const safeUpdate = buildSafeUpdate(resumeData);
 
-    // Preserve the stored photo when the payload doesn't include one
-    if (!safeUpdate.personal_info.image) {
+    // Preserve the stored photo only when the client didn't send an image field
+    // (undefined = not provided). Explicit null/"" = user intentionally cleared it.
+    if (safeUpdate.personal_info && safeUpdate.personal_info.image === undefined) {
       safeUpdate.personal_info.image = existingResume?.personal_info?.image || "";
     }
 
@@ -181,8 +182,7 @@ export const updateResume = async (req, res) => {
         const endpoint = process.env.IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/deepakkandpal";
         const filePath = response?.filePath || "";
         const baseUrl = filePath ? `${endpoint}/${filePath}` : response?.url || "";
-        const tr = "tr=c-maintain_ratio,fo-face,w-300,h-300";
-        safeUpdate.personal_info.image = baseUrl.includes("?") ? `${baseUrl}&${tr}` : `${baseUrl}?${tr}`;
+        safeUpdate.personal_info.image = baseUrl;
       } catch (error) {
         logger.error("ImageKit upload failed:", error.message);
         safeUpdate.personal_info.image = existingResume?.personal_info?.image || safeUpdate.personal_info.image || "";

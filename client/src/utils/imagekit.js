@@ -44,7 +44,7 @@ export const getCircleAvatarUrl = (url, size = 280) =>
   getImageKitUrl(url, {
     width: size,
     height: size,
-    crop: "maintain_ratio",
+    crop: "crop",
     focus: "face",
     radius: "max",
   });
@@ -54,7 +54,7 @@ export const getPortraitUrl = (url) =>
   getImageKitUrl(url, {
     width: 200,
     height: 260,
-    crop: "maintain_ratio",
+    crop: "crop",
     focus: "face",
   });
 
@@ -63,7 +63,7 @@ export const getPreviewThumbUrl = (url) =>
   getImageKitUrl(url, {
     width: 150,
     height: 150,
-    crop: "maintain_ratio",
+    crop: "crop",
     focus: "face",
   });
 
@@ -72,15 +72,24 @@ export const getPrintQualityUrl = (url) =>
   getImageKitUrl(url, {
     width: 400,
     height: 400,
-    crop: "maintain_ratio",
+    crop: "crop",
     focus: "face",
   });
 
 /**
- * Apply a style effect to a URL.
+ * Apply a photo effect to a URL, stripping any legacy baked-in transforms.
+ * Always applies face-centered crop for consistent display.
  * effect can be one of: "grayscale" | "contrast" | "sharpen" | "blur-2"
  */
 export const applyPhotoEffect = (url, effect) => {
-  if (!effect || effect === "none") return url;
-  return getImageKitUrl(url, { effect });
+  if (!url || typeof url !== "string") return url;
+
+  // Strip any baked-in transforms (legacy uploads)
+  const clean = url.replace(/[?&]tr=[^&]*/g, "").replace(/[?&]$/, "");
+
+  const parts = ["w-300", "h-300", "c-at_max"];
+  if (effect && effect !== "none") {
+    parts.push(`e-${effect}`);
+  }
+  return `${clean}?tr=${parts.join(",")}`;
 };

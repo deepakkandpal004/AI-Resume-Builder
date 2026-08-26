@@ -134,8 +134,8 @@ const useImageUpload = () => {
                 "https://ik.imagekit.io/deepakkandpal";
               const filePath = resp?.filePath || "";
               const baseUrl = filePath ? `${endpoint}/${filePath}` : resp?.url || "";
-              const tr = "tr=c-maintain_ratio,fo-face,w-300,h-300";
-              resolve(baseUrl.includes("?") ? `${baseUrl}&${tr}` : `${baseUrl}?${tr}`);
+              // Store raw compressed image — face crop is applied at display time
+              resolve(baseUrl);
             } else {
               reject(new Error(`Upload failed (${xhr.status}): ${xhr.responseText}`));
             }
