@@ -55,7 +55,6 @@ vi.mock('../services/atsService.js', () => ({
 import { runAtsScan, getScanHistory } from '../controllers/atsController.js';
 import Resume from '../models/resume.js';
 import AtsScore from '../models/AtsScore.js';
-import User from '../models/User.js';
 import { getMongoUserId } from '../utils/userHelper.js';
 import getAI from '../config/ai.js';
 import {

@@ -19,7 +19,7 @@ export const getScanHistory = async (req, res) => {
   let resume;
   try {
     resume = await Resume.findById(resumeId);
-  } catch (err) {
+  } catch {
     return res.status(503).json({ message: "Database unavailable. Please try again." });
   }
 
@@ -65,7 +65,7 @@ export const runAtsScan = async (req, res) => {
   let resume;
   try {
     resume = await Resume.findById(resumeId);
-  } catch (err) {
+  } catch {
     return res.status(503).json({ message: "Database unavailable. Please try again." });
   }
 
@@ -135,7 +135,7 @@ export const runAtsScan = async (req, res) => {
     if (oldest) {
       try {
         await AtsScore.deleteOne({ _id: oldest._id });
-      } catch (err) {
+      } catch {
         return res.status(500).json({ message: "Failed to save scan results. Please try again." });
       }
     }
@@ -154,7 +154,7 @@ export const runAtsScan = async (req, res) => {
 
   try {
     await newScan.save();
-  } catch (err) {
+  } catch {
     return res.status(500).json({ message: "Failed to save scan results. Please try again." });
   }
 
@@ -171,7 +171,7 @@ export const runAtsScan = async (req, res) => {
       });
       scansRemainingToday = Math.max(0, 1 - todayCount);
     }
-  } catch (err) {
+  } catch {
     scansRemainingToday = null;
   }
   return res.status(200).json({

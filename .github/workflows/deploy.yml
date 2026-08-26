@@ -3,7 +3,13 @@ name: Deploy
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
@@ -17,10 +23,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install & test backend
+      - name: Syntax-check backend
+        run: find server -name "*.js" -not -path "*/node_modules/*" -print0 | xargs -0 -n1 node --check
+
+      - name: Install, lint & test backend
         working-directory: server
         run: |
           npm ci
+          npm run lint
           npm test
 
       - name: Install, lint & build frontend

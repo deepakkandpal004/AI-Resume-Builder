@@ -308,7 +308,7 @@ describe("Property 18 — normalizeText produces only allowed characters", () =>
         // 1. All lowercase
         expect(result).toBe(result.toLowerCase());
         // 2. Only allowed characters
-        expect(result).toMatch(/^[a-z0-9 \-\/]*$/);
+        expect(result).toMatch(/^[a-z0-9 /-]*$/);
       })
     );
   });
@@ -326,7 +326,7 @@ describe("Property 18 — normalizeText produces only allowed characters", () =>
     fc.assert(
       fc.property(fc.string(), (s) => {
         const result = normalizeText(s);
-        return /^[a-z0-9 \-\/]*$/.test(result);
+        return /^[a-z0-9 /-]*$/.test(result);
       })
     );
   });

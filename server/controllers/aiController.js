@@ -202,7 +202,7 @@ Use this exact structure:
     try {
       parseData = JSON.parse(cleanedData);
     } catch (parseError) {
-      throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
+      throw new Error("Failed to parse AI response as JSON", { cause: parseError });
     }
 
     const sanitizeArray = (arr, fields) => {
@@ -329,7 +329,7 @@ export const suggestSkills = async (req, res) => {
     try {
       parsed = JSON.parse(raw);
     } catch (parseError) {
-      throw new Error("Failed to parse AI response as JSON: " + parseError.message);
+      throw new Error("Failed to parse AI response as JSON", { cause: parseError });
     }
 
     return res.status(200).json({
@@ -453,7 +453,7 @@ ${jobDescription}`;
         });
         lettersRemainingToday = Math.max(0, COVER_LETTER_DAILY_LIMIT - todayCount);
       }
-    } catch (err) {
+    } catch {
       lettersRemainingToday = null;
     }
 
@@ -483,7 +483,7 @@ export const getCoverLetterHistory = async (req, res) => {
   let resume;
   try {
     resume = await Resume.findById(resumeId);
-  } catch (err) {
+  } catch {
     return res.status(503).json({ message: "Database unavailable. Please try again." });
   }
 
@@ -523,7 +523,7 @@ export const deleteCoverLetter = async (req, res) => {
   try {
     const userId = await getMongoUserId(req.userId);
     letter = await CoverLetter.findOne({ _id: letterId, userId });
-  } catch (err) {
+  } catch {
     return res.status(503).json({ message: "Database unavailable. Please try again." });
   }
 
@@ -646,7 +646,7 @@ Instructions:
     try {
       parsed = JSON.parse(raw);
     } catch (parseError) {
-      throw new Error("Failed to parse AI response as JSON: " + parseError.message);
+      throw new Error("Failed to parse AI response as JSON", { cause: parseError });
     }
 
     const questions = Array.isArray(parsed.questions)
@@ -785,7 +785,7 @@ Current Resume Data:
     try {
       parseData = JSON.parse(cleanedData);
     } catch (parseError) {
-      throw new Error("Failed to parse tailored data as JSON: " + parseError.message);
+      throw new Error("Failed to parse tailored data as JSON", { cause: parseError });
     }
 
     return res.status(200).json({
@@ -880,7 +880,7 @@ Respond with ONLY valid JSON using this structure:
     try {
       parseData = JSON.parse(cleanedData);
     } catch (parseError) {
-      throw new Error("Failed to parse AI response: " + parseError.message);
+      throw new Error("Failed to parse AI response", { cause: parseError });
     }
 
     return res.status(200).json({

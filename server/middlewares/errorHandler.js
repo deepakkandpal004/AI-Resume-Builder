@@ -1,6 +1,6 @@
 import logger from "../observability/logger.js";
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   logger.error("Unhandled error:", err);
 
   // Multer upload errors

@@ -2,7 +2,6 @@ import User from "../models/User.js";
 import logger from "../observability/logger.js";
 import Resume from "../models/resume.js";
 import AtsScore from "../models/AtsScore.js";
-import { verifyIdToken } from "../config/firebase.js";
 
 // POST /api/users/sync
 // Syncs Firebase user data with MongoDB.
@@ -11,7 +10,7 @@ import { verifyIdToken } from "../config/firebase.js";
 // is only allowed when the token proves the email is verified.
 export const syncUser = async (req, res) => {
   try {
-    const { name, photoURL } = req.body;
+    const { name } = req.body;
     const firebaseUid = req.userId;
     const tokenEmail = req.firebaseUser?.email || null;
     const emailVerified = req.firebaseUser?.email_verified === true;

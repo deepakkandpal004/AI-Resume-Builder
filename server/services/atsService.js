@@ -304,7 +304,7 @@ export function normalizeText(rawText) {
   if (typeof rawText !== "string") return "";
   return rawText
     .toLowerCase()
-    .replace(/[^a-z0-9 \-\/]/g, "");
+    .replace(/[^a-z0-9 /-]/g, "");
 }
 
 // ---------------------------------------------------------------------------

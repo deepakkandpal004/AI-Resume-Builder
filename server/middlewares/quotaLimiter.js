@@ -23,7 +23,7 @@ export default function quotaLimiter({ feature, limit, unavailableMessage, limit
     let user;
     try {
       user = await User.findOne({ firebaseUid: req.userId }).select("subscriptionTier");
-    } catch (err) {
+    } catch {
       return res.status(503).json({ message: unavailableMessage });
     }
 
@@ -38,7 +38,7 @@ export default function quotaLimiter({ feature, limit, unavailableMessage, limit
     let used;
     try {
       used = await claimQuota(req.userId, feature);
-    } catch (err) {
+    } catch {
       return res.status(503).json({ message: unavailableMessage });
     }
 
@@ -46,7 +46,7 @@ export default function quotaLimiter({ feature, limit, unavailableMessage, limit
       // Roll back the over-limit claim so the counter reflects real usage.
       try {
         await refundQuota(req.userId, feature);
-      } catch (err) {
+      } catch {
         // non-fatal — worst case the counter reads one high until midnight UTC
       }
       return res.status(429).json({ message: limitMessage, quotaExhausted: true });
