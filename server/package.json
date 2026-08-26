@@ -27,7 +27,8 @@
     "multer": "^2.0.2",
     "nodemailer": "^6.10.1",
     "openai": "^6.9.1",
-    "razorpay": "^2.9.6"
+    "razorpay": "^2.9.6",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "fast-check": "^3.22.0",
