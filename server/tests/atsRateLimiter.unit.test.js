@@ -12,7 +12,7 @@ import mongoose from 'mongoose';
 // ─── Mock dependencies before importing the middleware ────────────────────────
 
 vi.mock('../models/User.js', () => ({
-  default: { findById: vi.fn() },
+  default: { findOne: vi.fn() },
 }));
 
 vi.mock('../models/AtsScore.js', () => ({
@@ -49,7 +49,7 @@ describe('atsRateLimiter — premium user', () => {
   test('1. premium user bypasses quota check and calls next()', async () => {
     const { req, res, next } = makeReqResNext();
 
-    User.findById.mockReturnValue({
+    User.findOne.mockReturnValue({
       select: vi.fn().mockResolvedValue({ subscriptionTier: 'premium' }),
     });
 
@@ -68,7 +68,7 @@ describe('atsRateLimiter — free-tier user under quota', () => {
   test('2. free-tier user with 0 scans today calls next()', async () => {
     const { req, res, next } = makeReqResNext();
 
-    User.findById.mockReturnValue({
+    User.findOne.mockReturnValue({
       select: vi.fn().mockResolvedValue({ subscriptionTier: 'free' }),
     });
     AtsScore.countDocuments.mockResolvedValue(0);
@@ -88,7 +88,7 @@ describe('atsRateLimiter — free-tier user at quota', () => {
   test('3. free-tier user with 1 scan today returns 429 with quotaExhausted', async () => {
     const { req, res, next } = makeReqResNext();
 
-    User.findById.mockReturnValue({
+    User.findOne.mockReturnValue({
       select: vi.fn().mockResolvedValue({ subscriptionTier: 'free' }),
     });
     AtsScore.countDocuments.mockResolvedValue(1);
@@ -112,7 +112,7 @@ describe('atsRateLimiter — DB errors', () => {
   test('4. DB error during User fetch returns 503', async () => {
     const { req, res, next } = makeReqResNext();
 
-    User.findById.mockReturnValue({
+    User.findOne.mockReturnValue({
       select: vi.fn().mockRejectedValue(new Error('DB error')),
     });
 
@@ -128,7 +128,7 @@ describe('atsRateLimiter — DB errors', () => {
   test('5. DB error during AtsScore count returns 503', async () => {
     const { req, res, next } = makeReqResNext();
 
-    User.findById.mockReturnValue({
+    User.findOne.mockReturnValue({
       select: vi.fn().mockResolvedValue({ subscriptionTier: 'free' }),
     });
     AtsScore.countDocuments.mockRejectedValue(new Error('count error'));

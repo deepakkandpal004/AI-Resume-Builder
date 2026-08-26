@@ -21,7 +21,13 @@ vi.mock('../models/CoverLetter.js', () => ({
 vi.mock('../models/User.js', () => ({
   default: {
     findById: vi.fn(),
+    findOne: vi.fn(),
   },
+}));
+
+vi.mock('../utils/userHelper.js', () => ({
+  getMongoUserId: vi.fn(),
+  getMongoUser: vi.fn(),
 }));
 
 vi.mock('../config/ai.js', () => ({
@@ -36,6 +42,7 @@ import {
 import CoverLetter from '../models/CoverLetter.js';
 import Resume from '../models/resume.js';
 import User from '../models/User.js';
+import { getMongoUserId } from '../utils/userHelper.js';
 import getAI from '../config/ai.js';
 
 function makeRes() {
@@ -62,6 +69,9 @@ function makeGenerateReq(overrides = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Controllers resolve the Mongo user via getMongoUserId(firebaseUid);
+  // identity mapping keeps resume.userId === req.userId comparisons valid.
+  getMongoUserId.mockImplementation(async (uid) => uid);
 });
 
 describe('generateCoverLetter', () => {

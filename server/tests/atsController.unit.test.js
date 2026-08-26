@@ -25,7 +25,12 @@ vi.mock('../models/AtsScore.js', () => ({
 }));
 
 vi.mock('../models/User.js', () => ({
-  default: { findById: vi.fn() },
+  default: { findById: vi.fn(), findOne: vi.fn() },
+}));
+
+vi.mock('../utils/userHelper.js', () => ({
+  getMongoUserId: vi.fn(),
+  getMongoUser: vi.fn(),
 }));
 
 vi.mock('../config/ai.js', () => ({
@@ -51,6 +56,7 @@ import { runAtsScan, getScanHistory } from '../controllers/atsController.js';
 import Resume from '../models/resume.js';
 import AtsScore from '../models/AtsScore.js';
 import User from '../models/User.js';
+import { getMongoUserId } from '../utils/userHelper.js';
 import getAI from '../config/ai.js';
 import {
   buildResumeText,
@@ -101,6 +107,9 @@ const PARSED_RESULT = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Controllers resolve the Mongo user via getMongoUserId(firebaseUid);
+  // identity mapping keeps resume.userId === req.userId comparisons valid.
+  getMongoUserId.mockImplementation(async (uid) => uid);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
