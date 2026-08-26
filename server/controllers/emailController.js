@@ -1,4 +1,5 @@
 import { auth } from "../config/firebase.js";
+import logger from "../observability/logger.js";
 import getMailer from "../config/mailer.js";
 
 const frontendUrl = () =>
@@ -48,8 +49,6 @@ export const forgotPassword = async (req, res) => {
     const isGoogle = providers.includes("google.com");
 
     if (isGoogle) {
-      // Client uses this flag to trigger the Firebase SDK reset email.
-      // Residual enumeration risk accepted: required for Google-user resets.
       return res.status(200).json({
         message:
           "If an account with that email exists, a reset link has been sent.",
@@ -91,7 +90,7 @@ export const forgotPassword = async (req, res) => {
         "If an account with that email exists, a reset link has been sent.",
     });
   } catch (error) {
-    console.error("forgotPassword error:", error.message);
+    logger.error("forgotPassword error:", error.message);
     if (error.code === "auth/user-not-found") {
       return res.status(200).json({
         message:
@@ -162,7 +161,7 @@ export const sendVerification = async (req, res) => {
 
     return res.status(200).json({ message: GENERIC_MESSAGE });
   } catch (error) {
-    console.error("sendVerification error:", error.message);
+    logger.error("sendVerification error:", error.message);
     return res.status(200).json({ message: GENERIC_MESSAGE });
   }
 };
@@ -201,7 +200,7 @@ export const sendLoginNotification = async (req, res) => {
 
     return res.status(200).json({ message: "Notification sent." });
   } catch (error) {
-    console.error("sendLoginNotification error:", error.message);
+    logger.error("sendLoginNotification error:", error.message);
     return res
       .status(500)
       .json({ message: "Something went wrong. Please try again." });

@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import logger from "../observability/logger.js";
 import Resume from "../models/resume.js";
 import AtsScore from "../models/AtsScore.js";
 import { verifyIdToken } from "../config/firebase.js";
@@ -47,7 +48,7 @@ export const syncUser = async (req, res) => {
 
     return res.status(200).json({ user });
   } catch (error) {
-    console.error("syncUser failed:", error.message);
+    logger.error("syncUser failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -63,7 +64,7 @@ export const getUserId = async (req, res) => {
     }
     return res.status(200).json({ user });
   } catch (error) {
-    console.error("getUserId failed:", error.message);
+    logger.error("getUserId failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -107,7 +108,7 @@ export const getUserResumes = async (req, res) => {
 
     return res.status(200).json({ resumes: enriched });
   } catch (error) {
-    console.error("getUserResumes failed:", error.message);
+    logger.error("getUserResumes failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -150,7 +151,7 @@ export const upgradeUser = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error("upgradeUser failed:", error.message);
+    logger.error("upgradeUser failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

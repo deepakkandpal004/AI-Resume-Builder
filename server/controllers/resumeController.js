@@ -1,4 +1,5 @@
 import getImageKit from "../config/imageKit.js";
+import logger from "../observability/logger.js";
 import mongoose from "mongoose";
 import Resume from "../models/resume.js";
 import ResumeVersion from "../models/ResumeVersion.js";
@@ -43,7 +44,7 @@ export const createResume = async (req, res) => {
     const newResume = await Resume.create({ userId, title });
     return res.status(201).json({ message: "Resume created successfully", resume: newResume });
   } catch (error) {
-    console.error("createResume failed:", error.message);
+    logger.error("createResume failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -62,7 +63,7 @@ export const deleteResume = async (req, res) => {
     await Resume.findOneAndDelete({ userId, _id: resumeId });
     return res.status(200).json({ message: "Resume deleted successfully" });
   } catch (error) {
-    console.error("deleteResume failed:", error.message);
+    logger.error("deleteResume failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -87,7 +88,7 @@ export const getResumeById = async (req, res) => {
 
     return res.status(200).json({ resume });
   } catch (error) {
-    console.error("getResumeById failed:", error.message);
+    logger.error("getResumeById failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -108,7 +109,7 @@ export const getPublicResumeById = async (req, res) => {
     resume.updatedAt = undefined;
     return res.status(200).json(resume);
   } catch (error) {
-    console.error("getPublicResumeById failed:", error.message);
+    logger.error("getPublicResumeById failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -136,7 +137,7 @@ export const duplicateResume = async (req, res) => {
 
     return res.status(201).json({ message: "Resume duplicated", resume: copy });
   } catch (error) {
-    console.error("duplicateResume failed:", error.message);
+    logger.error("duplicateResume failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -183,7 +184,7 @@ export const updateResume = async (req, res) => {
         const tr = "tr=c-maintain_ratio,fo-face,w-300,h-300";
         safeUpdate.personal_info.image = baseUrl.includes("?") ? `${baseUrl}&${tr}` : `${baseUrl}?${tr}`;
       } catch (error) {
-        console.error("ImageKit upload failed:", error.message);
+        logger.error("ImageKit upload failed:", error.message);
         safeUpdate.personal_info.image = existingResume?.personal_info?.image || safeUpdate.personal_info.image || "";
       }
     }
@@ -214,7 +215,7 @@ export const updateResume = async (req, res) => {
     if (error.message === "INVALID_RESUME_DATA") {
       return res.status(400).json({ message: "Invalid resumeData payload" });
     }
-    console.error("updateResume failed:", error.message);
+    logger.error("updateResume failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -240,7 +241,7 @@ export const listVersions = async (req, res) => {
 
     return res.status(200).json({ versions });
   } catch (error) {
-    console.error("listVersions failed:", error.message);
+    logger.error("listVersions failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -272,7 +273,7 @@ export const restoreVersion = async (req, res) => {
 
     return res.status(200).json({ message: "Restored successfully", resume: restored });
   } catch (error) {
-    console.error("restoreVersion failed:", error.message);
+    logger.error("restoreVersion failed:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

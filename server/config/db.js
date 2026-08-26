@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
+import logger from "../observability/logger.js";
 
 const connectDB = async () => {
     try {
         mongoose.connection.on("connected", () => {
-        console.log("MongoDB connected successfully");
+        logger.info("MongoDB connected successfully");
         });
 
         let mongodbURI = process.env.MONGODB_URI;
@@ -19,7 +20,7 @@ const connectDB = async () => {
 
         await mongoose.connect(`${mongodbURI}/${projectName}`);
         } catch (error) {
-      console.error("Error connecting to MongoDB:", error.message);
+      logger.error("Error connecting to MongoDB:", error.message);
       process.exit(1);
     }
 }

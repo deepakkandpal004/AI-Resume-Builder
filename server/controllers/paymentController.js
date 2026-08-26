@@ -1,9 +1,9 @@
 import Razorpay from "razorpay";
+import logger from "../observability/logger.js";
 import crypto from "crypto";
 import User from "../models/User.js";
 import { getMongoUserId } from "../utils/userHelper.js";
 
-// Helper to initialize Razorpay. Throws error if keys are missing in env.
 const getRazorpayInstance = () => {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -19,7 +19,6 @@ const getRazorpayInstance = () => {
 };
 
 // POST /api/payments/create-order
-// Creates a new Razorpay Order (amount: ₹299 = 29900 paise)
 export const createRazorpayOrder = async (req, res) => {
   try {
     const userId = await getMongoUserId(req.userId);
@@ -31,8 +30,7 @@ export const createRazorpayOrder = async (req, res) => {
 
     const rzp = getRazorpayInstance();
 
-    // Standard amount is ₹299 = 29900 paise
-    const amount = 29900; 
+    const amount = 29900;
     const currency = "INR";
     const receipt = `receipt_order_${Date.now()}`;
 
@@ -40,14 +38,13 @@ export const createRazorpayOrder = async (req, res) => {
       amount,
       currency,
       receipt,
-      payment_capture: 1, // Automatically capture payment on authorization
+      payment_capture: 1,
     });
 
     if (!order) {
       throw new Error("Razorpay order creation failed");
     }
 
-    // Associate this order with the user
     user.razorpayOrderId = order.id;
     await user.save();
 
@@ -62,13 +59,12 @@ export const createRazorpayOrder = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Create Razorpay Order error:", error.message);
+    logger.error("Create Razorpay Order error:", error.message);
     return res.status(500).json({ message: "Something went wrong. Please try again." });
   }
 };
 
 // POST /api/payments/verify-payment
-// Verifies signature using HMAC-SHA256 and activates premium subscription.
 export const verifyRazorpayPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -78,7 +74,6 @@ export const verifyRazorpayPayment = async (req, res) => {
       return res.status(400).json({ message: "Missing required payment details" });
     }
 
-    // Verify HMAC-SHA256 signature
     const secret = process.env.RAZORPAY_KEY_SECRET;
     if (!secret) {
       return res.status(500).json({ message: "Razorpay secret key is not configured" });
@@ -93,7 +88,6 @@ export const verifyRazorpayPayment = async (req, res) => {
     const isSignatureValid = expectedSignature === razorpay_signature;
 
     if (isSignatureValid) {
-      // Find and update the user's tier to premium
       const user = await User.findByIdAndUpdate(
         userId,
         {
@@ -108,7 +102,7 @@ export const verifyRazorpayPayment = async (req, res) => {
         return res.status(404).json({ message: "User not found" });
       }
 
-      console.log(`User ${userId} successfully upgraded to premium via Razorpay. Order: ${razorpay_order_id}`);
+      logger.info(`User ${userId} successfully upgraded to premium via Razorpay. Order: ${razorpay_order_id}`);
       return res.status(200).json({
         success: true,
         message: "Payment verified successfully. Your account has been upgraded to Premium!",
@@ -119,14 +113,14 @@ export const verifyRazorpayPayment = async (req, res) => {
         },
       });
     } else {
-      console.warn(`Invalid Razorpay signature for user ${userId}, Order: ${razorpay_order_id}`);
+      logger.warn(`Invalid Razorpay signature for user ${userId}, Order: ${razorpay_order_id}`);
       return res.status(400).json({
         success: false,
         message: "Invalid signature verification. Payment authentication failed.",
       });
     }
   } catch (error) {
-    console.error("Verify Razorpay Payment error:", error.message);
+    logger.error("Verify Razorpay Payment error:", error.message);
     return res.status(500).json({ message: "Something went wrong. Please try again." });
   }
 };

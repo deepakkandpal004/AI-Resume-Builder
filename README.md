@@ -159,6 +159,8 @@ Open `http://localhost:5173`
 | `PROMO_CODES` | server | Comma-separated premium promo codes |
 | `SMTP_*` | server | Brevo SMTP credentials for transactional email |
 | `CLIENT_URL` | server | Allowed CORS origin(s), comma-separated |
+| `SENTRY_DSN` | server | Optional — Sentry error tracking (no-ops if unset) |
+| `LOG_LEVEL` | server | Optional — pino log level (default: `info`) |
 | `VITE_BASE_URL` | client | Backend API base URL |
 
 ---

@@ -1,9 +1,10 @@
 import { verifyIdToken } from "../config/firebase.js";
+import logger from "../observability/logger.js";
 
 const protect = async (req, res, next) => {
   let token = req.headers.authorization;
   if (!token) {
-    console.error("[AUTH] No authorization header");
+    logger.error("[AUTH] No authorization header");
     return res.status(401).json({ message: "unauthorized" });
   }
   if (token.startsWith("Bearer ")) {
@@ -15,7 +16,7 @@ const protect = async (req, res, next) => {
     req.firebaseUser = decoded;
     next();
   } catch (error) {
-    console.error("[AUTH] Token verification failed:", error.message);
+    logger.error("[AUTH] Token verification failed:", error.message);
     return res.status(401).json({ message: "unauthorized" });
   }
 };

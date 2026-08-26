@@ -1,5 +1,7 @@
+import logger from "../observability/logger.js";
+
 const errorHandler = (err, req, res, next) => {
-  console.error("Unhandled error:", err);
+  logger.error("Unhandled error:", err);
 
   // Multer upload errors
   if (err.name === "MulterError") {
